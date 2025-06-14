@@ -282,14 +282,13 @@ const PatientForm = () => {
 
     // Validation Logic
     // 1. If B2B is enabled, clinicalName (stored in B2B field) should be mandatory
-    if (isB2BEnabled && (!formData.B2B || formData.B2B.trim() === "")) {
-      toast.error("Clinical Name is mandatory when B2B is enabled.");
+    if (
+      isB2BEnabled &&
+      (!formData.refby || !formData.B2B || formData.B2B.trim() === "")
+    ) {
+      toast.error(" Requred Clinical Name and Referred By ");
       return;
     }
-
-    // Debug log to check current B2B value (which contains clinical name)
-    console.log("Current B2B value (Clinical Name):", formData.B2B);
-    console.log("Is B2B Enabled:", isB2BEnabled);
 
     // 2. If both B2B and Home Collection are not enabled, Referred by is mandatory
     if (
@@ -297,17 +296,16 @@ const PatientForm = () => {
       !isHomeCollectionEnabled &&
       (!formData.refby || formData.refby.trim() === "")
     ) {
-      toast.error(
-        "Referred by is mandatory when both B2B and Home Collection are not enabled."
-      );
+      toast.error("Required Referred by");
       return;
     }
 
     // 3. Validate contact details if Home Collection is enabled (making them mandatory)
-    if (isHomeCollectionEnabled && (!formData.phone || !formData.email)) {
-      toast.error(
-        "Phone number and Email ID are mandatory for Home Collection."
-      );
+    if (
+      isHomeCollectionEnabled &&
+      (!formData.refby || !formData.phone || !formData.email)
+    ) {
+      toast.error("Required Referred By, Phone number and Email ID ");
       return;
     }
 
