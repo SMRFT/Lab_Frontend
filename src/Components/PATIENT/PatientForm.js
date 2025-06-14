@@ -1,60 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import "bootstrap/dist/css/bootstrap.min.css"
-import axios from "axios"
-import { FaToggleOff, FaToggleOn, FaSearch } from "react-icons/fa"
-import SampleCollectorForm from "../FORMS/SampleCollectorForm"
-import ClinicalName from "../FORMS/ClinicalName"
-import RefBy from "../FORMS/RefBy"
-import styled from "styled-components"
-import "./PatientForm.css"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
+import { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
+import { FaToggleOff, FaToggleOn, FaSearch } from "react-icons/fa";
+import SampleCollectorForm from "../FORMS/SampleCollectorForm";
+import ClinicalName from "../FORMS/ClinicalName";
+import RefBy from "../FORMS/RefBy";
+import styled from "styled-components";
+import "./PatientForm.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const Fieldset = styled.fieldset`
-border: 2px dashed #E68FAE; /* Dotted border for gradient effect */
-border-radius: 12px;
-padding: 25px;
-margin: 20px 0;
-background: none; /* No background color */
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow */
-font-family: 'Poppins', sans-serif;
-color: #1B262C;
+  border: 2px dashed #e68fae; /* Dotted border for gradient effect */
+  border-radius: 12px;
+  padding: 25px;
+  margin: 20px 0;
+  background: none; /* No background color */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  font-family: "Poppins", sans-serif;
+  color: #1b262c;
 
-legend {
-font-size: 1.5rem;
-font-weight: bold;
-color: #E68FAE; /* Matching the title color */
-padding: 0 10px;
-text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-}
-`
+  legend {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e68fae; /* Matching the title color */
+    padding: 0 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  }
+`;
 
 const SearchContainer = styled.div`
-position: relative;
-width: 100%;
+  position: relative;
+  width: 100%;
 
-input {
-padding-left: 2rem;
-border-radius: 25px;
-border: 1px solid #ced4da;
-font-family: 'Poppins', sans-serif;
-font-size: 0.8rem;
-color: #333;
+  input {
+    padding-left: 2rem;
+    border-radius: 25px;
+    border: 1px solid #ced4da;
+    font-family: "Poppins", sans-serif;
+    font-size: 0.8rem;
+    color: #333;
 
-&::placeholder {
-color: grey; /* Grey color for placeholder */
-}
-}
+    &::placeholder {
+      color: grey; /* Grey color for placeholder */
+    }
+  }
 
-svg {
-position: absolute;
-top: 50%;
-left: 10px;
-transform: translateY(-50%);
-color: #6c757d;
-}
-`
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #6c757d;
+  }
+`;
 const RequiredIndicator = styled.span`
   color: #ff6b6b;
   margin-left: 0.25rem;
@@ -62,17 +62,17 @@ const RequiredIndicator = styled.span`
 
 const PatientForm = () => {
   const getCurrentDateWithTime = () => {
-    const currentDate = new Date()
-    const year = currentDate.getFullYear()
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0") // Month is 0-based, so add 1
-    const day = String(currentDate.getDate()).padStart(2, "0")
-    const hours = String(currentDate.getHours()).padStart(2, "0")
-    const minutes = String(currentDate.getMinutes()).padStart(2, "0")
-    const seconds = String(currentDate.getSeconds()).padStart(2, "0")
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}` // Format as YYYY-MM-DD HH:mm:ss
-  }
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Month is 0-based, so add 1
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const hours = String(currentDate.getHours()).padStart(2, "0");
+    const minutes = String(currentDate.getMinutes()).padStart(2, "0");
+    const seconds = String(currentDate.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // Format as YYYY-MM-DD HH:mm:ss
+  };
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
-  const storedName = localStorage.getItem("name")
+  const storedName = localStorage.getItem("name");
 
   const [formData, setFormData] = useState({
     patient_id: "",
@@ -100,31 +100,36 @@ const PatientForm = () => {
     bill_no: "",
     salesMapping: "",
     PartialPayment: "",
-  })
+  });
 
-  const [isHomeCollectionEnabled, setIsHomeCollectionEnabled] = useState(false)
-  const [sampleCollectorOptions, setSampleCollectorOptions] = useState([])
-  const [refByOptions, setRefByOptions] = useState([])
-  const [showSampleCollectorForm, setShowSampleCollectorForm] = useState(false)
-  const [showRefByForm, setShowRefByFormForm] = useState(false)
-  const [showAddOrganisationForm, setShowAddOrganisationForm] = useState(false)
-  const [isB2BEnabled, setIsB2BEnabled] = useState(false) // State to track toggle status
+  const [isHomeCollectionEnabled, setIsHomeCollectionEnabled] = useState(false);
+  const [sampleCollectorOptions, setSampleCollectorOptions] = useState([]);
+  const [refByOptions, setRefByOptions] = useState([]);
+  const [showSampleCollectorForm, setShowSampleCollectorForm] = useState(false);
+  const [showRefByForm, setShowRefByFormForm] = useState(false);
+  const [showAddOrganisationForm, setShowAddOrganisationForm] = useState(false);
+  const [isB2BEnabled, setIsB2BEnabled] = useState(false); // State to track toggle status
   // Add a new state to track form validity
-  const [isFormValid, setIsFormValid] = useState(false)
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
 
-    let updatedGender = formData.gender // Default to the current gender
+    let updatedGender = formData.gender; // Default to the current gender
     if (name === "Title") {
       // Automatically set gender based on title
       if (value === "Mr" || value === "Master" || value === "Dr") {
-        updatedGender = "Male"
-      } else if (value === "Mrs" || value === "Ms" || value === "Miss" || value === "Baby") {
-        updatedGender = "Female"
+        updatedGender = "Male";
+      } else if (
+        value === "Mrs" ||
+        value === "Ms" ||
+        value === "Miss" ||
+        value === "Baby"
+      ) {
+        updatedGender = "Female";
       } else if (value === "Baby of") {
-        updatedGender = "Other" // Assume 'other' for BABY OF
+        updatedGender = "Other"; // Assume 'other' for BABY OF
       }
     }
 
@@ -135,158 +140,187 @@ const PatientForm = () => {
           ...prevData.address,
           [name]: value, // Update the specific part of address
         },
-      }))
+      }));
     } else {
       setFormData((prevData) => ({
         ...prevData,
         [name]: value,
         ...(name === "Title" && { gender: updatedGender }), // Update gender only if 'Title' changes
-      }))
+      }));
     }
-  }
+  };
 
-  const handleClinicalNameSelect = (clinicalName, referrerCode, salesMapping) => {
+  const handleClinicalNameSelect = (
+    clinicalName,
+    referrerCode,
+    salesMapping
+  ) => {
     setFormData((prevState) => ({
       ...prevState,
       B2B: clinicalName || "", // Update B2B field
       lab_id: referrerCode || "", // Update Lab ID with referrerCode
       salesMapping: salesMapping || "", // Update Sales Mapping
-    }))
-  }
+    }));
+  };
 
   const handleToggle = () => {
-    setIsB2BEnabled(!isB2BEnabled)
+    setIsB2BEnabled(!isB2BEnabled);
 
     // Automatically disable home collection when B2B is enabled
     setFormData((prevData) => ({
       ...prevData,
       home_collection: isB2BEnabled ? "" : prevData.home_collection,
-    }))
+    }));
 
     // If B2B is enabled, disable home collection toggle
     if (!isB2BEnabled) {
-      setIsHomeCollectionEnabled(false) // Disable the home collection toggle
+      setIsHomeCollectionEnabled(false); // Disable the home collection toggle
     }
-  }
+  };
 
   const handleToggleHomeCollection = () => {
     // Only allow toggling if B2B is not enabled
     if (!isB2BEnabled) {
-      setIsHomeCollectionEnabled((prev) => !prev)
+      setIsHomeCollectionEnabled((prev) => !prev);
     } else {
-      toast.error("Home Collection cannot be enabled when B2B is active.")
+      toast.error("Home Collection cannot be enabled when B2B is active.");
     }
-  }
+  };
 
   // Fetch the latest patient ID when the component is mounted
   const fetchSampleCollector = async () => {
     try {
-      const response = await axios.get(`${Labbaseurl}sample-collector/`)
-      setSampleCollectorOptions(response.data)
+      const response = await axios.get(`${Labbaseurl}sample-collector/`);
+      setSampleCollectorOptions(response.data);
     } catch (error) {
-      console.error("Error fetching patient ID:", error)
+      console.error("Error fetching patient ID:", error);
       // Optionally, show an alert or message
     }
-  }
+  };
   useEffect(() => {
     // Call the fetchPatientId function when the component mounts
-    fetchSampleCollector()
-  }, [])
+    fetchSampleCollector();
+  }, []);
 
   const handleSampleCollectorAdded = () => {
-    fetchSampleCollector() // Refresh RefBy data after adding a new entry
-  }
+    fetchSampleCollector(); // Refresh RefBy data after adding a new entry
+  };
 
   // Fetch the latest patient ID when the component is mounted
   const fetchPatientId = async () => {
     try {
-      const response = await axios.get(`${Labbaseurl}latest-patient-id/`)
+      const response = await axios.get(`${Labbaseurl}latest-patient-id/`);
       setFormData((prevData) => ({
         ...prevData,
         patient_id: response.data.patient_id, // Set the new patient ID
-      }))
+      }));
     } catch (error) {
-      console.error("Error fetching patient ID:", error)
+      console.error("Error fetching patient ID:", error);
       // Optionally, show an alert or message
     }
-  }
+  };
   useEffect(() => {
     // Call the fetchPatientId function when the component mounts
-    fetchPatientId()
-  }, [])
+    fetchPatientId();
+  }, []);
 
   // Fetch the latest patient ID when the component is mounted
   const fetchRefBy = async () => {
     try {
-      const response = await axios.get(`${Labbaseurl}refby/`)
-      setRefByOptions(response.data)
+      const response = await axios.get(`${Labbaseurl}refby/`);
+      setRefByOptions(response.data);
     } catch (error) {
-      console.error("Error fetching patient ID:", error)
+      console.error("Error fetching patient ID:", error);
       // Optionally, show an alert or message
     }
-  }
+  };
   useEffect(() => {
     // Call the fetchPatientId function when the component mounts
-    fetchRefBy()
-  }, [])
+    fetchRefBy();
+  }, []);
 
   const handleRefByAdded = () => {
-    fetchRefBy() // Refresh RefBy data after adding a new entry
-  }
+    fetchRefBy(); // Refresh RefBy data after adding a new entry
+  };
 
   // Fetch the latest patient ID when the component is mounted
   const fetchBillNo = async () => {
     try {
-      const response = await axios.get(`${Labbaseurl}latest-bill-no/`)
+      const response = await axios.get(`${Labbaseurl}latest-bill-no/`);
       setFormData((prevData) => ({
         ...prevData,
         bill_no: response.data.bill_no, // Set the fetched bill_no
-      }))
+      }));
     } catch (error) {
-      console.error("Error fetching patient ID:", error)
+      console.error("Error fetching patient ID:", error);
       // Optionally, show an alert or message
     }
-  }
+  };
   useEffect(() => {
     // Call the fetchPatientId function when the component mounts
-    fetchBillNo()
-  }, [])
+    fetchBillNo();
+  }, []);
 
   // Add this useEffect to check form validity whenever patientname or age changes
   useEffect(() => {
     // Check if both patientname and age are filled
-    const isValid = formData.patientname.trim() !== "" && formData.age.trim() !== ""
-    setIsFormValid(isValid)
-  }, [formData.patientname, formData.age])
+    const isValid = formData.patientname.trim() !== "" && formData.age !== "";
+    setIsFormValid(isValid);
+  }, [formData.patientname, formData.age]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    await fetchPatientId()
+    e.preventDefault();
+    await fetchPatientId();
 
     // Determine the segment value based on toggle states
-    let segmentValue = "Walk-in" // Default to "Walkin"
+    let segmentValue = "Walk-in"; // Default to "Walk-in"
     if (isB2BEnabled) {
-      segmentValue = "B2B"
+      segmentValue = "B2B";
     } else if (isHomeCollectionEnabled) {
-      segmentValue = "Home Collection"
+      segmentValue = "Home Collection";
     }
 
-    // Validate contact details if Home Collection is enabled (making them mandatory)
+    // Validation Logic
+    // 1. If B2B is enabled, clinicalName (stored in B2B field) should be mandatory
+    if (isB2BEnabled && (!formData.B2B || formData.B2B.trim() === "")) {
+      toast.error("Clinical Name is mandatory when B2B is enabled.");
+      return;
+    }
+
+    // Debug log to check current B2B value (which contains clinical name)
+    console.log("Current B2B value (Clinical Name):", formData.B2B);
+    console.log("Is B2B Enabled:", isB2BEnabled);
+
+    // 2. If both B2B and Home Collection are not enabled, Referred by is mandatory
+    if (
+      !isB2BEnabled &&
+      !isHomeCollectionEnabled &&
+      (!formData.refby || formData.refby.trim() === "")
+    ) {
+      toast.error(
+        "Referred by is mandatory when both B2B and Home Collection are not enabled."
+      );
+      return;
+    }
+
+    // 3. Validate contact details if Home Collection is enabled (making them mandatory)
     if (isHomeCollectionEnabled && (!formData.phone || !formData.email)) {
-      toast.error("Phone number and Email ID are mandatory for Home Collection.")
-      return // Exit early if validation fails
+      toast.error(
+        "Phone number and Email ID are mandatory for Home Collection."
+      );
+      return;
     }
 
-    const fullPatientName = `${formData.Title} ${formData.patientname}`
+    const fullPatientName = `${formData.Title} ${formData.patientname}`;
 
     // Prepare the address as a JSON object
     const addressData = {
       area: formData.address.area,
       pincode: formData.address.pincode,
-    }
+    };
 
     // Set B2B to null if the toggle is not enabled
-    const B2BValue = isB2BEnabled ? formData.B2B : null
+    const B2BValue = isB2BEnabled ? formData.B2B : null;
 
     try {
       const response = await axios.post(`${Labbaseurl}patient/create/`, {
@@ -296,10 +330,10 @@ const PatientForm = () => {
         age_type: formData.age_type || "Year",
         address: addressData, // Send the address as a JSON object
         B2B: B2BValue, // Include the B2B value dynamically
-      })
+      });
 
       // Show success toast
-      toast.success("Patient data saved successfully!")
+      toast.success("Patient data saved successfully!");
 
       // Reset form fields
       setFormData({
@@ -327,33 +361,34 @@ const PatientForm = () => {
         registeredby: storedName,
         salesMapping: "",
         PartialPayment: "",
-      })
+        clinicalName: "", // Remove this line since clinical name is stored in B2B field
+      });
+
       // Refresh the page after 3 seconds
       setTimeout(() => {
-        window.location.reload() // Refresh the page
-      }, 3000)
+        window.location.reload(); // Refresh the page
+      }, 3000);
     } catch (error) {
-      console.error("Error saving data:", error)
+      console.error("Error saving data:", error);
       // Show error toast
-      toast.error("Error saving data. Please try again.")
+      toast.error("Error saving data. Please try again.");
     }
-  }
-
-  const [selectedTests, setSelectedTests] = useState([])
-  const [searchValue, setSearchValue] = useState("") // Input value for search
-  const [typingTimeout, setTypingTimeout] = useState(null) // Timeout reference
+  };
+  const [selectedTests, setSelectedTests] = useState([]);
+  const [searchValue, setSearchValue] = useState(""); // Input value for search
+  const [typingTimeout, setTypingTimeout] = useState(null); // Timeout reference
 
   const handleSearchChange = (e) => {
-    const input = e.target.value.trim()
-    setSearchValue(input)
+    const input = e.target.value;
+    setSearchValue(input);
 
     if (typingTimeout) {
-      clearTimeout(typingTimeout)
+      clearTimeout(typingTimeout);
     }
 
     const timeout = setTimeout(() => {
       if (input.length >= 3) {
-        handleSearch(input)
+        handleSearch(input);
       } else {
         // toast.error("Please type at least 3 characters.");
         setFormData({
@@ -366,32 +401,36 @@ const PatientForm = () => {
           address: "",
           email: "",
           area: "",
-        })
+        });
       }
-    }, 1000)
+    }, 1000);
 
-    setTypingTimeout(timeout)
-  }
+    setTypingTimeout(timeout);
+  };
 
   const handleSearch = async (value) => {
     try {
-      let queryParam
-      const currentDate = getCurrentDateWithTime() // Get the current date
+      let queryParam;
+      const currentDate = getCurrentDateWithTime(); // Get the current date
 
       // Determine the query parameter based on input value
       if (/^SD\d+$/.test(value)) {
-        queryParam = `patient_id=${value}` // Patient ID
+        queryParam = `patient_id=${value}`; // Patient ID
       } else if (/^\d{10}$/.test(value)) {
-        queryParam = `phone=${value}` // Phone number (10 digits)
+        queryParam = `phone=${value}`; // Phone number (10 digits)
       } else {
-        queryParam = `patientname=${value}` // Patient name
+        queryParam = `patientname=${value}`; // Patient name
       }
 
       // Add the current date as a query parameter
-      const response = await axios.get(`${Labbaseurl}patient-get/?${queryParam}&date=${currentDate}`)
+      const response = await axios.get(
+        `${Labbaseurl}patient-get/?${queryParam}&date=${currentDate}`
+      );
       if (response.data) {
-        const prefixes = /^(MR|MRS|MS|MASTER|MISS|DR|BABY|BABY OF)\s+/i
-        const cleanedName = response.data.patientname.replace(prefixes, "").trim()
+        const prefixes = /^(MR|MRS|MS|MASTER|MISS|DR|BABY|BABY OF)\s+/i;
+        const cleanedName = response.data.patientname
+          .replace(prefixes, "")
+          .trim();
 
         setFormData((prev) => ({
           ...prev,
@@ -403,20 +442,20 @@ const PatientForm = () => {
           phone: response.data.phone,
           address: response.data.address,
           email: response.data.email,
-        }))
+        }));
 
-        toast.success("Patient details loaded successfully.")
+        toast.success("Patient details loaded successfully.");
       }
     } catch (error) {
-      console.error("Error fetching patient details:", error)
+      console.error("Error fetching patient details:", error);
       // toast.error(error.response?.data?.error || "Error fetching patient details.");
     }
-  }
+  };
 
   return (
     <div>
       <form className="container mt-3">
-      <h2 className="text-center">Patient Registration Form</h2>
+        <h2 className="text-center">Patient Registration Form</h2>
 
         <div className="row justify-content-center mb-3">
           <div className="col-md-6">
@@ -463,7 +502,12 @@ const PatientForm = () => {
             <div className="col-md-3">
               <label className="form-label">Ref By</label>
               <div className="d-flex align-items-center">
-                <select className="form-select me-2" name="refby" value={formData.refby} onChange={handleChange}>
+                <select
+                  className="form-select me-2"
+                  name="refby"
+                  value={formData.refby}
+                  onChange={handleChange}
+                >
                   <option value="">Select Refby</option>
                   {refByOptions.map((refby, index) => (
                     <option key={index} value={refby.name}>
@@ -471,17 +515,34 @@ const PatientForm = () => {
                     </option>
                   ))}
                 </select>
-                <button type="button" className="button" onClick={() => setShowRefByFormForm(true)}>
+                <button
+                  type="button"
+                  className="button"
+                  onClick={() => setShowRefByFormForm(true)}
+                >
                   <i className="fa fa-plus"></i> +
                 </button>
               </div>
-              <RefBy show={showRefByForm} setShow={setShowRefByFormForm} onRefByAdded={handleRefByAdded} />
+              <RefBy
+                show={showRefByForm}
+                setShow={setShowRefByFormForm}
+                onRefByAdded={handleRefByAdded}
+              />
             </div>
             <div className="col-md-3">
               <label className="form-label">Branch</label>
-              <select className="form-select" name="branch" value={formData.branch} onChange={handleChange}>
-                <option value="">Select a Branch</option> {/* Placeholder option */}
-                <option value="Shanmuga Mother Lab">Shanmuga Mother Lab</option> {/* Adding Mother Lab option */}
+              <select
+                className="form-select"
+                name="branch"
+                value={formData.branch}
+                onChange={handleChange}
+              >
+                <option value="">Select a Branch</option>{" "}
+                {/* Placeholder option */}
+                <option value="Shanmuga Mother Lab">
+                  Shanmuga Mother Lab
+                </option>{" "}
+                {/* Adding Mother Lab option */}
               </select>
             </div>
           </div>
@@ -492,9 +553,15 @@ const PatientForm = () => {
               <label className="form-label mt-2">B2B</label>
               <div onClick={handleToggle} style={{ cursor: "pointer" }}>
                 {isB2BEnabled ? (
-                  <FaToggleOn className="ms-2" style={{ fontSize: "40px", color: "green" }} />
+                  <FaToggleOn
+                    className="ms-2"
+                    style={{ fontSize: "40px", color: "green" }}
+                  />
                 ) : (
-                  <FaToggleOff className="ms-2" style={{ fontSize: "40px", color: "grey" }} />
+                  <FaToggleOff
+                    className="ms-2"
+                    style={{ fontSize: "40px", color: "grey" }}
+                  />
                 )}
               </div>
             </div>
@@ -520,11 +587,20 @@ const PatientForm = () => {
             {/* Home Collection */}
             <div className="col-md-2 d-flex flex-column align-items-center">
               <label className="form-label">Home Collection</label>
-              <div onClick={handleToggleHomeCollection} style={{ cursor: "pointer" }}>
+              <div
+                onClick={handleToggleHomeCollection}
+                style={{ cursor: "pointer" }}
+              >
                 {isHomeCollectionEnabled ? (
-                  <FaToggleOn className="ms-2" style={{ fontSize: "40px", color: "green" }} />
+                  <FaToggleOn
+                    className="ms-2"
+                    style={{ fontSize: "40px", color: "green" }}
+                  />
                 ) : (
-                  <FaToggleOff className="ms-2" style={{ fontSize: "40px", color: "grey" }} />
+                  <FaToggleOff
+                    className="ms-2"
+                    style={{ fontSize: "40px", color: "grey" }}
+                  />
                 )}
               </div>
             </div>
@@ -545,7 +621,10 @@ const PatientForm = () => {
                     </option>
                   ))}
                 </select>
-                <button type="button" onClick={() => setShowSampleCollectorForm(true)}>
+                <button
+                  type="button"
+                  onClick={() => setShowSampleCollectorForm(true)}
+                >
                   <i className="fa fa-plus"></i> +
                 </button>
               </div>
@@ -577,7 +656,12 @@ const PatientForm = () => {
             {/* Title */}
             <div className="col-md-2">
               <label className="form-label">Title</label>
-              <select className="form-select" name="Title" value={formData.Title} onChange={handleChange}>
+              <select
+                className="form-select"
+                name="Title"
+                value={formData.Title}
+                onChange={handleChange}
+              >
                 <option value="Mr">Mr</option>
                 <option value="Mrs">Mrs</option>
                 <option value="Ms">Ms</option>
@@ -591,32 +675,32 @@ const PatientForm = () => {
 
             {/* Patient Name */}
             <div className="col-md-3">
-  <label className="form-label">
-    Patient Name<RequiredIndicator>*</RequiredIndicator>
-  </label>
-  <input
-    type="text"
-    className="form-control"
-    name="patientname"
-    value={formData.patientname}
-    onChange={handleChange}
-    required
-  />
-</div>
+              <label className="form-label">
+                Patient Name<RequiredIndicator>*</RequiredIndicator>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                name="patientname"
+                value={formData.patientname}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-<div className="col-md-2">
-  <label className="form-label">
-    Age<RequiredIndicator>*</RequiredIndicator>
-  </label>
-  <input
-    type="text"
-    className="form-control"
-    name="age"
-    value={formData.age}
-    onChange={handleChange}
-    required
-  />
-</div>
+            <div className="col-md-2">
+              <label className="form-label">
+                Age<RequiredIndicator>*</RequiredIndicator>
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                name="age"
+                value={formData.age}
+                onChange={handleChange}
+                required
+              />
+            </div>
             {/* Age Type */}
             <div className="col-md-2 mb-4">
               <label className="form-label">Age Type</label>
@@ -725,19 +809,22 @@ const PatientForm = () => {
           </div>
         </Fieldset>
         <div className="d-flex justify-content-center mt-4">
-  <button
-    className="button mt-3 me-2"
-    onClick={handleSubmit}
-    disabled={!isFormValid}
-  >
-    Generate
-  </button>
-</div>
-
+          <button
+            className="button mt-3 me-2"
+            onClick={handleSubmit}
+            disabled={!isFormValid}
+          >
+            Generate
+          </button>
+        </div>
       </form>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default PatientForm
+export default PatientForm;
