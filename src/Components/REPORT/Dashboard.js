@@ -1,17 +1,34 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Activity, Users, Home, ClipboardCheck, Wallet, Calendar, RefreshCw } from "lucide-react"
-import axios from "axios"
-import styled from "styled-components"
-import { Tooltip, Legend, ResponsiveContainer, XAxis, YAxis, LineChart, Line, CartesianGrid } from "recharts"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Activity,
+  Users,
+  Home,
+  ClipboardCheck,
+  Wallet,
+  Calendar,
+  RefreshCw,
+} from "lucide-react";
+import axios from "axios";
+import styled from "styled-components";
+import {
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  LineChart,
+  Line,
+  CartesianGrid,
+} from "recharts";
 
 const DashboardContainer = styled(motion.div)`
   padding: 2rem;
   background: #f8fafc;
   min-height: 100vh;
-`
+`;
 
 const Title = styled(motion.h1)`
   text-align: center;
@@ -19,14 +36,14 @@ const Title = styled(motion.h1)`
   color: #1e293b;
   margin-bottom: 2rem;
   font-weight: bold;
-`
+`;
 
 const AmountContainer = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
-`
+`;
 
 const AmountBox = styled(motion.div)`
   background: white;
@@ -40,7 +57,7 @@ const AmountBox = styled(motion.div)`
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -48,7 +65,7 @@ const AmountBox = styled(motion.div)`
     height: 4px;
     background: ${({ color }) => color};
   }
-`
+`;
 
 const IconWrapper = styled.div`
   width: 48px;
@@ -59,19 +76,19 @@ const IconWrapper = styled.div`
   justify-content: center;
   background: ${({ color }) => `${color}20`};
   color: ${({ color }) => color};
-`
+`;
 
 const Heading = styled.h2`
   font-size: 1rem;
   color: #64748b;
   font-weight: 500;
-`
+`;
 
 const AmountValue = styled(motion.p)`
   font-size: 2rem;
   font-weight: bold;
   color: #1e293b;
-`
+`;
 
 const ChartContainer = styled(motion.div)`
   background: white;
@@ -79,19 +96,19 @@ const ChartContainer = styled(motion.div)`
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   margin-top: 2rem;
-  
+
   h3 {
     margin-bottom: 1.5rem;
     color: #1e293b;
   }
-`
+`;
 
 const ChartsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
-`
+`;
 
 const FilterContainer = styled(motion.div)`
   display: flex;
@@ -103,49 +120,49 @@ const FilterContainer = styled(motion.div)`
   padding: 1.5rem;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  
+
   /* Ensure everything stays in one row */
   flex-wrap: wrap;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
   }
-`
+`;
 
 const DateFilterGroup = styled.div`
   display: flex;
   gap: 0.5rem;
   align-items: center;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     width: 100%;
   }
-`
+`;
 
 const FilterLabel = styled.div`
   font-size: 0.875rem;
   color: #64748b;
   font-weight: 500;
   margin-bottom: 0.25rem;
-`
+`;
 
 const FilterSection = styled.div`
   display: flex;
   flex-direction: column;
-`
+`;
 
 const QuickFilterContainer = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-top: 0.5rem;
   flex-wrap: wrap;
-  
+
   @media (max-width: 768px) {
     justify-content: center;
   }
-`
+`;
 
 const QuickFilterButton = styled(motion.button)`
   padding: 0.5rem 0.75rem;
@@ -156,16 +173,16 @@ const QuickFilterButton = styled(motion.button)`
   border: none;
   cursor: pointer;
   font-weight: 500;
-  
+
   &:hover {
     background: #e2e8f0;
   }
-  
+
   &.active {
     background: #3b82f6;
     color: white;
   }
-`
+`;
 
 const StyledSelect = styled.select`
   padding: 0.75rem 1rem;
@@ -175,17 +192,17 @@ const StyledSelect = styled.select`
   min-width: 200px;
   color: #1e293b;
   font-size: 0.875rem;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
-`
+`;
 
 const StyledInput = styled.input`
   padding: 0.75rem 1rem;
@@ -195,17 +212,17 @@ const StyledInput = styled.input`
   min-width: 200px;
   color: #1e293b;
   font-size: 0.875rem;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
-`
+`;
 
 const StyledButton = styled(motion.button)`
   padding: 0.75rem 1.5rem;
@@ -218,16 +235,16 @@ const StyledButton = styled(motion.button)`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  
+
   &:hover {
     background: #2563eb;
   }
-  
+
   @media (max-width: 768px) {
     width: 100%;
     justify-content: center;
   }
-`
+`;
 
 const ActiveFilterBadge = styled.div`
   background: #f1f5f9;
@@ -239,308 +256,337 @@ const ActiveFilterBadge = styled.div`
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  
+
   span {
     font-weight: 500;
   }
-`
+`;
 
 const Dashboard = () => {
-  const [patients, setPatients] = useState([])
-  const [filteredPatients, setFilteredPatients] = useState([])
-  const [totalAmount, setTotalAmount] = useState(0)
-  const [creditAmount, setCreditAmount] = useState(0)
-  const [registeredPatients, setRegisteredPatients] = useState(0)
-  const [testCount, setTestCount] = useState(0)
-  const [homeVisits, setHomeVisits] = useState(0)
-  const [b2bNames, setB2bNames] = useState([])
-  const [selectedB2b, setSelectedB2b] = useState("")
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
-  const [chartData, setChartData] = useState([])
-  const [activeQuickFilter, setActiveQuickFilter] = useState("today")
-  const [isLoading, setIsLoading] = useState(false)
-  const [dateFilterApplied, setDateFilterApplied] = useState(false)
-  const [periodLabel, setPeriodLabel] = useState("Today's")
-  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   // Helper function to format ISO date to YYYY-MM-DD
   const formatDateForInput = (date) => {
-    return date.toISOString().split("T")[0]
-  }
+    return date.toISOString().split("T")[0];
+  };
 
   // Helper function to get date only part from ISO string
   const getDatePart = (isoString) => {
-    return new Date(isoString).toISOString().split("T")[0]
-  }
+    return new Date(isoString).toISOString().split("T")[0];
+  };
+
+  // Initialize dates with current date
+  const getCurrentDate = () => formatDateForInput(new Date());
+
+  const [patients, setPatients] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [creditAmount, setCreditAmount] = useState(0);
+  const [registeredPatients, setRegisteredPatients] = useState(0);
+  const [testCount, setTestCount] = useState(0);
+  const [homeVisits, setHomeVisits] = useState(0);
+  const [b2bNames, setB2bNames] = useState([]);
+  const [selectedB2b, setSelectedB2b] = useState("");
+  const [startDate, setStartDate] = useState(getCurrentDate()); // Initialize with current date
+  const [endDate, setEndDate] = useState(getCurrentDate()); // Initialize with current date
+  const [chartData, setChartData] = useState([]);
+  const [activeQuickFilter, setActiveQuickFilter] = useState("today");
+  const [isLoading, setIsLoading] = useState(false);
+  const [dateFilterApplied, setDateFilterApplied] = useState(false);
+  const [periodLabel, setPeriodLabel] = useState("Today's");
+  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await axios.get(`${Labbaseurl}patient_overview/`)
-      const data = response.data
-      setPatients(data)
-      setFilteredPatients(data)
-      const uniqueB2bNames = [...new Set(data.map((patient) => patient.B2B))].filter(Boolean)
-      setB2bNames(uniqueB2bNames)
+      const response = await axios.get(`${Labbaseurl}patient_overview/`);
+      const data = response.data;
+      setPatients(data);
+      setFilteredPatients(data);
+      const uniqueB2bNames = [
+        ...new Set(data.map((patient) => patient.B2B)),
+      ].filter(Boolean);
+      setB2bNames(uniqueB2bNames);
 
       // Process data for time series chart
-      const processedData = processTimeSeriesData(data)
-      setChartData(processedData)
+      const processedData = processTimeSeriesData(data);
+      setChartData(processedData);
 
-      // Apply today's filter by default
-      applyQuickFilter("today")
+      // Apply today's filter by default but skip updating date inputs to preserve initial current date
+      applyQuickFilter("today", true);
     } catch (error) {
-      console.error("Error fetching data:", error)
+      console.error("Error fetching data:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const processTimeSeriesData = (data) => {
-    const dateMap = new Map()
+    const dateMap = new Map();
 
     data.forEach((patient) => {
       // Extract just the date part from the ISO string
-      const date = getDatePart(patient.date)
-      const amount = Number.parseFloat(patient.totalAmount) || 0
+      const date = getDatePart(patient.date);
+      const amount = Number.parseFloat(patient.totalAmount) || 0;
 
       if (dateMap.has(date)) {
-        const current = dateMap.get(date)
+        const current = dateMap.get(date);
         dateMap.set(date, {
           date,
           amount: current.amount + amount,
           patients: current.patients + 1,
-        })
+        });
       } else {
         dateMap.set(date, {
           date,
           amount,
           patients: 1,
-        })
+        });
       }
-    })
+    });
 
     return Array.from(dateMap.values())
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(-7) // Last 7 days
-  }
+      .slice(-7); // Last 7 days
+  };
 
   // Update metrics based on filtered patients
   useEffect(() => {
     // Calculate metrics for the filtered patients
-    const total = filteredPatients.reduce((sum, patient) => sum + (Number.parseFloat(patient.totalAmount) || 0), 0)
-    const credit = filteredPatients.reduce((sum, patient) => sum + (Number.parseFloat(patient.credit_amount) || 0), 0)
+    const total = filteredPatients.reduce(
+      (sum, patient) => sum + (Number.parseFloat(patient.totalAmount) || 0),
+      0
+    );
+    const credit = filteredPatients.reduce(
+      (sum, patient) => sum + (Number.parseFloat(patient.credit_amount) || 0),
+      0
+    );
 
-    setTotalAmount(total)
-    setCreditAmount(credit)
-    setRegisteredPatients(filteredPatients.length)
+    setTotalAmount(total);
+    setCreditAmount(credit);
+    setRegisteredPatients(filteredPatients.length);
 
     const tests = filteredPatients.reduce((count, patient) => {
       if (Array.isArray(patient.testname)) {
-        return count + patient.testname.filter((test) => test.testname).length
+        return count + patient.testname.filter((test) => test.testname).length;
       }
-      return count
-    }, 0)
+      return count;
+    }, 0);
 
-    setTestCount(tests)
+    setTestCount(tests);
 
-    const visits = filteredPatients.filter((patient) => patient.B2B == null || patient.home_collection).length
-    setHomeVisits(visits)
-  }, [filteredPatients])
+    const visits = filteredPatients.filter(
+      (patient) => patient.B2B == null || patient.home_collection
+    ).length;
+    setHomeVisits(visits);
+  }, [filteredPatients]);
 
   const handleB2bChange = (event) => {
-    const selected = event.target.value
-    setSelectedB2b(selected)
+    const selected = event.target.value;
+    setSelectedB2b(selected);
 
-    let filtered = patients
+    let filtered = patients;
 
     if (selected) {
-      filtered = filtered.filter((patient) => patient.B2B === selected)
+      filtered = filtered.filter((patient) => patient.B2B === selected);
     }
 
     if (dateFilterApplied && startDate && endDate) {
-      const start = new Date(startDate)
-      const end = new Date(endDate)
+      const start = new Date(startDate);
+      const end = new Date(endDate);
 
       // Set end time to end of day
-      end.setHours(23, 59, 59, 999)
+      end.setHours(23, 59, 59, 999);
 
       filtered = filtered.filter((patient) => {
-        const patientDate = new Date(patient.date)
-        return patientDate >= start && patientDate <= end
-      })
+        const patientDate = new Date(patient.date);
+        return patientDate >= start && patientDate <= end;
+      });
     }
 
-    setFilteredPatients(filtered)
-  }
+    setFilteredPatients(filtered);
+  };
 
   const handleDateFilter = () => {
     if (!startDate || !endDate) {
-      alert("Please select both start and end dates")
-      return
+      alert("Please select both start and end dates");
+      return;
     }
 
-    setIsLoading(true)
-    setActiveQuickFilter("custom")
-    setDateFilterApplied(true)
+    setIsLoading(true);
+    setActiveQuickFilter("custom");
+    setDateFilterApplied(true);
 
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
     // Set start time to beginning of day
-    start.setHours(0, 0, 0, 0)
+    start.setHours(0, 0, 0, 0);
 
     // Set end time to end of day
-    end.setHours(23, 59, 59, 999)
+    end.setHours(23, 59, 59, 999);
 
     // Update period label for custom date range
-    setPeriodLabel("Selected Period")
+    setPeriodLabel("Selected Period");
 
-    let filtered = patients
+    let filtered = patients;
 
     if (selectedB2b) {
-      filtered = filtered.filter((patient) => patient.B2B === selectedB2b)
+      filtered = filtered.filter((patient) => patient.B2B === selectedB2b);
     }
 
     filtered = filtered.filter((patient) => {
-      const patientDate = new Date(patient.date)
-      return patientDate >= start && patientDate <= end
-    })
+      const patientDate = new Date(patient.date);
+      return patientDate >= start && patientDate <= end;
+    });
 
-    setFilteredPatients(filtered)
-    setIsLoading(false)
-  }
+    setFilteredPatients(filtered);
+    setIsLoading(false);
+  };
 
   const resetFilters = () => {
-    setIsLoading(true)
-    setSelectedB2b("")
-    setStartDate("")
-    setEndDate("")
-    setDateFilterApplied(false)
-    setActiveQuickFilter("today")
+    setIsLoading(true);
+    setSelectedB2b("");
+    // Reset to current date instead of empty strings
+    const currentDate = getCurrentDate();
+    setStartDate(currentDate);
+    setEndDate(currentDate);
+    setDateFilterApplied(false);
+    setActiveQuickFilter("today");
 
     // Apply today's filter
-    applyQuickFilter("today")
-    setIsLoading(false)
-  }
+    applyQuickFilter("today");
+    setIsLoading(false);
+  };
 
-  const applyQuickFilter = (filterType) => {
-    setIsLoading(true)
-    setActiveQuickFilter(filterType)
+  const applyQuickFilter = (filterType, skipDateUpdate = false) => {
+    setIsLoading(true);
+    setActiveQuickFilter(filterType);
 
-    const today = new Date()
-    let start = new Date(today)
-    let end = new Date(today)
+    const today = new Date();
+    let start = new Date(today);
+    let end = new Date(today);
 
     // Set start time to beginning of day
-    start.setHours(0, 0, 0, 0)
+    start.setHours(0, 0, 0, 0);
 
     // Set end time to end of day
-    end.setHours(23, 59, 59, 999)
+    end.setHours(23, 59, 59, 999);
 
-    let filtered = patients
-    let newPeriodLabel = "Today's"
+    let filtered = patients;
+    let newPeriodLabel = "Today's";
 
     switch (filterType) {
       case "today":
         // Start and end are already set to today
-        newPeriodLabel = "Today's"
-        break
+        newPeriodLabel = "Today's";
+        break;
       case "yesterday":
-        start.setDate(today.getDate() - 1)
-        end.setDate(today.getDate() - 1)
-        end.setHours(23, 59, 59, 999)
-        newPeriodLabel = "Yesterday's"
-        break
+        start.setDate(today.getDate() - 1);
+        end.setDate(today.getDate() - 1);
+        end.setHours(23, 59, 59, 999);
+        newPeriodLabel = "Yesterday's";
+        break;
       case "thisWeek":
-        start.setDate(today.getDate() - today.getDay())
-        start.setHours(0, 0, 0, 0)
-        newPeriodLabel = "This Week's"
-        break
+        start.setDate(today.getDate() - today.getDay());
+        start.setHours(0, 0, 0, 0);
+        newPeriodLabel = "This Week's";
+        break;
       case "lastWeek":
-        start.setDate(today.getDate() - today.getDay() - 7)
-        start.setHours(0, 0, 0, 0)
-        end.setDate(today.getDate() - today.getDay() - 1)
-        end.setHours(23, 59, 59, 999)
-        newPeriodLabel = "Last Week's"
-        break
+        start.setDate(today.getDate() - today.getDay() - 7);
+        start.setHours(0, 0, 0, 0);
+        end.setDate(today.getDate() - today.getDay() - 1);
+        end.setHours(23, 59, 59, 999);
+        newPeriodLabel = "Last Week's";
+        break;
       case "thisMonth":
-        start.setDate(1)
-        start.setHours(0, 0, 0, 0)
-        newPeriodLabel = "This Month's"
-        break
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        newPeriodLabel = "This Month's";
+        break;
       case "lastMonth":
-        start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-        start.setHours(0, 0, 0, 0)
-        end = new Date(today.getFullYear(), today.getMonth(), 0)
-        end.setHours(23, 59, 59, 999)
-        newPeriodLabel = "Last Month's"
-        break
+        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(today.getFullYear(), today.getMonth(), 0);
+        end.setHours(23, 59, 59, 999);
+        newPeriodLabel = "Last Month's";
+        break;
       case "last30Days":
-        start.setDate(today.getDate() - 30)
-        start.setHours(0, 0, 0, 0)
-        newPeriodLabel = "Last 30 Days'"
-        break
+        start.setDate(today.getDate() - 30);
+        start.setHours(0, 0, 0, 0);
+        newPeriodLabel = "Last 30 Days'";
+        break;
       case "last90Days":
-        start.setDate(today.getDate() - 90)
-        start.setHours(0, 0, 0, 0)
-        newPeriodLabel = "Last 90 Days'"
-        break
+        start.setDate(today.getDate() - 90);
+        start.setHours(0, 0, 0, 0);
+        newPeriodLabel = "Last 90 Days'";
+        break;
       default:
         // No filter, return all patients
-        setFilteredPatients(filtered)
-        setIsLoading(false)
-        return
+        setFilteredPatients(filtered);
+        setIsLoading(false);
+        return;
     }
 
     // Update the period label
-    setPeriodLabel(newPeriodLabel)
+    setPeriodLabel(newPeriodLabel);
 
-    // Format dates for the input fields
-    if (filterType !== "custom") {
-      setStartDate(formatDateForInput(start))
-      setEndDate(formatDateForInput(end))
-      setDateFilterApplied(true)
+    // Only update date inputs if not skipping date update and not custom filter
+    if (!skipDateUpdate && filterType !== "custom") {
+      setStartDate(formatDateForInput(start));
+      setEndDate(formatDateForInput(end));
+      setDateFilterApplied(true);
     }
 
     if (selectedB2b) {
-      filtered = filtered.filter((patient) => patient.B2B === selectedB2b)
+      filtered = filtered.filter((patient) => patient.B2B === selectedB2b);
     }
 
     filtered = filtered.filter((patient) => {
-      const patientDate = new Date(patient.date)
-      return patientDate >= start && patientDate <= end
-    })
+      const patientDate = new Date(patient.date);
+      return patientDate >= start && patientDate <= end;
+    });
 
-    setFilteredPatients(filtered)
-    setIsLoading(false)
-  }
+    setFilteredPatients(filtered);
+    setIsLoading(false);
+  };
 
   const formatDateRange = () => {
-    if (!startDate || !endDate) return ""
+    if (!startDate || !endDate) return "";
 
-    const start = new Date(startDate)
-    const end = new Date(endDate)
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`
-  }
+    return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+  };
 
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"]
+  const COLORS = [
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+  ];
 
   const statsCards = [
     {
       title: `${periodLabel} Total Amount`,
-      value: totalAmount.toLocaleString("en-IN", { style: "currency", currency: "INR" }),
+      value: totalAmount.toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }),
       icon: <Wallet size={24} />,
       color: "#10b981",
     },
     {
       title: `${periodLabel} Credit Amount`,
-      value: creditAmount.toLocaleString("en-IN", { style: "currency", currency: "INR" }),
+      value: creditAmount.toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }),
       icon: <Activity size={24} />,
       color: "#f59e0b",
     },
@@ -562,7 +608,7 @@ const Dashboard = () => {
       icon: <Home size={24} />,
       color: "#ec4899",
     },
-  ]
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -572,7 +618,7 @@ const Dashboard = () => {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -580,7 +626,7 @@ const Dashboard = () => {
       y: 0,
       opacity: 1,
     },
-  }
+  };
 
   const chartVariants = {
     hidden: { opacity: 0, scale: 0.9 },
@@ -592,15 +638,21 @@ const Dashboard = () => {
         ease: "easeOut",
       },
     },
-  }
+  };
 
   const pieData = b2bNames.map((b2bName) => {
-    const count = filteredPatients.filter((patient) => patient.B2B === b2bName).length
-    return { name: b2bName, value: count }
-  })
+    const count = filteredPatients.filter(
+      (patient) => patient.B2B === b2bName
+    ).length;
+    return { name: b2bName, value: count };
+  });
 
   return (
-    <DashboardContainer initial="hidden" animate="visible" variants={containerVariants}>
+    <DashboardContainer
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       <Title variants={itemVariants}>Patient Analytics Dashboard</Title>
 
       <FilterContainer variants={itemVariants}>
@@ -747,7 +799,13 @@ const Dashboard = () => {
       </AmountContainer>
 
       <AnimatePresence mode="wait">
-        <motion.div key="weekly-trend" initial="hidden" animate="visible" exit="hidden" variants={chartVariants}>
+        <motion.div
+          key="weekly-trend"
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={chartVariants}
+        >
           <ChartContainer>
             <h3 className="text-xl font-semibold">Weekly Revenue Trend</h3>
             <ResponsiveContainer width="100%" height={400}>
@@ -780,13 +838,18 @@ const Dashboard = () => {
           </ChartContainer>
         </motion.div>
 
-        <motion.div key="charts-grid" initial="hidden" animate="visible" exit="hidden" variants={chartVariants}>
+        <motion.div
+          key="charts-grid"
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={chartVariants}
+        >
           <ChartsGrid>{/* Charts can be added here */}</ChartsGrid>
         </motion.div>
       </AnimatePresence>
     </DashboardContainer>
-  )
-}
+  );
+};
 
-export default Dashboard
-
+export default Dashboard;
