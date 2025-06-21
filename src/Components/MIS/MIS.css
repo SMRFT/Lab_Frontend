@@ -1,0 +1,85 @@
+.container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+h2 {
+  color: #0178A1;
+  text-align: center;
+  font-weight: 600;
+}
+.date-picker {
+  margin-bottom: 20px;
+}
+.table-wrapper {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+th {
+  background-color: #F2F2F2;
+}
+tr:hover {
+  background-color: #F1F1F1;
+}
+td[colspan="8"] {
+  text-align: center;
+}
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.download-btn {
+  display: flex;
+  align-items: center;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.download-btn:hover {
+  background-color: #45A049;
+}
+.download-btn svg {
+  margin-right: 5px;
+}
+.date-search-container {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Adjust spacing between elements */
+  justify-content: center;
+  margin-bottom: 15px;
+}
+.date-picker-container,
+.search-container {
+  display: flex;
+  align-items: center;
+}
+.search-container {
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 5px;
+}
+.search-icon {
+  margin-right: 5px;
+}
+.search-input {
+  border: none;
+  outline: none;
+  padding: 5px;
+}
+
+
+
