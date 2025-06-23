@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import styled, { createGlobalStyle } from 'styled-components';
-import { Search, Calendar, Eye, AlertCircle, CheckCircle, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import styled, { createGlobalStyle } from "styled-components";
+import {
+  Search,
+  Calendar,
+  Eye,
+  AlertCircle,
+  CheckCircle,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -89,7 +98,7 @@ const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
@@ -110,7 +119,7 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
@@ -131,12 +140,12 @@ const FiltersContainer = styled.div`
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  
+
   @media (max-width: 768px) {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   @media (max-width: 480px) {
     flex-direction: column;
     align-items: flex-start;
@@ -149,7 +158,7 @@ const DatePickerContainer = styled.div`
   gap: 0.5rem;
   position: relative;
   width: 300px;
-  height: 136px; /* Adjust height */
+  height: 240px; /* Adjust height */
 `;
 
 const DatePickerLabel = styled.label`
@@ -163,7 +172,7 @@ const DatePickerLabel = styled.label`
 const SearchContainer = styled.div`
   position: relative;
   width: 250px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -176,7 +185,7 @@ const SearchInput = styled.input`
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   transition: var(--transition);
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
@@ -197,16 +206,16 @@ const SearchIconWrapper = styled.div`
 const TableContainer = styled.div`
   overflow-x: auto;
   max-height: 600px;
-  
+
   &::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: var(--gray-light);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background-color: var(--gray);
     border-radius: 20px;
@@ -224,7 +233,7 @@ const TableHead = styled.thead`
   // position: sticky;
   top: 0;
   z-index: 10;
-  
+
   th {
     padding: 1rem;
     text-align: left;
@@ -240,16 +249,16 @@ const TableHead = styled.thead`
 const TableBody = styled.tbody`
   tr {
     border-bottom: 1px solid var(--gray-light);
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     &:hover {
       background-color: rgba(67, 97, 238, 0.05);
     }
   }
-  
+
   td {
     padding: 1rem;
     vertical-align: middle;
@@ -306,11 +315,11 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
-  
+
   &:hover {
     background-color: var(--primary-dark);
   }
-  
+
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
@@ -320,7 +329,7 @@ const Button = styled.button`
 const ViewButton = styled(Button)`
   padding: 0.35rem 0.75rem;
   background-color: var(--primary-light);
-  
+
   &:hover {
     background-color: var(--primary);
   }
@@ -371,11 +380,11 @@ const PaginationButton = styled.button`
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: var(--transition);
-  
+
   &:hover {
     background-color: var(--gray-light);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -391,7 +400,7 @@ const PaginationInfo = styled.div`
 function PatientList() {
   const [patientList, setPatientList] = useState([]);
   const [testValues, setTestValues] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -399,66 +408,82 @@ function PatientList() {
   const patientsPerPage = 10;
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   const navigate = useNavigate();
-  
+
   const fetchPatientData = async (date) => {
     setLoading(true);
-    const formattedDate = date.toLocaleDateString('en-CA');
+    const formattedDate = date.toLocaleDateString("en-CA");
     try {
       // Fetch patient list
-      const patientResponse = await fetch(`${Labbaseurl}test-values/?date=${formattedDate}`);
+      const patientResponse = await fetch(
+        `${Labbaseurl}test-values/?date=${formattedDate}`
+      );
       if (!patientResponse.ok) {
-        throw new Error('Failed to fetch patient data');
+        throw new Error("Failed to fetch patient data");
       }
       const patients = await patientResponse.json();
       setPatientList(patients);
-      
+
       // Fetch test values
-      const testResponse = await fetch(`${Labbaseurl}testvalue/?date=${formattedDate}`);
+      const testResponse = await fetch(
+        `${Labbaseurl}testvalue/?date=${formattedDate}`
+      );
       if (!testResponse.ok) {
-        throw new Error('Failed to fetch test values');
+        throw new Error("Failed to fetch test values");
       }
       const testData = await testResponse.json();
-      
+
       const testValueMap = {};
-      testData.forEach(patient => {
+      testData.forEach((patient) => {
         testValueMap[patient.patient_id] = patient.testdetails;
       });
       setTestValues(testValueMap);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching patient data:', error);
+      console.error("Error fetching patient data:", error);
       setError(error.message);
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchPatientData(selectedDate);
   }, [selectedDate]);
-  
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setCurrentPage(1); // Reset to first page when date changes
   };
-  
+
   const handleViewDetails = (patientId) => {
     const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(selectedDate.getDate()).padStart(2, "0");
     const formattedDate = `${year}-${month}-${day}`;
     navigate(`/DoctorForm?patient_id=${patientId}&date=${formattedDate}`);
   };
-  
+
   const getStatusBadge = (status) => {
     if (status === "Approved") {
-      return <ApprovedBadge><CheckCircle size={12} /> Approved</ApprovedBadge>;
+      return (
+        <ApprovedBadge>
+          <CheckCircle size={12} /> Approved
+        </ApprovedBadge>
+      );
     } else if (status === "Rerun Initiated") {
-      return <RerunBadge><RotateCcw size={12} /> Rerun Initiated</RerunBadge>;
+      return (
+        <RerunBadge>
+          <RotateCcw size={12} /> Rerun Initiated
+        </RerunBadge>
+      );
     } else {
-      return <WaitingBadge><AlertCircle size={12} /> Waiting for Approval</WaitingBadge>;
+      return (
+        <WaitingBadge>
+          <AlertCircle size={12} /> Waiting for Approval
+        </WaitingBadge>
+      );
     }
   };
-  
+
   const getStatusText = (testDetails) => {
     if (!testDetails) return ["Waiting for Approval"];
     return testDetails.map((test) => {
@@ -467,31 +492,35 @@ function PatientList() {
       return "Waiting for Approval";
     });
   };
-  
+
   // Filter patients based on search query
-  const filteredPatients = patientList.filter((patient) =>
-    patient.patientname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    patient.patient_id?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPatients = patientList.filter(
+    (patient) =>
+      patient.patientname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.patient_id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   // Pagination
   const indexOfLastPatient = currentPage * patientsPerPage;
   const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
-  const currentPatients = filteredPatients.slice(indexOfFirstPatient, indexOfLastPatient);
+  const currentPatients = filteredPatients.slice(
+    indexOfFirstPatient,
+    indexOfLastPatient
+  );
   const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
-  
+
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
-  
+
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
-  
+
   if (error) {
     return (
       <Container>
@@ -500,9 +529,12 @@ function PatientList() {
           <Header>
             <Title>Error</Title>
           </Header>
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <div style={{ padding: "2rem", textAlign: "center" }}>
             <p>Failed to load patient data: {error}</p>
-            <Button onClick={() => fetchPatientData(selectedDate)} style={{ marginTop: '1rem' }}>
+            <Button
+              onClick={() => fetchPatientData(selectedDate)}
+              style={{ marginTop: "1rem" }}
+            >
               Retry
             </Button>
           </div>
@@ -510,7 +542,7 @@ function PatientList() {
       </Container>
     );
   }
-  
+
   return (
     <Container>
       <GlobalStyle />
@@ -529,7 +561,7 @@ function PatientList() {
                 dateFormat="yyyy-MM-dd"
               />
             </DatePickerContainer>
-            
+
             <SearchContainer>
               <SearchIconWrapper>
                 <Search size={16} />
@@ -543,7 +575,7 @@ function PatientList() {
             </SearchContainer>
           </FiltersContainer>
         </Header>
-        
+
         <TableContainer>
           <Table>
             <TableHead>
@@ -561,7 +593,10 @@ function PatientList() {
             <TableBody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>
+                  <td
+                    colSpan={8}
+                    style={{ textAlign: "center", padding: "2rem" }}
+                  >
                     Loading patient data...
                   </td>
                 </tr>
@@ -592,7 +627,9 @@ function PatientList() {
                         </StatusList>
                       </td>
                       <td>
-                        <ViewButton onClick={() => handleViewDetails(patient.patient_id)}>
+                        <ViewButton
+                          onClick={() => handleViewDetails(patient.patient_id)}
+                        >
                           <Eye size={14} />
                           View
                         </ViewButton>
@@ -610,7 +647,7 @@ function PatientList() {
             </TableBody>
           </Table>
         </TableContainer>
-        
+
         {filteredPatients.length > patientsPerPage && (
           <PaginationContainer>
             <PaginationButton onClick={prevPage} disabled={currentPage === 1}>
@@ -619,7 +656,10 @@ function PatientList() {
             <PaginationInfo>
               Page {currentPage} of {totalPages}
             </PaginationInfo>
-            <PaginationButton onClick={nextPage} disabled={currentPage === totalPages}>
+            <PaginationButton
+              onClick={nextPage}
+              disabled={currentPage === totalPages}
+            >
               <ChevronRight size={16} />
             </PaginationButton>
           </PaginationContainer>

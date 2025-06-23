@@ -447,18 +447,7 @@ const Dashboard = () => {
   };
 
   const resetFilters = () => {
-    setIsLoading(true);
-    setSelectedB2b("");
-    // Reset to current date instead of empty strings
-    const currentDate = getCurrentDate();
-    setStartDate(currentDate);
-    setEndDate(currentDate);
-    setDateFilterApplied(false);
-    setActiveQuickFilter("today");
-
-    // Apply today's filter
-    applyQuickFilter("today");
-    setIsLoading(false);
+    window.location.reload();
   };
 
   const applyQuickFilter = (filterType, skipDateUpdate = false) => {

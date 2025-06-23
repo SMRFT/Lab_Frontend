@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { AlertTriangle, CheckCircle, RotateCcw, FileText, ChevronLeft } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import styled, { createGlobalStyle, keyframes } from "styled-components";
+import {
+  AlertTriangle,
+  CheckCircle,
+  RotateCcw,
+  FileText,
+  ChevronLeft,
+} from "lucide-react";
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -42,7 +48,7 @@ const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
@@ -54,7 +60,7 @@ const Header = styled.header`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
@@ -66,7 +72,7 @@ const Title = styled.h1`
   font-size: 1.75rem;
   color: var(--dark);
   font-weight: 600;
-  
+
   @media (max-width: 768px) {
     font-size: 1.5rem;
   }
@@ -78,7 +84,7 @@ const PatientInfo = styled.div`
   gap: 1rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
@@ -90,7 +96,7 @@ const InfoItem = styled.div`
   padding: 0.75rem 1rem;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
-  
+
   span {
     font-weight: 600;
     margin-right: 0.5rem;
@@ -114,17 +120,17 @@ const Table = styled.table`
 const TableHead = styled.thead`
   background-color: var(--primary);
   color: white;
-  
+
   th {
     padding: 1rem;
     text-align: left;
     font-weight: 500;
     white-space: nowrap;
-    
+
     &:first-child {
       border-top-left-radius: var(--border-radius);
     }
-    
+
     &:last-child {
       border-top-right-radius: var(--border-radius);
     }
@@ -134,20 +140,50 @@ const TableHead = styled.thead`
 const TableBody = styled.tbody`
   tr {
     border-bottom: 1px solid var(--gray-light);
-    
+
     &:last-child {
       border-bottom: none;
     }
-    
+
     &:hover {
       background-color: rgba(67, 97, 238, 0.05);
     }
   }
-  
+
   td {
     padding: 1rem;
     vertical-align: middle;
   }
+`;
+
+// Special row styles for test headers and parameters
+const TestHeaderRow = styled.tr`
+  background-color: rgba(67, 97, 238, 0.15) !important;
+
+  &:hover {
+    background-color: rgba(67, 97, 238, 0.2) !important;
+  }
+`;
+
+const ParameterRow = styled.tr`
+  &:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+  }
+`;
+
+const TestTitleCell = styled.td`
+  font-weight: 700 !important;
+  font-size: 1.1rem;
+  color: var(--primary);
+  padding: 1.5rem 1rem !important;
+  background-color: rgba(67, 97, 238, 0.1);
+  border-left: 4px solid var(--primary);
+`;
+
+const ParameterNameCell = styled.td`
+  padding-left: 2rem !important;
+  font-weight: 500;
+  color: var(--dark);
 `;
 
 const NoData = styled.td`
@@ -171,16 +207,16 @@ const Button = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: var(--transition);
-  
+
   &:hover {
     background-color: var(--primary-light);
   }
-  
+
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -190,32 +226,42 @@ const Button = styled.button`
 const BackButton = styled(Button)`
   background-color: var(--light);
   color: var(--dark);
-  
+
   &:hover {
     background-color: var(--gray-light);
   }
 `;
 
 const ApproveButton = styled(Button)`
-  background-color: ${props => props.disabled ? 'var(--gray-light)' : 'var(--success)'};
-  color: ${props => props.disabled ? 'var(--gray)' : 'white'};
+  background-color: ${(props) =>
+    props.disabled ? "var(--gray-light)" : "var(--success)"};
+  color: ${(props) => (props.disabled ? "var(--gray)" : "white")};
   padding: 0.35rem 0.75rem;
   font-size: 0.875rem;
-  
+
   &:hover {
-    background-color: ${props => props.disabled ? 'var(--gray-light)' : 'var(--info)'};
+    background-color: ${(props) =>
+      props.disabled ? "var(--gray-light)" : "var(--info)"};
   }
 `;
 
 const RerunButton = styled(Button)`
-  background-color: ${props => props.disabled ? 'var(--gray-light)' : 'var(--warning)'};
-  color: ${props => props.disabled ? 'var(--gray)' : 'white'};
+  background-color: ${(props) =>
+    props.disabled ? "var(--gray-light)" : "var(--warning)"};
+  color: ${(props) => (props.disabled ? "var(--gray)" : "white")};
   padding: 0.35rem 0.75rem;
   font-size: 0.875rem;
-  
+
   &:hover {
-    background-color: ${props => props.disabled ? 'var(--gray-light)' : '#f9844a'};
+    background-color: ${(props) =>
+      props.disabled ? "var(--gray-light)" : "#f9844a"};
   }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 `;
 
 // Status indicators
@@ -275,294 +321,445 @@ const BadgeContainer = styled.div`
 `;
 
 function DoctorForm() {
-    const [testValues, setTestValues] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const approved_by = localStorage.getItem('name');
-    const location = useLocation();
-    const navigate = useNavigate();
-    const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
-    // Extract date and patient_id from URL query params
-    const queryParams = new URLSearchParams(location.search);
-    const selectedDate = queryParams.get('date');
-    const patientId = queryParams.get('patient_id');
-    
-    useEffect(() => {
-        // Fetch data when date or patientId changes
-        if (selectedDate && patientId) {
-            fetchTestData(selectedDate, patientId);
-        } else {
-            setLoading(false);
-        }
-    }, [selectedDate, patientId]);
-    
-    const fetchTestData = (date, patientId) => {
-        setLoading(true);
-        // Fetch all data if backend doesn't support filtering
-        fetch(`${Labbaseurl}test-values/`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Filter the data based on patient_id and date
-                const filteredData = data.filter(
-                    item => item.patient_id === patientId && item.date === date
-                );
-                setTestValues(filteredData);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                setError('Failed to load test data. Please try again.');
-                setLoading(false);
-            });
-    };
-    
-    const handleApprove = (patientId, testIndex, approve_by) => {
-        fetch(`${Labbaseurl}test-values/${patientId}/${testIndex}/approve/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                approve: true,
-                approve_by: approve_by,
-            }),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // console.log('Response data:', data);  // Log the entire response to check its content
-                // Update the condition to match the actual success message
-                if (data.message && data.message.includes("Test detail approved successfully")) {
-                    setTestValues(prevValues => {
-                        return prevValues.map(test => {
-                            if (test.patient_id === patientId) {
-                                return {
-                                    ...test,
-                                    testdetails: test.testdetails.map((detail, idx) =>
-                                        idx === testIndex
-                                            ? { ...detail, approve: true, approve_by: approve_by }
-                                            : detail
-                                    ),
-                                };
-                            }
-                            return test;
-                        });
-                    });
-                    // Show success message
-                    alert('Test approved successfully!');
-                } else {
-                    alert('Approval failed: ' + (data.message || 'Unknown error'));
-                }
-            })
-            .catch(error => {
-                console.error('Error updating data:', error);
-                alert('Error during approval: ' + error.message);
-            });
-    };
-    
-    // Handle rerun of a test
-    const handleRerun = (patientId, testIndex) => {
-        fetch(`https://lab.shinovadatabase.in/test-values/${patientId}/${testIndex}/rerun/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ rerun: true }),
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(() => {
-                setTestValues(prevValues => {
-                    const newValues = [...prevValues];
-                    const testToUpdate = newValues.find(test => test.patient_id === patientId);
-                    if (testToUpdate) {
-                        testToUpdate.testdetails[testIndex].rerun = true;
-                    }
-                    return newValues;
-                });
-                // Show an alert after successful rerun
-                alert('Test rerun initiated successfully!');
-            })
-            .catch(error => {
-                console.error('Error updating data:', error);
-                alert('Error during rerun: ' + error.message);
-            });
-    };
+  const [testValues, setTestValues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const approved_by = localStorage.getItem("name");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
 
-    const isOutOfRange = (value, referenceRange) => {
-        if (!value || !referenceRange) return false;
-    
-        const numericValue = parseFloat(value);
-        if (isNaN(numericValue)) return false;
-        
-        const rangeParts = referenceRange.split('-').map(part => parseFloat(part.trim()));
-    
-        if (rangeParts.length === 2 && !isNaN(rangeParts[0]) && !isNaN(rangeParts[1])) {
-            const [min, max] = rangeParts;
-            return numericValue < min || numericValue > max;
+  // Extract date and patient_id from URL query params
+  const queryParams = new URLSearchParams(location.search);
+  const selectedDate = queryParams.get("date");
+  const patientId = queryParams.get("patient_id");
+
+  useEffect(() => {
+    // Fetch data when date or patientId changes
+    if (selectedDate && patientId) {
+      fetchTestData(selectedDate, patientId);
+    } else {
+      setLoading(false);
+    }
+  }, [selectedDate, patientId]);
+
+  const fetchTestData = (date, patientId) => {
+    setLoading(true);
+    // Fetch all data if backend doesn't support filtering
+    fetch(`${Labbaseurl}test-values/`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-        return false;
-    };
-    
-    const getStatusBadge = (value, referenceRange) => {
-        if (!value || !referenceRange) return null;
-    
-        const numericValue = parseFloat(value);
-        if (isNaN(numericValue)) return null;
-        
-        const rangeParts = referenceRange.split('-').map(part => parseFloat(part.trim()));
-    
-        if (rangeParts.length === 2 && !isNaN(rangeParts[0]) && !isNaN(rangeParts[1])) {
-            const [min, max] = rangeParts;
-    
-            if (numericValue < min) {
-                return <LowBadge><AlertTriangle size={12} /> Low</LowBadge>;
-            } else if (numericValue > max) {
-                return <HighBadge><AlertTriangle size={12} /> High</HighBadge>;
+        return response.json();
+      })
+      .then((data) => {
+        // Filter the data based on patient_id and date
+        const filteredData = data.filter(
+          (item) => item.patient_id === patientId && item.date === date
+        );
+        setTestValues(filteredData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setError("Failed to load test data. Please try again.");
+        setLoading(false);
+      });
+  };
+
+  // Handle approve for a test (affects all parameters of that test)
+  const handleTestApprove = (patientId, testIndex, approve_by) => {
+    fetch(`${Labbaseurl}test-values/${patientId}/${testIndex}/approve/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        approve: true,
+        approve_by: approve_by,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (
+          data.message &&
+          (data.message.includes("Test approved successfully") ||
+            data.message.includes("Test detail approved successfully"))
+        ) {
+          setTestValues((prevValues) => {
+            return prevValues.map((test) => {
+              if (test.patient_id === patientId) {
+                return {
+                  ...test,
+                  testdetails: test.testdetails.map((detail, idx) =>
+                    idx === testIndex
+                      ? { ...detail, approve: true, approve_by: approve_by }
+                      : detail
+                  ),
+                };
+              }
+              return test;
+            });
+          });
+          alert("Test approved successfully!");
+        } else {
+          alert("Approval failed: " + (data.message || "Unknown error"));
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating data:", error);
+        alert("Error during approval: " + error.message);
+      });
+  };
+
+  // Handle rerun for a test (affects all parameters of that test)
+  const handleTestRerun = (patientId, testIndex) => {
+    fetch(`${Labbaseurl}test-values/${patientId}/${testIndex}/rerun/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rerun: true }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(() => {
+        setTestValues((prevValues) => {
+          return prevValues.map((test) => {
+            if (test.patient_id === patientId) {
+              return {
+                ...test,
+                testdetails: test.testdetails.map((detail, idx) =>
+                  idx === testIndex ? { ...detail, rerun: true } : detail
+                ),
+              };
             }
+            return test;
+          });
+        });
+        alert("Test rerun initiated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error updating data:", error);
+        alert("Error during rerun: " + error.message);
+      });
+  };
+
+  const isOutOfRange = (value, referenceRange) => {
+    if (!value || !referenceRange) return false;
+
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) return false;
+
+    const rangeParts = referenceRange
+      .split("-")
+      .map((part) => parseFloat(part.trim()));
+
+    if (
+      rangeParts.length === 2 &&
+      !isNaN(rangeParts[0]) &&
+      !isNaN(rangeParts[1])
+    ) {
+      const [min, max] = rangeParts;
+      return numericValue < min || numericValue > max;
+    }
+    return false;
+  };
+
+  const getStatusBadge = (value, referenceRange) => {
+    if (!value || !referenceRange) return null;
+
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) return null;
+
+    const rangeParts = referenceRange
+      .split("-")
+      .map((part) => parseFloat(part.trim()));
+
+    if (
+      rangeParts.length === 2 &&
+      !isNaN(rangeParts[0]) &&
+      !isNaN(rangeParts[1])
+    ) {
+      const [min, max] = rangeParts;
+
+      if (numericValue < min) {
+        return (
+          <LowBadge>
+            <AlertTriangle size={12} /> Low
+          </LowBadge>
+        );
+      } else if (numericValue > max) {
+        return (
+          <HighBadge>
+            <AlertTriangle size={12} /> High
+          </HighBadge>
+        );
+      }
+    }
+    return null;
+  };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  // Convert Roman numerals for parameter numbering
+  const getRomanNumeral = (num) => {
+    const romanNumerals = [
+      "i",
+      "ii",
+      "iii",
+      "iv",
+      "v",
+      "vi",
+      "vii",
+      "viii",
+      "ix",
+      "x",
+      "xi",
+      "xii",
+      "xiii",
+      "xiv",
+      "xv",
+      "xvi",
+      "xvii",
+      "xviii",
+      "xix",
+      "xx",
+    ];
+    return romanNumerals[num] || (num + 1).toString();
+  };
+
+  // Generate rows for hierarchical display
+  const generateTableRows = () => {
+    const rows = [];
+    let testNumber = 1;
+
+    testValues.forEach((test, testIndex) => {
+      test.testdetails.forEach((detail, detailIndex) => {
+        // Add test title row with approve/rerun buttons
+        if (detail.parameters && detail.parameters.length > 0) {
+          rows.push(
+            <TestHeaderRow key={`test-${testIndex}-${detailIndex}`}>
+              <TestTitleCell colSpan="7">
+                <strong>
+                  {testNumber}. {detail.testname || "N/A"}:
+                </strong>
+              </TestTitleCell>
+              <td colSpan="2">
+                <ButtonContainer>
+                  <RerunButton
+                    onClick={() =>
+                      handleTestRerun(test.patient_id, detailIndex)
+                    }
+                    disabled={detail.approve || detail.rerun}
+                  >
+                    <RotateCcw size={14} />
+                    {detail.rerun ? "Rerun Initiated" : "Rerun"}
+                  </RerunButton>
+                  <ApproveButton
+                    onClick={() =>
+                      handleTestApprove(
+                        test.patient_id,
+                        detailIndex,
+                        approved_by
+                      )
+                    }
+                    disabled={detail.approve || detail.rerun}
+                  >
+                    <CheckCircle size={14} />
+                    {detail.approve ? "Approved" : "Approve"}
+                  </ApproveButton>
+                </ButtonContainer>
+              </td>
+            </TestHeaderRow>
+          );
+
+          // Add parameter rows (without approve/rerun buttons)
+          detail.parameters.forEach((parameter, paramIndex) => {
+            rows.push(
+              <ParameterRow
+                key={`param-${testIndex}-${detailIndex}-${paramIndex}`}
+              >
+                <td></td>
+                <ParameterNameCell>
+                  {getRomanNumeral(paramIndex)}. {parameter.name || "N/A"}
+                </ParameterNameCell>
+                <td>{detail.specimen_type || "N/A"}</td>
+                <ValueCell>
+                  <ValueContainer>
+                    <ValueText>{parameter.value || "N/A"}</ValueText>
+                    <BadgeContainer>
+                      {getStatusBadge(
+                        parameter.value,
+                        parameter.reference_range
+                      )}
+                      {parameter.remarks && (
+                        <EditedBadge>
+                          <FileText size={12} /> Edited
+                        </EditedBadge>
+                      )}
+                    </BadgeContainer>
+                  </ValueContainer>
+                </ValueCell>
+                <td>{parameter.unit || "N/A"}</td>
+                <td>{parameter.reference_range || "N/A"}</td>
+                <td>{parameter.remarks || "N/A"}</td>
+                <td colSpan="2"></td>{" "}
+                {/* Empty cells for approve/rerun columns */}
+              </ParameterRow>
+            );
+          });
+
+          testNumber++;
+        } else {
+          // If no parameters, show test with its actual values and buttons
+          rows.push(
+            <ParameterRow key={`test-no-params-${testIndex}-${detailIndex}`}>
+              <td>{testNumber}</td>
+              <td>
+                <strong>{detail.testname || "N/A"}</strong>
+              </td>
+              <td>{detail.specimen_type || "N/A"}</td>
+              <ValueCell>
+                <ValueContainer>
+                  <ValueText>{detail.value || "N/A"}</ValueText>
+                  <BadgeContainer>
+                    {getStatusBadge(detail.value, detail.reference_range)}
+                    {detail.remarks && (
+                      <EditedBadge>
+                        <FileText size={12} /> Edited
+                      </EditedBadge>
+                    )}
+                  </BadgeContainer>
+                </ValueContainer>
+              </ValueCell>
+              <td>{detail.unit || "N/A"}</td>
+              <td>{detail.reference_range || "N/A"}</td>
+              <td>{detail.remarks || "N/A"}</td>
+              <td>
+                <RerunButton
+                  onClick={() => handleTestRerun(test.patient_id, detailIndex)}
+                  disabled={detail.approve || detail.rerun}
+                >
+                  <RotateCcw size={14} />
+                  {detail.rerun ? "Rerun Initiated" : "Rerun"}
+                </RerunButton>
+              </td>
+              <td>
+                <ApproveButton
+                  onClick={() =>
+                    handleTestApprove(test.patient_id, detailIndex, approved_by)
+                  }
+                  disabled={detail.approve || detail.rerun}
+                >
+                  <CheckCircle size={14} />
+                  {detail.approve ? "Approved" : "Approve"}
+                </ApproveButton>
+              </td>
+            </ParameterRow>
+          );
+          testNumber++;
         }
-        return null;
-    };
-    
-    const handleBack = () => {
-        navigate(-1);
-    };
-    
-    if (loading) {
-        return (
-            <Container>
-                <GlobalStyle />
-                <div>Loading test data...</div>
-            </Container>
-        );
-    }
-    
-    if (error) {
-        return (
-            <Container>
-                <GlobalStyle />
-                <div>{error}</div>
-            </Container>
-        );
-    }
-    
+      });
+    });
+
+    return rows;
+  };
+
+  if (loading) {
     return (
-        <Container>
-            <GlobalStyle />
-            <Header>
-                <Title>Shanmuga Diagnosis</Title>
-                <BackButton onClick={handleBack}>
-                    <ChevronLeft size={18} />
-                    Back
-                </BackButton>
-            </Header>
-            
-            {patientId && (
-                <PatientInfo>
-                    <InfoItem>
-                        <span>Patient ID:</span> {patientId}
-                    </InfoItem>
-                    {selectedDate && (
-                        <InfoItem>
-                            <span>Date:</span> {selectedDate}
-                        </InfoItem>
-                    )}
-                    {testValues.length > 0 && (
-                        <>
-                            <InfoItem>
-                                <span>Patient Name:</span> {testValues[0].patientname || 'N/A'}
-                            </InfoItem>
-                            <InfoItem>
-                                <span>Age:</span> {testValues[0].age || 'N/A'}
-                            </InfoItem>
-                        </>
-                    )}
-                </PatientInfo>
-            )}
-            
-            <TableContainer>
-                <Table>
-                    <TableHead>
-                        <tr>
-                            <th>Sl. No</th>
-                            <th>Test Name</th>
-                            <th>Specimen Type</th>
-                            <th>Value</th>
-                            <th>Unit</th>
-                            <th>Reference Range</th>
-                            <th>Remarks</th>
-                            <th>Rerun</th>
-                            <th>Approve</th>
-                        </tr>
-                    </TableHead>
-                    <TableBody>
-                        {testValues.length > 0 ? (
-                            testValues.flatMap((test, testIndex) => 
-                                test.testdetails.map((detail, index) => (
-                                    <tr key={`${testIndex}-${index}`}>
-                                        <td>{index + 1}</td>
-                                        <td>{detail.testname || 'N/A'}</td>
-                                        <td>{detail.specimen_type || 'N/A'}</td>
-                                        <ValueCell>
-                                            <ValueContainer>
-                                                <ValueText>{detail.value || 'N/A'}</ValueText>
-                                                <BadgeContainer>
-                                                    {getStatusBadge(detail.value, detail.reference_range)}
-                                                    {detail.remarks && (
-                                                        <EditedBadge><FileText size={12} /> Edited</EditedBadge>
-                                                    )}
-                                                </BadgeContainer>
-                                            </ValueContainer>
-                                        </ValueCell>
-                                        <td>{detail.unit || 'N/A'}</td>
-                                        <td>{detail.reference_range || 'N/A'}</td>
-                                        <td>{detail.remarks || 'N/A'}</td>
-                                        <td>
-                                            <RerunButton
-                                                onClick={() => handleRerun(test.patient_id, index)}
-                                                disabled={detail.approve || detail.rerun}
-                                            >
-                                                <RotateCcw size={14} />
-                                                {detail.rerun ? "Rerun Initiated" : "Rerun"}
-                                            </RerunButton>
-                                        </td>
-                                        <td>
-                                            <ApproveButton
-                                                onClick={() => handleApprove(test.patient_id, index, approved_by)}
-                                                disabled={detail.approve || detail.rerun}
-                                            >
-                                                <CheckCircle size={14} />
-                                                {detail.approve ? "Approved" : "Approve"}
-                                            </ApproveButton>
-                                        </td>
-                                    </tr>
-                                ))
-                            )
-                        ) : (
-                            <tr>
-                                <NoData colSpan="9">
-                                    No test data available for the selected patient and date.
-                                </NoData>
-                            </tr>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Container>
+      <Container>
+        <GlobalStyle />
+        <div>Loading test data...</div>
+      </Container>
     );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <GlobalStyle />
+        <div>{error}</div>
+      </Container>
+    );
+  }
+
+  return (
+    <Container>
+      <GlobalStyle />
+      <Header>
+        <Title>Shanmuga Diagnosis</Title>
+        <BackButton onClick={handleBack}>
+          <ChevronLeft size={18} />
+          Back
+        </BackButton>
+      </Header>
+
+      {patientId && (
+        <PatientInfo>
+          <InfoItem>
+            <span>Patient ID:</span> {patientId}
+          </InfoItem>
+          {selectedDate && (
+            <InfoItem>
+              <span>Date:</span> {selectedDate}
+            </InfoItem>
+          )}
+          {testValues.length > 0 && (
+            <>
+              <InfoItem>
+                <span>Patient Name:</span> {testValues[0].patientname || "N/A"}
+              </InfoItem>
+              <InfoItem>
+                <span>Age:</span> {testValues[0].age || "N/A"}
+              </InfoItem>
+            </>
+          )}
+        </PatientInfo>
+      )}
+
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <tr>
+              <th>Sl. No</th>
+              <th>Test Name / Parameters</th>
+              <th>Specimen Type</th>
+              <th>Value</th>
+              <th>Unit</th>
+              <th>Reference Range</th>
+              <th>Remarks</th>
+              <th>Rerun</th>
+              <th>Approve</th>
+            </tr>
+          </TableHead>
+          <TableBody>
+            {testValues.length > 0 ? (
+              generateTableRows()
+            ) : (
+              <tr>
+                <NoData colSpan="9">
+                  No test data available for the selected patient and date.
+                </NoData>
+              </tr>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
+  );
 }
 
 export default DoctorForm;

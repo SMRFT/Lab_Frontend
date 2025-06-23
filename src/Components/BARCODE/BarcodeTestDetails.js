@@ -839,7 +839,10 @@ const BarcodeTestDetails = () => {
                 </PatientInfoItem>
                 <PatientInfoItem>
                   <InfoLabel>Bill No</InfoLabel>
-                  <InfoValue>{bill_no}</InfoValue>
+                  <InfoValue>
+                    <FileText size={14} />
+                    {bill_no}
+                  </InfoValue>
                 </PatientInfoItem>
               </PatientInfoGrid>
             </PatientCardBody>
