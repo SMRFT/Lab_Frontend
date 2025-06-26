@@ -13,14 +13,15 @@
 .form-label {
   color: #2d3748;
   font-size: 0.875rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 500;
   margin-bottom: 0.5rem;
   display: block;
 }
 
 /* Form Inputs */
-.form-control, .form-select {
+.form-control,
+.form-select {
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   padding: 0.75rem 1rem;
@@ -82,7 +83,8 @@
 /* Dropdown Menu */
 .dropdown-menu {
   border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   background-color: white;
   border: none;
   padding: 0.5rem 0;
@@ -112,7 +114,7 @@
 .table thead th {
   text-align: left;
   padding: 1rem;
-  background-color: #DB9BB9;
+  background-color: #db9bb9;
   color: white;
   font-weight: 600;
   font-size: 0.875rem;
@@ -173,89 +175,26 @@
   color: #e53e3e;
 }
 
-/* Modal Styling */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1050;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.modal.show {
-  display: flex;
-  opacity: 1;
-}
-
-.modal-content {
-  background-color: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  transform: translateY(20px);
-  transition: transform 0.3s ease;
-  overflow: hidden;
-}
-
-.modal.show .modal-content {
-  transform: translateY(0);
-}
-
-.modal-header {
-  padding: 1.25rem;
-  border-bottom: 1px solid #f7fafc;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.modal-title {
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.modal-footer {
-  padding: 1.25rem;
-  border-top: 1px solid #f7fafc;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
 /* Responsive styles */
 @media (max-width: 768px) {
   .container {
     padding: 1.5rem;
   }
-  
+
   .table {
     border: 0;
   }
-  
+
   .table thead {
     display: none;
   }
-  
+
   .table tbody tr {
     display: block;
     margin-bottom: 1rem;
     border-radius: 8px;
   }
-  
+
   .table tbody td {
     display: flex;
     justify-content: space-between;
@@ -263,18 +202,18 @@
     text-align: right;
     padding: 0.75rem 1rem;
   }
-  
+
   .table tbody td:before {
     content: attr(data-label);
     font-weight: 600;
     color: #4a5568;
     text-align: left;
   }
-  
+
   .table tbody td:last-child {
     border-bottom: none;
   }
-  
+
   .table tbody td[data-label="Actions"] {
     justify-content: flex-end;
   }
@@ -283,10 +222,5 @@
 @media (max-width: 480px) {
   .container {
     padding: 1rem;
-  }
-  
-  .modal-content {
-    max-width: 90%;
-    margin: 0 auto;
   }
 }

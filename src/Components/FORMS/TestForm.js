@@ -4,15 +4,43 @@ import axios from "axios";
 import { FaPlus, FaTrash, FaEnvelope } from "react-icons/fa";
 import styled from "styled-components";
 
-// Styled modal to increase size
 const StyledModal = styled(Modal)`
   .modal-dialog {
-    max-width: 80%;
-    margin: 1.75rem auto;
+    width: 100%;
+    max-width: 900px; /* or a responsive unit like 90% */
+    margin: 1rem auto; /* centers horizontally */
+    margin-left: 300px;
+    padding: 0 1rem; /* some breathing room on small screens */
   }
 
   .modal-content {
     padding: 1.5rem;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 576px) {
+    .modal-dialog {
+      max-width: 100%;
+      margin: 0.5rem;
+      margin-left: 300px;
+    }
+    .modal-content {
+      padding: 1rem;
+    }
+  }
+
+  @media (min-width: 577px) and (max-width: 992px) {
+    .modal-dialog {
+      max-width: 90%;
+      margin-left: 300px;
+    }
+  }
+
+  @media (min-width: 993px) {
+    .modal-dialog {
+      max-width: 75%;
+      margin-left: 300px;
+    }
   }
 `;
 
@@ -81,7 +109,7 @@ const TestForm = ({ show, setShow }) => {
     MRP: "",
     L2L_Rate_Card: "",
     parameters: {},
-    status: "Pending"
+    status: "Pending",
   });
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   const [parameterList, setParameterList] = useState([
@@ -118,7 +146,13 @@ const TestForm = ({ show, setShow }) => {
   const addParameter = () => {
     setParameterList([
       ...parameterList,
-      { test_name: "", department: "", method: "", unit: "", reference_range: "" },
+      {
+        test_name: "",
+        department: "",
+        method: "",
+        unit: "",
+        reference_range: "",
+      },
     ]);
   };
 
@@ -127,93 +161,102 @@ const TestForm = ({ show, setShow }) => {
     setParameterList(updatedParameters);
   };
 
-// Update the handleSubmit function in TestForm.jsx to ensure the full test details are sent for approval
+  // Update the handleSubmit function in TestForm.jsx to ensure the full test details are sent for approval
 
-const handleSubmit = (e) => {
-  e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const updatedFormData = {
-    ...formData,
-    parameters: parameterList,
-  };
-  // console.log("Final Form Data:", updatedFormData);
+    const updatedFormData = {
+      ...formData,
+      parameters: parameterList,
+    };
+    // console.log("Final Form Data:", updatedFormData);
 
-  axios
-    .post(`${Labbaseurl}test_details/`, updatedFormData)
-    .then((response) => {
-      // console.log("Response:", response.data);
-      setMessage("Form submitted successfully! An approval email has been sent.");
-      setMessageType("success");
-      setFormSubmitted(true);
-     
-      // Store the test name for approval
-      setSubmittedTestName(formData.test_name);
-     
-      // Send approval email with test name
-      // console.log("Sending approval email for:", formData.test_name);
-      sendApprovalEmail(formData.test_name);
-     
-      // Reset form
-      setFormData({
-        test_name: "",
-        shortcut:"",
-        department: "",
-        method: "",
-        collection_container: "",
-        specimen_type: "",
-        reference_range: "",
-        units: "",
-        MRP: "",
-        L2L_Rate_Card: "",
-        parameters: {},
-        status: "Pending"
-      });
-      setParameterList([
-        {
+    axios
+      .post(`${Labbaseurl}test_details/`, updatedFormData)
+      .then((response) => {
+        // console.log("Response:", response.data);
+        setMessage(
+          "Form submitted successfully! An approval email has been sent."
+        );
+        setMessageType("success");
+        setFormSubmitted(true);
+
+        // Store the test name for approval
+        setSubmittedTestName(formData.test_name);
+
+        // Send approval email with test name
+        // console.log("Sending approval email for:", formData.test_name);
+        sendApprovalEmail(formData.test_name);
+
+        // Reset form
+        setFormData({
           test_name: "",
+          shortcut: "",
           department: "",
           method: "",
-          unit: "",
+          collection_container: "",
+          specimen_type: "",
           reference_range: "",
+          units: "",
+          MRP: "",
+          L2L_Rate_Card: "",
+          parameters: {},
+          status: "Pending",
+        });
+        setParameterList([
+          {
+            test_name: "",
+            department: "",
+            method: "",
+            unit: "",
+            reference_range: "",
+          },
+        ]);
+
+        setTimeout(() => {
+          setMessage(null);
+          setMessageType(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        console.error("Error posting data:", error);
+        setMessage("Failed to submit the form. Please try again.");
+        setMessageType("danger");
+
+        setTimeout(() => {
+          setMessage(null);
+          setMessageType(null);
+        }, 5000);
+      });
+  };
+
+  const sendApprovalEmail = (testName) => {
+    // Send approval email request to backend with improved error handling
+    // console.log("sendApprovalEmail function called with:", testName);
+
+    axios
+      .post(
+        `${Labbaseurl}send_approval_email/`,
+        {
+          test_name: testName,
         },
-      ]);
-
-      setTimeout(() => {
-        setMessage(null);
-        setMessageType(null);
-      }, 5000);
-    })
-    .catch((error) => {
-      console.error("Error posting data:", error);
-      setMessage("Failed to submit the form. Please try again.");
-      setMessageType("danger");
-
-      setTimeout(() => {
-        setMessage(null);
-        setMessageType(null);
-      }, 5000);
-    });
-};
-
-const sendApprovalEmail = (testName) => {
-  // Send approval email request to backend with improved error handling
-  // console.log("sendApprovalEmail function called with:", testName);
- 
-  axios
-    .post(`${Labbaseurl}send_approval_email/`, {
-      test_name: testName,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-    .then(response => {
-      console.log("Approval email sent successfully:", response.data);
-    })
-    .catch(error => {
-      console.error("Error sending approval email:", error.response ? error.response.data : error.message);
-    });
-};
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        console.log("Approval email sent successfully:", response.data);
+      })
+      .catch((error) => {
+        console.error(
+          "Error sending approval email:",
+          error.response ? error.response.data : error.message
+        );
+      });
+  };
 
   const handleClose = () => {
     setShow(false);
@@ -229,9 +272,17 @@ const sendApprovalEmail = (testName) => {
       </Modal.Header>
       <Modal.Body>
         {message && (
-          <div className={`alert alert-${messageType} alert-dismissible fade show`} role="alert">
+          <div
+            className={`alert alert-${messageType} alert-dismissible fade show`}
+            role="alert"
+          >
             {message}
-            <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button
+              type="button"
+              className="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
           </div>
         )}
 
@@ -244,7 +295,9 @@ const sendApprovalEmail = (testName) => {
           <form>
             <div className="row mb-3">
               <div className="col-md-4">
-                <label htmlFor="test_name" className="form-label">Test Name</label>
+                <label htmlFor="test_name" className="form-label">
+                  Test Name
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -256,7 +309,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-1">
-                <label htmlFor="shortcut" className="form-label">Shortcut</label>
+                <label htmlFor="shortcut" className="form-label">
+                  Shortcut
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -268,7 +323,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-4">
-                <label htmlFor="department" className="form-label">Department</label>
+                <label htmlFor="department" className="form-label">
+                  Department
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -280,7 +337,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-3">
-                <label htmlFor="method" className="form-label">Method</label>
+                <label htmlFor="method" className="form-label">
+                  Method
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -295,7 +354,9 @@ const sendApprovalEmail = (testName) => {
 
             <div className="row mb-3">
               <div className="col-md-4">
-                <label htmlFor="collection_container" className="form-label">Collection Container</label>
+                <label htmlFor="collection_container" className="form-label">
+                  Collection Container
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -307,7 +368,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-4">
-                <label htmlFor="specimen_type" className="form-label">Specimen Type</label>
+                <label htmlFor="specimen_type" className="form-label">
+                  Specimen Type
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -319,7 +382,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-4">
-                <label htmlFor="reference_range" className="form-label">Reference Range</label>
+                <label htmlFor="reference_range" className="form-label">
+                  Reference Range
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -334,7 +399,9 @@ const sendApprovalEmail = (testName) => {
 
             <div className="row mb-3">
               <div className="col-md-4">
-                <label htmlFor="units" className="form-label">Units</label>
+                <label htmlFor="units" className="form-label">
+                  Units
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -346,7 +413,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-4">
-                <label htmlFor="MRP" className="form-label">MRP</label>
+                <label htmlFor="MRP" className="form-label">
+                  MRP
+                </label>
                 <input
                   type="number"
                   className="form-control"
@@ -358,7 +427,9 @@ const sendApprovalEmail = (testName) => {
                 />
               </div>
               <div className="col-md-4">
-                <label htmlFor="L2L_Rate_Card" className="form-label">L2L Rate Card</label>
+                <label htmlFor="L2L_Rate_Card" className="form-label">
+                  L2L Rate Card
+                </label>
                 <input
                   type="number"
                   className="form-control"
@@ -390,7 +461,10 @@ const sendApprovalEmail = (testName) => {
                 {parameterList.map((parameter, index) => (
                   <div className="row mb-3" key={index}>
                     <div className="col-md-2">
-                      <label htmlFor={`test_name_${index}`} className="form-label">
+                      <label
+                        htmlFor={`test_name_${index}`}
+                        className="form-label"
+                      >
                         Test Name
                       </label>
                       <input
@@ -401,9 +475,12 @@ const sendApprovalEmail = (testName) => {
                         value={parameter.test_name}
                         onChange={(e) => handleParameterChange(index, e)}
                       />
-                    </div>                
+                    </div>
                     <div className="col-md-2">
-                      <label htmlFor={`department_${index}`} className="form-label">
+                      <label
+                        htmlFor={`department_${index}`}
+                        className="form-label"
+                      >
                         Department
                       </label>
                       <input
@@ -442,7 +519,10 @@ const sendApprovalEmail = (testName) => {
                       />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor={`reference_range_${index}`} className="form-label">
+                      <label
+                        htmlFor={`reference_range_${index}`}
+                        className="form-label"
+                      >
                         Reference Range
                       </label>
                       <input
@@ -469,14 +549,18 @@ const sendApprovalEmail = (testName) => {
                   type="button"
                   className="btn btn-secondary"
                   onClick={addParameter}
-                  style={{float:"right"}}
+                  style={{ float: "right" }}
                 >
                   <FaPlus /> Add Parameter
                 </button>
               </>
             )}
 
-            <button type="submit" className="btn btn-success" onClick={handleSubmit}>
+            <button
+              type="submit"
+              className="btn btn-success"
+              onClick={handleSubmit}
+            >
               Submit
             </button>
           </form>

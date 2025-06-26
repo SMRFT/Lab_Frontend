@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { FaSearch, FaClipboardList, FaEdit, FaSave, FaTimes,FaPlus } from "react-icons/fa";
-import TestForm from './TestForm';
+import {
+  FaSearch,
+  FaClipboardList,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaPlus,
+} from "react-icons/fa";
+import TestForm from "./TestForm";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Modern styled components with responsive design
 const Container = styled.div`
   padding: 1rem;
+  width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
 `;
 
 const Header = styled.div`
@@ -18,10 +27,11 @@ const Header = styled.div`
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
-  
+  width: 100%;
+
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 `;
 
@@ -30,13 +40,16 @@ const Title = styled.h2`
   font-weight: 600;
   color: #333;
   margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const SearchContainer = styled.div`
-  left: 200px;
   position: relative;
   width: 350px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
   }
@@ -52,7 +65,8 @@ const SearchInput = styled.input`
   outline: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  
+  box-sizing: border-box;
+
   &:focus {
     border-color: #3182ce;
     box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
@@ -68,23 +82,51 @@ const SearchIcon = styled(FaSearch)`
   font-size: 16px;
 `;
 
+const AddButton = styled.button`
+  background-color: #db9bb9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgb(190, 123, 154);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 16px;
+  }
+`;
+
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  width: 100%;
 `;
 
 const ModernTable = styled.table`
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
   font-size: 14px;
-  
-  th, td {
+
+  th,
+  td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
   }
-  
+
   th {
     background-color: #f8fafc;
     font-weight: 600;
@@ -93,19 +135,28 @@ const ModernTable = styled.table`
     top: 0;
     z-index: 10;
   }
-  
+
   tr:nth-child(even) {
     background-color: #f9fafb;
   }
-  
+
   tr:hover {
     background-color: #f1f5f9;
   }
-  
+
   @media (max-width: 1024px) {
-    th, td {
+    th,
+    td {
       padding: 0.75rem;
     }
+  }
+
+  @media (max-width: 768px) {
+    th,
+    td {
+      padding: 0.5rem;
+    }
+    font-size: 12px;
   }
 `;
 
@@ -124,7 +175,7 @@ const IconButton = styled.button`
   padding: 0.25rem;
   border-radius: 4px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     color: #3182ce;
     background-color: rgba(49, 130, 206, 0.1);
@@ -137,7 +188,8 @@ const Input = styled.input`
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 14px;
-  
+  box-sizing: border-box;
+
   &:focus {
     outline: none;
     border-color: #3182ce;
@@ -156,16 +208,32 @@ const ModalOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 50;
+  padding: 1rem;
+  box-sizing: border-box;
 `;
 
 const ModalContent = styled.div`
   background-color: white;
   border-radius: 12px;
-  width: 90%;
-  max-width: 900px;
+  width: calc(100% - 300px); /* respects margin-left */
+  margin-left: 300px;
+  max-width: 1000px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transition: width 0.3s ease;
+
+  @media (max-width: 992px) {
+    width: 90%;
+    margin-left: 0; /* fallback to centered modal on smaller screens */
+  }
+
+  @media (max-width: 576px) {
+    width: 100%;
+    margin-left: 0;
+    border-radius: 0;
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -190,7 +258,7 @@ const ModalCloseButton = styled.button`
   cursor: pointer;
   color: #a0aec0;
   transition: color 0.2s ease;
-  
+
   &:hover {
     color: #2d3748;
   }
@@ -214,8 +282,10 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  ${props => props.secondary && `
+
+  ${(props) =>
+    props.secondary &&
+    `
     background-color: #f8fafc;
     color: #64748b;
     border: 1px solid #e2e8f0;
@@ -224,8 +294,10 @@ const Button = styled.button`
       background-color: #f1f5f9;
     }
   `}
-  
-  ${props => props.primary && `
+
+  ${(props) =>
+    props.primary &&
+    `
     background-color: #3182ce;
     color: white;
     border: 1px solid #3182ce;
@@ -258,7 +330,7 @@ const TestEdit = () => {
   const [editingRow, setEditingRow] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTestName, setSelectedTestName] = useState("");
-  const [showTestForm, setShowTestForm] = useState(false)
+  const [showTestForm, setShowTestForm] = useState(false);
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   // Fetch test details from the backend
   useEffect(() => {
@@ -277,15 +349,19 @@ const TestEdit = () => {
     fetchTestDetails();
   }, []);
 
-  // Search handling
+  // Search handling - Updated to search both test name and shortcut
   const handleSearchChange = (e) => {
-    const query = e.target.value.toLowerCase();
+    const query = e.target.value;
     setSearchQuery(query);
-  
-    const filteredData = testDetails.filter((test) =>
-      test.test_name.toLowerCase().includes(query)
+
+    const filteredData = testDetails.filter(
+      (test) =>
+        (test.test_name &&
+          test.test_name.toLowerCase().includes(query.toLowerCase())) ||
+        (test.shortcut &&
+          test.shortcut.toLowerCase().includes(query.toLowerCase()))
     );
-  
+
     setFilteredTestDetails(filteredData);
     setEditingRow(null);
   };
@@ -304,7 +380,7 @@ const TestEdit = () => {
     setShowModal(true);
     setSelectedTestName(testName);
   };
-  
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedParameters(null);
@@ -319,7 +395,7 @@ const TestEdit = () => {
     updatedParameters[index][field] = value;
     setSelectedParameters(updatedParameters);
   };
-  
+
   const handleSaveParameters = async () => {
     try {
       const response = await fetch(`${Labbaseurl}test_details/`, {
@@ -332,7 +408,7 @@ const TestEdit = () => {
           parameters: selectedParameters,
         }),
       });
-  
+
       if (response.ok) {
         toast.success("Parameters updated successfully!");
         setShowModal(false);
@@ -345,7 +421,7 @@ const TestEdit = () => {
       console.error("Error:", error);
       toast.error("An error occurred while updating parameters");
     }
-  };  
+  };
 
   const handleSaveClick = async (index) => {
     const updatedTest = filteredTestDetails[index];
@@ -358,9 +434,10 @@ const TestEdit = () => {
         },
         body: JSON.stringify({
           test_name: updatedTest.test_name,
-          shortcut: updatedTest.shortcut, 
+          shortcut: updatedTest.shortcut,
           department: updatedTest.department,
           collection_container: updatedTest.collection_container,
+          specimen_type: updatedTest.specimen_type,
           method: updatedTest.method,
           reference_range: updatedTest.reference_range,
           unit: updatedTest.unit,
@@ -389,13 +466,13 @@ const TestEdit = () => {
       toast.error("An error occurred while updating test details");
     }
   };
-  
+
   const handleInputChange = (e, index, field) => {
     const updatedFilteredTestDetails = [...filteredTestDetails];
     updatedFilteredTestDetails[index][field] = e.target.value;
-  
+
     setFilteredTestDetails(updatedFilteredTestDetails);
-  
+
     const originalIndex = testDetails.findIndex(
       (test) => test.test_name === filteredTestDetails[index].test_name
     );
@@ -422,14 +499,15 @@ const TestEdit = () => {
           <SearchIcon />
           <SearchInput
             type="text"
-            placeholder="Search Test Name"
+            placeholder="Search Test Name or Shortcut"
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </SearchContainer>
-        <button onClick={() => setShowTestForm(true)}>
+        <AddButton onClick={() => setShowTestForm(true)}>
           <FaPlus size={16} />
-        </button>
+          <span>Add Test</span>
+        </AddButton>
       </Header>
 
       <TableWrapper>
@@ -440,6 +518,7 @@ const TestEdit = () => {
               <th>Shortcut</th>
               <th>Department</th>
               <th>Collection Container</th>
+              <th>Specimen Type</th>
               <th>Method</th>
               <th>Reference Range</th>
               <th>Unit</th>
@@ -455,7 +534,9 @@ const TestEdit = () => {
                       <Input
                         type="text"
                         value={test.test_name}
-                        onChange={(e) => handleInputChange(e, index, "test_name")}
+                        onChange={(e) =>
+                          handleInputChange(e, index, "test_name")
+                        }
                       />
                     ) : (
                       test.test_name
@@ -466,7 +547,9 @@ const TestEdit = () => {
                       <Input
                         type="text"
                         value={test.shortcut}
-                        onChange={(e) => handleInputChange(e, index, "shortcut")}
+                        onChange={(e) =>
+                          handleInputChange(e, index, "shortcut")
+                        }
                       />
                     ) : (
                       test.shortcut
@@ -477,7 +560,9 @@ const TestEdit = () => {
                       <Input
                         type="text"
                         value={test.department}
-                        onChange={(e) => handleInputChange(e, index, "department")}
+                        onChange={(e) =>
+                          handleInputChange(e, index, "department")
+                        }
                       />
                     ) : (
                       test.department
@@ -488,10 +573,25 @@ const TestEdit = () => {
                       <Input
                         type="text"
                         value={test.collection_container}
-                        onChange={(e) => handleInputChange(e, index, "collection_container")}
+                        onChange={(e) =>
+                          handleInputChange(e, index, "collection_container")
+                        }
                       />
                     ) : (
                       test.collection_container
+                    )}
+                  </td>
+                  <td>
+                    {editingRow === index ? (
+                      <Input
+                        type="text"
+                        value={test.specimen_type}
+                        onChange={(e) =>
+                          handleInputChange(e, index, "specimen_type")
+                        }
+                      />
+                    ) : (
+                      test.specimen_type
                     )}
                   </td>
                   <td>
@@ -510,7 +610,9 @@ const TestEdit = () => {
                       <Input
                         type="text"
                         value={test.reference_range}
-                        onChange={(e) => handleInputChange(e, index, "reference_range")}
+                        onChange={(e) =>
+                          handleInputChange(e, index, "reference_range")
+                        }
                       />
                     ) : (
                       test.reference_range
@@ -530,12 +632,14 @@ const TestEdit = () => {
                   <td>
                     <ActionIcons>
                       <IconButton
-                        onClick={() => handleParameterClick(test.test_name, test.parameters)}
+                        onClick={() =>
+                          handleParameterClick(test.test_name, test.parameters)
+                        }
                         title="View Parameters"
                       >
                         <FaClipboardList />
                       </IconButton>
-                      
+
                       {editingRow === index ? (
                         <IconButton
                           onClick={() => handleSaveClick(index)}
@@ -557,7 +661,7 @@ const TestEdit = () => {
               ))
             ) : (
               <tr>
-                <EmptyMessage colSpan="8">
+                <EmptyMessage colSpan="9">
                   No test details available.
                 </EmptyMessage>
               </tr>
@@ -576,9 +680,9 @@ const TestEdit = () => {
                 <FaTimes />
               </ModalCloseButton>
             </ModalHeader>
-            
+
             <TestName>Test Name: {selectedTestName}</TestName>
-            
+
             <ModalBody>
               {selectedParameters && selectedParameters.length > 0 ? (
                 <TableWrapper>
@@ -586,7 +690,6 @@ const TestEdit = () => {
                     <thead>
                       <tr>
                         <th>Test Name</th>
-                        <th>Department</th>
                         <th>Unit</th>
                         <th>Reference Range</th>
                         <th>Method</th>
@@ -599,35 +702,52 @@ const TestEdit = () => {
                             <Input
                               type="text"
                               value={param.test_name}
-                              onChange={(e) => handleParameterChange(index, "test_name", e.target.value)}
-                            />
-                          </td>
-                          <td>
-                            <Input
-                              type="text"
-                              value={param.department}
-                              onChange={(e) => handleParameterChange(index, "department", e.target.value)}
+                              onChange={(e) =>
+                                handleParameterChange(
+                                  index,
+                                  "test_name",
+                                  e.target.value
+                                )
+                              }
                             />
                           </td>
                           <td>
                             <Input
                               type="text"
                               value={param.unit}
-                              onChange={(e) => handleParameterChange(index, "unit", e.target.value)}
+                              onChange={(e) =>
+                                handleParameterChange(
+                                  index,
+                                  "unit",
+                                  e.target.value
+                                )
+                              }
                             />
                           </td>
                           <td>
                             <Input
                               type="text"
                               value={param.reference_range}
-                              onChange={(e) => handleParameterChange(index, "reference_range", e.target.value)}
+                              onChange={(e) =>
+                                handleParameterChange(
+                                  index,
+                                  "reference_range",
+                                  e.target.value
+                                )
+                              }
                             />
                           </td>
                           <td>
                             <Input
                               type="text"
                               value={param.method}
-                              onChange={(e) => handleParameterChange(index, "method", e.target.value)}
+                              onChange={(e) =>
+                                handleParameterChange(
+                                  index,
+                                  "method",
+                                  e.target.value
+                                )
+                              }
                             />
                           </td>
                         </tr>
@@ -639,7 +759,7 @@ const TestEdit = () => {
                 <p>No parameters available</p>
               )}
             </ModalBody>
-            
+
             <ModalFooter>
               <Button secondary onClick={handleCloseModal}>
                 Cancel
@@ -651,10 +771,14 @@ const TestEdit = () => {
           </ModalContent>
         </ModalOverlay>
       )}
-       {/* Test Form Modal */}
+      {/* Test Form Modal */}
       <TestForm show={showTestForm} setShow={setShowTestForm} />
-      
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+      />
     </Container>
   );
 };

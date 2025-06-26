@@ -596,7 +596,7 @@ function DoctorForm() {
                 <ParameterNameCell>
                   {getRomanNumeral(paramIndex)}. {parameter.name || "N/A"}
                 </ParameterNameCell>
-                <td>{detail.specimen_type || "N/A"}</td>
+                <td>{parameter.specimen_type || "N/A"}</td>
                 <ValueCell>
                   <ValueContainer>
                     <ValueText>{parameter.value || "N/A"}</ValueText>
