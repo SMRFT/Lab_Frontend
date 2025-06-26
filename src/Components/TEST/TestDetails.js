@@ -388,6 +388,7 @@ function TestDetails() {
             ...test,
             value: values[test.testname],
             remarks: remarks[test.testname],
+            rerun: false, // Set rerun to false when updating
           };
         }
         return test;
@@ -415,7 +416,11 @@ function TestDetails() {
       if (test.parameters && Array.isArray(test.parameters) && test.parameters.length > 0) {
         return {
           testname: test.testname,
-          specimen_type: test.specimen_type || 'N/A',
+          rerun: false,
+          approve: false,
+          approve_time: "null",
+          dispatch: false,
+          dispatch_time: "null",
           department: test.department || 'N/A',
           parameters: test.parameters.map((param) => {
             // Handle both name formats (name or test_name)
@@ -428,14 +433,9 @@ function TestDetails() {
               name: paramName,
               value: values[uniqueKey] || '',
               unit: param.unit || 'N/A',
+              specimen_type: test.specimen_type || 'N/A',
               reference_range: param.reference_range || 'N/A',
               method: param.method || '',
-              department: param.department || '',
-              rerun: false,
-              approve: false,
-              approve_time: "null",
-              dispatch: false,
-              dispatch_time: "null",
             };
           }),
         };
@@ -681,6 +681,11 @@ function TestDetails() {
                               <Label>Parameter Name</Label>
                               <Input type="text" value={paramName} disabled />
                             </FormGroup>
+                            <FormGroup>
+                              <Label>Specimen Type</Label>
+                              <Input type="text" value={test.specimen_type || 'N/A'} disabled />
+                            </FormGroup>
+
                             <FormGroup>
                               <Label>Value</Label>
                               <Input

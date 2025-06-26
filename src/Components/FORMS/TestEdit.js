@@ -8,7 +8,9 @@ import "react-toastify/dist/ReactToastify.css";
 // Modern styled components with responsive design
 const Container = styled.div`
   padding: 1rem;
+  width: 100%;
   max-width: 100%;
+  box-sizing: border-box;
 `;
 
 const Header = styled.div`
@@ -18,10 +20,11 @@ const Header = styled.div`
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100%;
   
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 `;
 
@@ -30,10 +33,13 @@ const Title = styled.h2`
   font-weight: 600;
   color: #333;
   margin: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const SearchContainer = styled.div`
-  left: 200px;
   position: relative;
   width: 350px;
   
@@ -52,6 +58,7 @@ const SearchInput = styled.input`
   outline: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  box-sizing: border-box;
   
   &:focus {
     border-color: #3182ce;
@@ -68,14 +75,41 @@ const SearchIcon = styled(FaSearch)`
   font-size: 16px;
 `;
 
+const AddButton = styled.button`
+  background-color: #DB9BB9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color:rgb(190, 123, 154);
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 16px;
+  }
+`;
+
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  width: 100%;
 `;
 
 const ModernTable = styled.table`
   width: 100%;
+  min-width: 900px;
   border-collapse: collapse;
   font-size: 14px;
   
@@ -107,6 +141,13 @@ const ModernTable = styled.table`
       padding: 0.75rem;
     }
   }
+  
+  @media (max-width: 768px) {
+    th, td {
+      padding: 0.5rem;
+    }
+    font-size: 12px;
+  }
 `;
 
 const ActionIcons = styled.div`
@@ -137,6 +178,7 @@ const Input = styled.input`
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 14px;
+  box-sizing: border-box;
   
   &:focus {
     outline: none;
@@ -156,17 +198,33 @@ const ModalOverlay = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 50;
+  padding: 1rem;
+  box-sizing: border-box;
 `;
 
 const ModalContent = styled.div`
   background-color: white;
   border-radius: 12px;
-  width: 90%;
-  max-width: 900px;
+  width: calc(100% - 300px); /* respects margin-left */
+  margin-left: 300px;
+  max-width: 1000px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transition: width 0.3s ease;
+
+  @media (max-width: 992px) {
+    width: 90%;
+    margin-left: 0; /* fallback to centered modal on smaller screens */
+  }
+
+  @media (max-width: 576px) {
+    width: 100%;
+    margin-left: 0;
+    border-radius: 0;
+  }
 `;
+
 
 const ModalHeader = styled.div`
   display: flex;
@@ -277,13 +335,14 @@ const TestEdit = () => {
     fetchTestDetails();
   }, []);
 
-  // Search handling
+  // Search handling - Updated to search both test name and shortcut
   const handleSearchChange = (e) => {
-    const query = e.target.value.toLowerCase();
+    const query = e.target.value;
     setSearchQuery(query);
   
     const filteredData = testDetails.filter((test) =>
-      test.test_name.toLowerCase().includes(query)
+      (test.test_name && test.test_name.toLowerCase().includes(query.toLowerCase())) || 
+      (test.shortcut && test.shortcut.toLowerCase().includes(query.toLowerCase()))
     );
   
     setFilteredTestDetails(filteredData);
@@ -361,6 +420,7 @@ const TestEdit = () => {
           shortcut: updatedTest.shortcut, 
           department: updatedTest.department,
           collection_container: updatedTest.collection_container,
+          specimen_type: updatedTest.specimen_type,
           method: updatedTest.method,
           reference_range: updatedTest.reference_range,
           unit: updatedTest.unit,
@@ -422,14 +482,15 @@ const TestEdit = () => {
           <SearchIcon />
           <SearchInput
             type="text"
-            placeholder="Search Test Name"
+            placeholder="Search Test Name or Shortcut"
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </SearchContainer>
-        <button onClick={() => setShowTestForm(true)}>
+        <AddButton onClick={() => setShowTestForm(true)}>
           <FaPlus size={16} />
-        </button>
+          <span>Add Test</span>
+        </AddButton>
       </Header>
 
       <TableWrapper>
@@ -440,6 +501,7 @@ const TestEdit = () => {
               <th>Shortcut</th>
               <th>Department</th>
               <th>Collection Container</th>
+              <th>Specimen Type</th>
               <th>Method</th>
               <th>Reference Range</th>
               <th>Unit</th>
@@ -492,6 +554,17 @@ const TestEdit = () => {
                       />
                     ) : (
                       test.collection_container
+                    )}
+                  </td>
+                  <td>
+                    {editingRow === index ? (
+                      <Input
+                        type="text"
+                        value={test.specimen_type}
+                        onChange={(e) => handleInputChange(e, index, "specimen_type")}
+                      />
+                    ) : (
+                      test.specimen_type
                     )}
                   </td>
                   <td>
@@ -557,7 +630,7 @@ const TestEdit = () => {
               ))
             ) : (
               <tr>
-                <EmptyMessage colSpan="8">
+                <EmptyMessage colSpan="9">
                   No test details available.
                 </EmptyMessage>
               </tr>
@@ -586,7 +659,6 @@ const TestEdit = () => {
                     <thead>
                       <tr>
                         <th>Test Name</th>
-                        <th>Department</th>
                         <th>Unit</th>
                         <th>Reference Range</th>
                         <th>Method</th>
@@ -600,13 +672,6 @@ const TestEdit = () => {
                               type="text"
                               value={param.test_name}
                               onChange={(e) => handleParameterChange(index, "test_name", e.target.value)}
-                            />
-                          </td>
-                          <td>
-                            <Input
-                              type="text"
-                              value={param.department}
-                              onChange={(e) => handleParameterChange(index, "department", e.target.value)}
                             />
                           </td>
                           <td>

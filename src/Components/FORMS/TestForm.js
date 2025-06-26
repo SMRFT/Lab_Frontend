@@ -4,15 +4,46 @@ import axios from "axios";
 import { FaPlus, FaTrash, FaEnvelope } from "react-icons/fa";
 import styled from "styled-components";
 
-// Styled modal to increase size
 const StyledModal = styled(Modal)`
   .modal-dialog {
-    max-width: 80%;
-    margin: 1.75rem auto;
+    width: 100%;
+    max-width: 900px; /* or a responsive unit like 90% */
+    margin: 1rem auto; /* centers horizontally */
+    margin-left:300px;
+    padding: 0 1rem;   /* some breathing room on small screens */
   }
 
   .modal-content {
     padding: 1.5rem;
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 576px) {
+    .modal-dialog {
+      max-width: 100%;
+      margin: 0.5rem;
+    margin-left:300px;
+
+    }
+    .modal-content {
+      padding: 1rem;
+    }
+  }
+
+  @media (min-width: 577px) and (max-width: 992px) {
+    .modal-dialog {
+      max-width: 90%;
+    margin-left:300px;
+
+    }
+  }
+
+  @media (min-width: 993px) {
+    .modal-dialog {
+      max-width: 75%;
+    margin-left:300px;
+
+    }
   }
 `;
 
