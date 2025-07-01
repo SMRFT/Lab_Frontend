@@ -516,6 +516,65 @@ const BilledButton = styled.button`
   }
 `;
 
+const SearchFilters = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+`;
+
+const SearchGroup = styled.div`
+  flex: 1;
+  min-width: 200px;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #334155;
+    background-color: white;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+  }
+`;
+
+const ClearButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  align-self: flex-end;
+
+  &:hover {
+    background-color: #e2e8f0;
+  }
+`;
+
 const PatientBilling = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -545,6 +604,70 @@ const PatientBilling = () => {
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   const [showTestMessage, setShowTestMessage] = useState(false);
   const [showPaymentMessage, setShowPaymentMessage] = useState(false);
+  const [searchFilters, setSearchFilters] = useState({
+    patientId: "",
+    name: "",
+    segment: "",
+    clinicalName: "",
+  });
+
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  useEffect(() => {
+    // Filter patients based on search criteria
+    let filtered = patients;
+
+    if (searchFilters.patientId) {
+      filtered = filtered.filter((patient) =>
+        patient.patient_id
+          ?.toLowerCase()
+          .includes(searchFilters.patientId.toLowerCase())
+      );
+    }
+
+    if (searchFilters.name) {
+      filtered = filtered.filter((patient) =>
+        patient.patientname
+          ?.toLowerCase()
+          .includes(searchFilters.name.toLowerCase())
+      );
+    }
+
+    if (searchFilters.segment) {
+      filtered = filtered.filter(
+        (patient) => patient.segment === searchFilters.segment
+      );
+    }
+
+    if (searchFilters.clinicalName) {
+      filtered = filtered.filter((patient) =>
+        patient.B2B?.toLowerCase().includes(
+          searchFilters.clinicalName.toLowerCase()
+        )
+      );
+    }
+
+    setFilteredPatients(filtered);
+  }, [patients, searchFilters]);
+
+  // Add this function to handle search filter changes
+
+  const handleSearchChange = (field, value) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const clearSearchFilters = () => {
+    setSearchFilters({
+      patientId: "",
+      name: "",
+      segment: "",
+      clinicalName: "",
+    });
+  };
+  const [showPaymentDetailMessage, setShowPaymentDetailMessage] =
+    useState(false);
 
   useEffect(() => {
     fetchPatients(selectedDate);
@@ -770,6 +893,7 @@ const PatientBilling = () => {
     }
   };
 
+  // Updated handleChange function
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -777,6 +901,17 @@ const PatientBilling = () => {
     // Hide payment alert when payment method is selected
     if (name === "payment_method" && value) {
       setShowPaymentMessage(false);
+      // Clear payment detail when changing payment method
+      setFormData((prevData) => ({
+        ...prevData,
+        payment_method: value,
+        payment_detail: "",
+      }));
+    }
+
+    // Hide payment detail alert when payment detail is entered
+    if (name === "payment_detail" && value.trim()) {
+      setShowPaymentDetailMessage(false);
     }
 
     if (name === "payment_method" && value === "Credit") {
@@ -798,6 +933,48 @@ const PatientBilling = () => {
     }
   };
 
+  // Add this new function to handle Enter key press
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      const input = e.target.value.trim();
+
+      if (input.length >= 1) {
+        // Check if input matches a shortcut
+        const matchedByShortcut = testOptions.find(
+          (test) =>
+            test.shortcut && test.shortcut.toLowerCase() === input.toLowerCase()
+        );
+
+        if (matchedByShortcut) {
+          // If shortcut matches, set the test name and show only this option
+          setFormData2({
+            ...formData2,
+            testname: matchedByShortcut.test_name,
+            amount: "",
+            collection_container: "",
+          });
+          setFilteredOptions([matchedByShortcut]);
+        } else {
+          // Otherwise, filter test names normally
+          const filtered = testOptions.filter(
+            (test) =>
+              test["test_name"] &&
+              test["test_name"].toLowerCase().startsWith(input.toLowerCase())
+          );
+          setFilteredOptions(filtered);
+        }
+      } else {
+        setFilteredOptions([]);
+      }
+
+      // Hide test alert when test name is entered
+      if (input.trim()) {
+        setShowTestMessage(false);
+      }
+    }
+  };
+
+  // Updated handleTestNameChange function (simplified)
   const handleTestNameChange = (e) => {
     const input = e.target.value.trim();
     setFormData2({
@@ -807,31 +984,15 @@ const PatientBilling = () => {
       collection_container: "",
     });
 
+    // Only show live filtering if you want, otherwise just update the input value
     if (input.length >= 1) {
-      // Check if input matches a shortcut
-      const matchedByShortcut = testOptions.find(
+      // Optional: You can keep live filtering or remove it
+      const filtered = testOptions.filter(
         (test) =>
-          test.shortcut && test.shortcut.toLowerCase() === input.toLowerCase()
+          test["test_name"] &&
+          test["test_name"].toLowerCase().startsWith(input.toLowerCase())
       );
-
-      if (matchedByShortcut) {
-        // If shortcut matches, set the test name and show only this option
-        setFormData2({
-          ...formData2,
-          testname: matchedByShortcut.test_name,
-          amount: "",
-          collection_container: "",
-        });
-        setFilteredOptions([matchedByShortcut]);
-      } else {
-        // Otherwise, filter test names normally
-        const filtered = testOptions.filter(
-          (test) =>
-            test["test_name"] &&
-            test["test_name"].toLowerCase().startsWith(input.toLowerCase())
-        );
-        setFilteredOptions(filtered);
-      }
+      setFilteredOptions(filtered);
     } else {
       setFilteredOptions([]);
     }
@@ -939,9 +1100,22 @@ const PatientBilling = () => {
       return;
     }
 
+    // Validate payment details for UPI, Neft, and Cheque
+    if (
+      (formData.payment_method === "UPI" ||
+        formData.payment_method === "Neft" ||
+        formData.payment_method === "Credit" ||
+        formData.payment_method === "PartialPayment" ||
+        formData.payment_method === "Cheque") &&
+      (!formData.payment_detail || formData.payment_detail.trim() === "")
+    ) {
+      setShowPaymentDetailMessage(true);
+      toast.error(`Please enter ${formData.payment_method} details`);
+      return;
+    }
+
     handleUpdateBilling();
   };
-
   const handleUpdateBilling = async () => {
     if (!selectedPatient) return;
 
@@ -1021,7 +1195,7 @@ const PatientBilling = () => {
         hour12: true,
       });
     };
-    // Ensure patient.testname is an array or fallback to an empty array
+
     const numberToWords = (num) => {
       const a = [
         "",
@@ -1075,204 +1249,257 @@ const PatientBilling = () => {
       };
       return toWords(num);
     };
+
     const tableRows =
       selectedTests
         ?.map(
           (test, index) => `
- <tr>
- <td>${index + 1}</td>
- <td>${test.testname || ""}</td>
-<td>₹ ${test.amount || ""}</td>
- </tr>
- `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${test.testname || ""}</td>
+          <td>₹ ${test.amount || ""}</td>
+        </tr>
+        `
         )
         .join("") || "";
 
-    // Parse payment_method string safely
-    let parsedPaymentMethod = {};
-    try {
-      parsedPaymentMethod = JSON.parse(formData.payment_method);
-    } catch (err) {
-      parsedPaymentMethod = {};
-    }
+    // FIXED: Better payment method handling
+    let displayPaymentMode = "NIL";
 
-    // Parse PartialPayment only if payment method is PartialPayment
-    let partialPaymentMethod = "";
-    if (parsedPaymentMethod.paymentmethod === "PartialPayment") {
+    // First, check if payment_method is a string (current form state)
+    if (
+      formData.payment_method &&
+      typeof formData.payment_method === "string"
+    ) {
+      displayPaymentMode = formData.payment_method;
+
+      // Add payment details if available and not Cash
+      if (formData.payment_method !== "Cash" && formData.payment_detail) {
+        displayPaymentMode += ` (${formData.payment_detail})`;
+      }
+
+      // Handle PartialPayment special case
+      if (
+        formData.payment_method === "PartialPayment" &&
+        formData.PartialPayment?.method
+      ) {
+        displayPaymentMode = `Partial Payment - ${formData.PartialPayment.method}`;
+        if (formData.PartialPayment.credit) {
+          displayPaymentMode += ` (Paid: ₹${
+            formData.PartialPayment.credit
+          }, Remaining: ₹${formData.PartialPayment.remainingAmount || 0})`;
+        }
+      }
+    } else {
+      // Fallback: Try to parse if it's a JSON string (from database)
       try {
-        partialPaymentMethod =
-          JSON.parse(formData.PartialPayment)?.method || "NIL";
-      } catch {
-        partialPaymentMethod = "NIL";
+        const parsedPaymentMethod =
+          typeof formData.payment_method === "string"
+            ? JSON.parse(formData.payment_method)
+            : formData.payment_method;
+
+        if (parsedPaymentMethod && parsedPaymentMethod.paymentmethod) {
+          displayPaymentMode = parsedPaymentMethod.paymentmethod;
+
+          // Add details based on payment method
+          if (parsedPaymentMethod.paymentmethod === "PartialPayment") {
+            try {
+              const partialDetails = JSON.parse(
+                formData.PartialPayment || "{}"
+              );
+              if (partialDetails.method) {
+                displayPaymentMode = `Partial Payment - ${partialDetails.method}`;
+                if (partialDetails.credit) {
+                  displayPaymentMode += ` (Paid: ₹${
+                    partialDetails.credit
+                  }, Remaining: ₹${partialDetails.remainingAmount || 0})`;
+                }
+              }
+            } catch {
+              displayPaymentMode = "Partial Payment";
+            }
+          } else if (parsedPaymentMethod.paymentmethod !== "Cash") {
+            // Add details for other payment methods
+            const detailKey = `${parsedPaymentMethod.paymentmethod.toLowerCase()}details`;
+            if (parsedPaymentMethod[detailKey]) {
+              displayPaymentMode += ` (${parsedPaymentMethod[detailKey]})`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error parsing payment method:", err);
+        displayPaymentMode = "NIL";
       }
     }
 
-    // Determine final payment mode for display
-    const paymentMode =
-      parsedPaymentMethod.paymentmethod === "PartialPayment"
-        ? partialPaymentMethod
-        : parsedPaymentMethod.paymentmethod || "NIL";
-
-    // Ensure other patient properties are defined, using defaults if needed
     const amountInWords = formData.totalAmount
       ? numberToWords(formData.totalAmount) + " Only"
       : "Zero only";
-    <div>{storedName}</div>; // Replace with the actual logged-in employee's name
+
     // Dynamically populate the receipt with patient values
     const printableContent = `
- <html>
- <head>
- <title>Shanmuga Diagnostics</title>
- <style>
- body {
- font-family: Arial, sans-serif;
- margin: 0;
- padding: 0;
- color: #000;
- }
- .container {
- width: 90%;
- margin: 20px auto;
- padding: 10px;
- border: 1px solid #000;
- font-size: 14px;
- }
- .header {
- text-align: center;
- border-bottom: 1px solid #000;
- padding-bottom: 10px;
- margin-bottom: 10px;
- }
- .header h1 {
- margin: 0;
- font-size: 18px;
- }
- .header p {
- margin: 5px 0;
- }
- .header img {
- width: 100%; /* Scale the image to the container's width */
- max-width: 100%; /* Ensures the image doesn't overflow */
- height: auto; /* Maintains the aspect ratio */
- }
- .details,
- .test-info,
- .payment-info {
- width: 100%;
- margin-bottom: 20px;
- }
- .details td,
- .test-info td,
- .payment-info td {
- padding: 5px;
- border-bottom: 1px solid #ddd;
- }
- .details th,
- .test-info th,
- .payment-info th {
- text-align: left;
- }
- .details table,
- .test-info table,
- .payment-info table {
- width: 100%;
- border-collapse: collapse;
- }
- .signature {
- text-align: right; /* Align both elements center */
- font-size: 16px;
- }
- </style>
- </head>
- <body>
- <div class="container">
- <div class="header">
- <img src= ${headerImage} alt="Shanmuga Diagnostics" />
- <h1>BILL CUM RECEIPT</h1>
- <p>Contact No: 9876543210</p>
- </div>
- <div class="details">
- <table id="invoiceTable">
- <tr>
- <td><strong>Invoice Date:</strong>${
-   formatDateTimeUTC(selectedPatient.date) || "NIL"
- }</td>
- <td><strong>Invoice No / Lab ID:</strong> ${
-   selectedPatient.lab_id || "NIL"
- }</td>
- </tr>
- <tr>
- <td><strong>Patient ID:</strong> ${selectedPatient.patient_id || "NIL"}</td>
- <td><strong>Lab Name:</strong> ${selectedPatient.B2B || "NIL"}</td>
- </tr>
- <tr>
- <td><strong>Name:</strong> ${selectedPatient.patientname || "NIL"}</td>
- <td><strong>Gender/Age:</strong> ${selectedPatient.gender || "NIL"}/${
-      selectedPatient.age || "NIL"
-    } Yrs</td>
- </tr>
- <tr>
- <td><strong>Mobile:</strong> ${selectedPatient.phone || "NIL"}</td>
- <td><strong>Ref By:</strong> ${selectedPatient.refby || "SELF"}</td>
- </tr>
- </table>
- <script>
- // Get the table by its ID
- const table = document.getElementById('invoiceTable');
- // Loop through all the <td> elements
- Array.from(table.querySelectorAll('td')).forEach(td => {
- // If the text includes 'NIL', hide the <td>
- if (td.textContent.includes('NIL')) {
- td.style.display = 'none';
- }
- });
- </script>
- </div>
- <div class="test-info">
- <table>
- <thead>
- <tr>
- <th>S.No</th>
- <th>Test Name</th>
- <th>Amount</th>
- </tr>
- </thead>
- <tbody>
- ${tableRows}
- </tbody>
- </table>
- </div>
- <div class="payment-info">
- <table>
- <thead>
- <tr>
- <th>Total Amount</th>
- <th>Mode</th>
- </tr>
- </thead>
- <tbody>
- <tr>
-<td>₹ ${formData.totalAmount || "NIL"}</td>
- <td>
- ${paymentMode}
- </td>
- </tr>
- </tbody>
- </table>
- <p>Amount Paid in Words: ${amountInWords}</p>
- </div>
- <div class="signature">
- <div class="signature-label">Signature of Employee</div>
- <div class="employee-name">${storedName}</div>
- </div>
- </html>
- `;
+    <html>
+    <head>
+      <title>Shanmuga Diagnostics</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          color: #000;
+        }
+        .container {
+          width: 90%;
+          margin: 20px auto;
+          padding: 10px;
+          border: 1px solid #000;
+          font-size: 14px;
+        }
+        .header {
+          text-align: center;
+          border-bottom: 1px solid #000;
+          padding-bottom: 10px;
+          margin-bottom: 10px;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 18px;
+        }
+        .header p {
+          margin: 5px 0;
+        }
+        .header img {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+        }
+        .details,
+        .test-info,
+        .payment-info {
+          width: 100%;
+          margin-bottom: 20px;
+        }
+        .details td,
+        .test-info td,
+        .payment-info td {
+          padding: 5px;
+          border-bottom: 1px solid #ddd;
+        }
+        .details th,
+        .test-info th,
+        .payment-info th {
+          text-align: left;
+        }
+        .details table,
+        .test-info table,
+        .payment-info table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .signature {
+          text-align: right;
+          font-size: 16px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+              <div>CIN : U85110TZ2020PTC033974</div>
+              <img src="${headerImage}" alt="Shanmuga Diagnostics" />
+              <h1>BILL CUM RECEIPT</h1>
+              <p>Contact No: 0427-2706666 / 6369131631</p>
+            </div>
+        <div class="details">
+          <table id="invoiceTable">
+            <tr>
+              <td><strong>Invoice Date:</strong> ${
+                formatDateTimeUTC(selectedPatient.date) || "NIL"
+              }</td>
+              <td><strong>Invoice No / Lab ID:</strong> ${
+                selectedPatient.lab_id || "NIL"
+              }</td>
+            </tr>
+            <tr>
+              <td><strong>Patient ID:</strong> ${
+                selectedPatient.patient_id || "NIL"
+              }</td>
+              <td><strong>Lab Name:</strong> ${
+                selectedPatient.B2B || "NIL"
+              }</td>
+            </tr>
+            <tr>
+              <td><strong>Name:</strong> ${
+                selectedPatient.patientname || "NIL"
+              }</td>
+              <td><strong>Gender/Age:</strong> ${
+                selectedPatient.gender || "NIL"
+              }/${selectedPatient.age || "NIL"} Yrs</td>
+            </tr>
+            <tr>
+              <td><strong>Mobile:</strong> ${
+                selectedPatient.phone || "NIL"
+              }</td>
+              <td><strong>Ref By:</strong> ${
+                selectedPatient.refby || "SELF"
+              }</td>
+            </tr>
+          </table>
+          <script>
+            const table = document.getElementById('invoiceTable');
+            Array.from(table.querySelectorAll('td')).forEach(td => {
+              if (td.textContent.includes('NIL')) {
+                td.style.display = 'none';
+              }
+            });
+          </script>
+        </div>
+        <div class="test-info">
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Test Name</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </div>
+        <div class="payment-info">
+          <table>
+            <thead>
+              <tr>
+                <th>Total Amount</th>
+                <th>Payment Mode</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>₹ ${formData.totalAmount || "NIL"}</td>
+                <td>${displayPaymentMode || "NIL"}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Amount Paid in Words: ${amountInWords}</p>
+        </div>
+        <div class="signature">
+          <div class="signature-label">Signature of Employee</div>
+          <div class="employee-name">${storedName}</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
     const printWindow = window.open("", "", "width=1000,height=800");
     printWindow.document.write(printableContent);
     setTimeout(() => {
       printWindow.document.close();
       printWindow.print();
-      printWindow.close(); // Close the new window after printing
+      printWindow.close();
     }, 1000);
   };
 
@@ -1298,7 +1525,60 @@ const PatientBilling = () => {
       {!isBillingView ? (
         // Patient List Table View
         <Card>
-          <h3>Patients for {new Date(selectedDate).toLocaleDateString()}</h3>
+          {/* Search Filters */}
+          <SearchFilters>
+            <SearchGroup>
+              <label>Patient ID</label>
+              <input
+                type="text"
+                placeholder="Search by Patient ID"
+                value={searchFilters.patientId}
+                onChange={(e) =>
+                  handleSearchChange("patientId", e.target.value)
+                }
+              />
+            </SearchGroup>
+
+            <SearchGroup>
+              <label>Patient Name</label>
+              <input
+                type="text"
+                placeholder="Search by Name"
+                value={searchFilters.name}
+                onChange={(e) => handleSearchChange("name", e.target.value)}
+              />
+            </SearchGroup>
+
+            <SearchGroup>
+              <label>Segment</label>
+              <select
+                value={searchFilters.segment}
+                onChange={(e) => handleSearchChange("segment", e.target.value)}
+              >
+                <option value="">All Segments</option>
+                <option value="B2B">B2B</option>
+                <option value="Walk-in">Walk-in</option>
+                <option value="Home Collection">Home Collection</option>
+              </select>
+            </SearchGroup>
+
+            <SearchGroup>
+              <label>Clinical Name</label>
+              <input
+                type="text"
+                placeholder="Search by Clinical Name"
+                value={searchFilters.clinicalName}
+                onChange={(e) =>
+                  handleSearchChange("clinicalName", e.target.value)
+                }
+              />
+            </SearchGroup>
+
+            <ClearButton onClick={clearSearchFilters}>
+              Clear Filters
+            </ClearButton>
+          </SearchFilters>
+
           {loading ? (
             <div style={{ textAlign: "center", padding: "2rem" }}>
               Loading patients...
@@ -1316,8 +1596,8 @@ const PatientBilling = () => {
                 </tr>
               </TableHead>
               <tbody>
-                {patients.length > 0 ? (
-                  patients.map((patient) => (
+                {filteredPatients.length > 0 ? (
+                  filteredPatients.map((patient) => (
                     <TableRow key={patient.patient_id}>
                       <TableCell>{patient.patient_id}</TableCell>
                       <TableCell>
@@ -1368,10 +1648,12 @@ const PatientBilling = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       style={{ textAlign: "center", padding: "2rem" }}
                     >
-                      No patients found for the selected date.
+                      {patients.length === 0
+                        ? "No patients found for the selected date."
+                        : "No patients match the current search criteria."}
                     </td>
                   </tr>
                 )}
@@ -1392,19 +1674,6 @@ const PatientBilling = () => {
                   {selectedPatient.segment}
                 </Badge>
               </p>
-              {/* 
- {selectedPatient.tests && selectedPatient.tests.length > 0 && (
- <div className="test-details">
- <h5>Existing Tests:</h5>
- <div className="test-tags">
- {selectedPatient.tests.map((test, index) => (
- <span key={index} className="test-tag">
- {typeof test === "string" ? test : test.testname || "Unknown Test"}
- </span>
- ))}
- </div>
- </div>
- )} */}
             </div>
           </PatientInfo>
 
@@ -1429,7 +1698,8 @@ const PatientBilling = () => {
                         type="text"
                         value={formData2.testname}
                         onChange={handleTestNameChange}
-                        placeholder="Type Test Name or Shortcut"
+                        onKeyDown={handleKeyDown}
+                        placeholder="Enter Test Name or Shortcut"
                       />
                     </SearchInput>
 

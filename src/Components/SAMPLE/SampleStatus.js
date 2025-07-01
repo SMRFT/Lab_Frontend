@@ -656,7 +656,7 @@ const SampleStatus = () => {
       setTimeout(() => {
         window.location.reload();
         setSuccessMessage(null);
-      }, 1000);
+      }, 5000);
     } catch (error) {
       console.error("Error saving test data:", error);
       setError("Data already exists");
@@ -710,7 +710,7 @@ const SampleStatus = () => {
       setTimeout(() => {
         window.location.reload();
         setSuccessMessage(null);
-      }, 1000);
+      }, 5000);
     } catch (err) {
       console.error("Error updating test statuses:", err);
       setError("No updates made");
@@ -758,6 +758,7 @@ const SampleStatus = () => {
     setSelectedPatientId(null);
     setError(null);
     setSuccessMessage(null);
+    window.location.reload();
   };
 
   const filteredPatients = patients.filter(

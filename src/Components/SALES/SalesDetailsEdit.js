@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import styled from "styled-components";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -67,22 +67,22 @@ const ScrollableTableContainer = styled.div`
   max-height: 500px;
   overflow-y: auto;
   border-radius: 16px;
-  
+
   /* Custom scrollbar styling */
   &::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     border-radius: 4px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
@@ -91,7 +91,7 @@ const ScrollableTableContainer = styled.div`
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
 `;
 
 const TableHeader = styled.thead`
@@ -150,11 +150,35 @@ const Input = styled.input`
   padding: 0.6rem 0.8rem;
   border: 2px solid transparent;
   border-radius: 8px;
-  background: ${props => props.disabled ? '#f8f9fa' : '#ffffff'};
-  color: ${props => props.disabled ? '#6c757d' : '#333'};
+  background: ${(props) => (props.disabled ? "#f8f9fa" : "#ffffff")};
+  color: ${(props) => (props.disabled ? "#6c757d" : "#333")};
   font-size: 0.9rem;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
+    background: #ffffff;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: ${(props) => (props.disabled ? "#f8f9fa" : "#ffffff")};
+  color: ${(props) => (props.disabled ? "#6c757d" : "#333")};
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 
   &:focus {
     outline: none;
@@ -187,7 +211,9 @@ const ActionButton = styled.button`
   letter-spacing: 0.5px;
   min-width: 80px;
 
-  ${props => props.save ? `
+  ${(props) =>
+    props.save
+      ? `
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
@@ -196,7 +222,8 @@ const ActionButton = styled.button`
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(17, 153, 142, 0.6);
     }
-  ` : `
+  `
+      : `
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
@@ -224,9 +251,9 @@ const LoadingSpinner = styled.div`
   justify-content: center;
   align-items: center;
   height: 200px;
-  
+
   &:after {
-    content: '';
+    content: "";
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
@@ -236,8 +263,12 @@ const LoadingSpinner = styled.div`
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -250,7 +281,7 @@ const ResultsInfo = styled.div`
   color: #ffffff;
   font-weight: 500;
   border-radius: 12px 12px 0 0;
-  
+
   span {
     font-size: 0.9rem;
   }
@@ -265,7 +296,7 @@ const ClearButton = styled.button`
   cursor: pointer;
   font-size: 0.85rem;
   transition: all 0.3s ease;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
@@ -278,17 +309,20 @@ const SalesDetailsEdit = () => {
   const [editingCode, setEditingCode] = useState(null);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [salesPersons, setSalesPersons] = useState([]);
+  const [loadingSalesPersons, setLoadingSalesPersons] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
-    referrerCode: '',
-    clinicalname: '',
-    salesMapping: '',
-    phone: ''
+    referrerCode: "",
+    clinicalname: "",
+    salesMapping: "",
+    phone: "",
   });
-  
+
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
 
   useEffect(() => {
     fetchRecords();
+    fetchSalesPersons();
   }, []);
 
   useEffect(() => {
@@ -297,48 +331,84 @@ const SalesDetailsEdit = () => {
 
   const fetchRecords = () => {
     setLoading(true);
-    axios.get(`${Labbaseurl}get_clinicalname/`)
-      .then(res => {
+    axios
+      .get(`${Labbaseurl}get_clinicalname/`)
+      .then((res) => {
         setRecords(res.data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setLoading(false);
       });
   };
 
-  const filterRecords = () => {
-    const filtered = records.filter(record => {
-      const matchesReferrerCode = !searchFilters.referrerCode || 
-        (record.referrerCode && record.referrerCode.toLowerCase().includes(searchFilters.referrerCode.toLowerCase()));
-      
-      const matchesClinicalName = !searchFilters.clinicalname || 
-        (record.clinicalname && record.clinicalname.toLowerCase().includes(searchFilters.clinicalname.toLowerCase()));
-      
-      const matchesSalesMapping = !searchFilters.salesMapping || 
-        (record.salesMapping && record.salesMapping.toLowerCase().includes(searchFilters.salesMapping.toLowerCase()));
-      
-      const matchesPhone = !searchFilters.phone || 
-        (record.phone && record.phone.toLowerCase().includes(searchFilters.phone.toLowerCase()));
+  const fetchSalesPersons = () => {
+    setLoadingSalesPersons(true);
+    axios
+      .get(`${Labbaseurl}registration/`)
+      .then((res) => {
+        setSalesPersons(res.data);
+        setLoadingSalesPersons(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching sales persons:", err);
+        setLoadingSalesPersons(false);
+      });
+  };
 
-      return matchesReferrerCode && matchesClinicalName && matchesSalesMapping && matchesPhone;
+  const filterRecords = () => {
+    const filtered = records.filter((record) => {
+      const matchesReferrerCode =
+        !searchFilters.referrerCode ||
+        (record.referrerCode &&
+          record.referrerCode
+            .toLowerCase()
+            .includes(searchFilters.referrerCode.toLowerCase()));
+
+      const matchesClinicalName =
+        !searchFilters.clinicalname ||
+        (record.clinicalname &&
+          record.clinicalname
+            .toLowerCase()
+            .includes(searchFilters.clinicalname.toLowerCase()));
+
+      const matchesSalesMapping =
+        !searchFilters.salesMapping ||
+        (record.salesMapping &&
+          record.salesMapping
+            .toLowerCase()
+            .includes(searchFilters.salesMapping.toLowerCase()));
+
+      const matchesPhone =
+        !searchFilters.phone ||
+        (record.phone &&
+          record.phone
+            .toLowerCase()
+            .includes(searchFilters.phone.toLowerCase()));
+
+      return (
+        matchesReferrerCode &&
+        matchesClinicalName &&
+        matchesSalesMapping &&
+        matchesPhone
+      );
     });
-    
+
     setFilteredRecords(filtered);
   };
 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
-    setSearchFilters(prev => ({ ...prev, [name]: value }));
+    setSearchFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const clearFilters = () => {
     setSearchFilters({
-      referrerCode: '',
-      clinicalname: '',
-      salesMapping: '',
-      phone: ''
+      referrerCode: "",
+      clinicalname: "",
+      salesMapping: "",
+      phone: "",
     });
   };
 
@@ -349,11 +419,12 @@ const SalesDetailsEdit = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = () => {
-    axios.put(`${Labbaseurl}clinicalname/update/`, formData)
+    axios
+      .put(`${Labbaseurl}clinicalname/update/`, formData)
       .then(() => {
         alert("Updated successfully");
         setEditingCode(null);
@@ -367,7 +438,9 @@ const SalesDetailsEdit = () => {
     setFormData({});
   };
 
-  const hasActiveFilters = Object.values(searchFilters).some(filter => filter !== '');
+  const hasActiveFilters = Object.values(searchFilters).some(
+    (filter) => filter !== ""
+  );
 
   if (loading) {
     return (
@@ -383,7 +456,7 @@ const SalesDetailsEdit = () => {
   return (
     <Container>
       <Title>Edit Sales Details</Title>
-      
+
       <SearchContainer>
         <SearchInput
           type="text"
@@ -414,7 +487,7 @@ const SalesDetailsEdit = () => {
           onChange={handleSearchChange}
         />
       </SearchContainer>
-      
+
       <TableWrapper>
         <ResultsInfo>
           <span>
@@ -422,12 +495,10 @@ const SalesDetailsEdit = () => {
             {hasActiveFilters && " (filtered)"}
           </span>
           {hasActiveFilters && (
-            <ClearButton onClick={clearFilters}>
-              Clear Filters
-            </ClearButton>
+            <ClearButton onClick={clearFilters}>Clear Filters</ClearButton>
           )}
         </ResultsInfo>
-        
+
         <ScrollableTableContainer>
           <StyledTable>
             <TableHeader>
@@ -440,67 +511,116 @@ const SalesDetailsEdit = () => {
                 <HeaderCell>Actions</HeaderCell>
               </HeaderRow>
             </TableHeader>
-            
+
             <TableBody>
               {filteredRecords.length === 0 ? (
                 <tr>
                   <TableCell colSpan="6">
                     <EmptyState>
-                      {hasActiveFilters ? "No records match your search criteria" : "No records found"}
+                      {hasActiveFilters
+                        ? "No records match your search criteria"
+                        : "No records found"}
                     </EmptyState>
                   </TableCell>
                 </tr>
               ) : (
-                filteredRecords.map(record => (
+                filteredRecords.map((record) => (
                   <TableRow key={record.referrerCode}>
                     <TableCell>
                       <ReadOnlyInput value={record.referrerCode} readOnly />
                     </TableCell>
-                    
+
                     <TableCell>
                       <Input
                         name="clinicalname"
-                        value={editingCode === record.referrerCode ? formData.clinicalname || '' : record.clinicalname || ''}
+                        value={
+                          editingCode === record.referrerCode
+                            ? formData.clinicalname || ""
+                            : record.clinicalname || ""
+                        }
                         onChange={handleChange}
                         disabled={editingCode !== record.referrerCode}
                       />
                     </TableCell>
-                    
+
                     <TableCell>
                       <Input
                         name="type"
-                        value={editingCode === record.referrerCode ? formData.type || '' : record.type || ''}
+                        value={
+                          editingCode === record.referrerCode
+                            ? formData.type || ""
+                            : record.type || ""
+                        }
                         onChange={handleChange}
                         disabled={editingCode !== record.referrerCode}
                       />
                     </TableCell>
-                    
+
                     <TableCell>
-                      <Input
-                        name="salesMapping"
-                        value={editingCode === record.referrerCode ? formData.salesMapping || '' : record.salesMapping || ''}
-                        onChange={handleChange}
-                        disabled={editingCode !== record.referrerCode}
-                      />
+                      {editingCode === record.referrerCode ? (
+                        <Select
+                          name="salesMapping"
+                          value={formData.salesMapping || ""}
+                          onChange={handleChange}
+                          disabled={loadingSalesPersons}
+                        >
+                          <option value="">
+                            {loadingSalesPersons
+                              ? "Loading..."
+                              : "Select Sales Person"}
+                          </option>
+                          <option value="Vacant">Vacant</option>
+                          {salesPersons.map((person) => (
+                            <option
+                              key={person.id || person.name}
+                              value={person.name}
+                            >
+                              {person.name}
+                            </option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Input
+                          name="salesMapping"
+                          value={record.salesMapping || ""}
+                          disabled={true}
+                        />
+                      )}
                     </TableCell>
-                    
+
                     <TableCell>
                       <Input
                         name="phone"
-                        value={editingCode === record.referrerCode ? formData.phone || '' : record.phone || ''}
+                        value={
+                          editingCode === record.referrerCode
+                            ? formData.phone || ""
+                            : record.phone || ""
+                        }
                         onChange={handleChange}
                         disabled={editingCode !== record.referrerCode}
                       />
                     </TableCell>
-                    
+
                     <TableCell>
                       {editingCode === record.referrerCode ? (
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                          <ActionButton save onClick={handleSave}>Save</ActionButton>
-                          <ActionButton onClick={handleCancel}>Cancel</ActionButton>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "0.5rem",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <ActionButton save onClick={handleSave}>
+                            Save
+                          </ActionButton>
+                          <ActionButton onClick={handleCancel}>
+                            Cancel
+                          </ActionButton>
                         </div>
                       ) : (
-                        <ActionButton onClick={() => handleEdit(record)}>Edit</ActionButton>
+                        <ActionButton onClick={() => handleEdit(record)}>
+                          Edit
+                        </ActionButton>
                       )}
                     </TableCell>
                   </TableRow>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
-import { ArrowLeft, Save, Edit, Check } from "lucide-react";
+import { ArrowLeft, Save, Edit } from "lucide-react";
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -147,16 +147,6 @@ const EditButton = styled(Button)`
   }
 `;
 
-const UpdateButton = styled(Button)`
-  background-color: var(--success);
-  padding: 0.35rem 0.75rem;
-  font-size: 0.875rem;
-
-  &:hover {
-    background-color: var(--info);
-  }
-`;
-
 const NoData = styled.div`
   display: flex;
   align-items: center;
@@ -278,11 +268,19 @@ const ButtonContainer = styled.div`
   margin-top: 2rem;
 `;
 
+const RemarksSection = styled.div`
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-light);
+`;
+
 function TestDetails() {
   const [testDetails, setTestDetails] = useState([]);
   const [values, setValues] = useState({});
   const [remarks, setRemarks] = useState({});
+  const [parameterRemarks, setParameterRemarks] = useState(""); // Common remarks for all parameters
   const [editMode, setEditMode] = useState({});
+  const [parameterEditMode, setParameterEditMode] = useState(false); // Common edit mode for all parameters
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [patientName, setPatientName] = useState("");
@@ -295,8 +293,8 @@ function TestDetails() {
   const testName = queryParams.get("test_name");
   const navigate = useNavigate();
   const verified_by = localStorage.getItem("name") || "";
-  // console.log('Verified By:', verified_by);
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
+
   useEffect(() => {
     if (patientId && date && testName) {
       fetchTestDetails(patientId, date, testName);
@@ -312,15 +310,10 @@ function TestDetails() {
         `${Labbaseurl}compare_test_details/?patient_id=${patientId}&date=${selectedDate}`
       );
 
-      // Debug the response data structure
-      // console.log("Test details response:", response.data);
-
       const allTests = response.data.data || [];
       const filteredTests = allTests.filter(
         (test) => test.testname === testName
       );
-
-      // console.log("Filtered tests:", filteredTests);
 
       setTestDetails(filteredTests);
 
@@ -329,21 +322,19 @@ function TestDetails() {
 
       filteredTests.forEach((test) => {
         tempValues[test.testname] = test.value || "";
+        tempEditMode[test.testname] = false;
 
         if (test.parameters && Array.isArray(test.parameters)) {
           test.parameters.forEach((param) => {
-            // Use consistent naming for parameter keys
             const paramName = param.name || param.test_name;
-            tempValues[`${test.testname}_${paramName}`] = param.value || "";
+            const uniqueKey = `${test.testname}_${paramName}`;
+            tempValues[uniqueKey] = param.value || "";
           });
         }
-
-        tempEditMode[test.testname] = false;
       });
 
       setValues(tempValues);
       setEditMode(tempEditMode);
-
       setLoading(false);
     } catch (error) {
       console.error("Error fetching test details:", error);
@@ -363,8 +354,6 @@ function TestDetails() {
     const { value } = event.target;
     const uniqueKey = `${testname}_${paramName}`;
 
-    // console.log(`Setting parameter value for ${uniqueKey} to ${value}`);
-
     setValues((prevValues) => ({
       ...prevValues,
       [uniqueKey]: value,
@@ -378,6 +367,11 @@ function TestDetails() {
     }));
   };
 
+  // Common parameter remarks change handler
+  const handleParameterRemarksChange = (event) => {
+    setParameterRemarks(event.target.value);
+  };
+
   const toggleEditMode = (testname) => {
     setEditMode((prevEditMode) => ({
       ...prevEditMode,
@@ -385,126 +379,158 @@ function TestDetails() {
     }));
   };
 
-  const handleUpdate = async (testname) => {
-    try {
-      const updatedTestDetails = testDetails.map((test) => {
-        if (test.testname === testname) {
-          return {
-            ...test,
-            value: values[test.testname],
-            remarks: remarks[test.testname],
-            rerun: false, // Set rerun to false when updating
-          };
-        }
-        return test;
-      });
-      const payload = {
-        patient_id: patientId,
-        date: date,
-        testdetails: updatedTestDetails,
-        verified_by: verified_by,
-      };
-      await axios.patch(`${Labbaseurl}test-value/update/`, payload);
-      alert("Test details updated successfully!");
-      toggleEditMode(testname);
-    } catch (error) {
-      console.error("Error updating test details:", error);
-      alert("Failed to update test details.");
-    }
+  // Toggle common parameter edit mode
+  const toggleParameterEditMode = () => {
+    setParameterEditMode(!parameterEditMode);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // console.log("Current test details:", testDetails);
 
-    const testDetailsData = testDetails.map((test) => {
-      if (
-        test.parameters &&
-        Array.isArray(test.parameters) &&
-        test.parameters.length > 0
-      ) {
-        return {
-          testname: test.testname,
-          rerun: false,
-          approve: false,
-          approve_time: "null",
-          dispatch: false,
-          dispatch_time: "null",
-          department: test.department || "N/A",
-          parameters: test.parameters.map((param) => {
-            // Handle both name formats (name or test_name)
-            const paramName = param.name || param.test_name;
-            const uniqueKey = `${test.testname}_${paramName}`;
-
-            // console.log(`Processing parameter ${paramName}, value: ${values[uniqueKey]}`);
-
-            return {
-              name: paramName,
-              value: values[uniqueKey] || "",
-              unit: param.unit || "N/A",
-              specimen_type: test.specimen_type || "N/A",
-              reference_range: param.reference_range || "N/A",
-              method: param.method || "",
-            };
-          }),
-        };
-      } else {
-        return {
-          testname: test.testname,
-          specimen_type: test.specimen_type || "N/A",
-          value: values[test.testname] || "",
-          unit: test.unit || "N/A",
-          reference_range: test.reference_range || "N/A",
-          method: test.method || "",
-          department: test.department || "",
-          rerun: false,
-          approve: false,
-          approve_time: "null",
-          dispatch: false,
-          dispatch_time: "null",
-        };
+    const validateTestValue = (value, paramName, testName) => {
+      if (!value || (typeof value === "string" && value.trim() === "")) {
+        throw new Error(`Value for ${paramName} in ${testName} is required`);
       }
-    });
-
-    const payload = {
-      patient_id: patientId,
-      date: date,
-      barcode: barcode,
-      testdetails: testDetailsData,
-      verified_by: verified_by,
     };
 
-    // console.log("Submitting payload:", payload);
-
     try {
-      const response = await axios.patch(
-        `${Labbaseurl}test-value/save/`,
-        payload
-      );
-      alert(response.data.message || "Test details updated successfully!");
-      fetchTestDetails(patientId, date, testName);
-    } catch (patchError) {
-      console.error("Patch error:", patchError);
+      const validationErrors = [];
 
-      if (patchError.response && patchError.response.status === 404) {
-        try {
-          // console.log("Record not found, trying POST instead");
-          const postResponse = await axios.post(
-            `${Labbaseurl}test-value/save/`,
-            payload
-          );
-          alert(
-            postResponse.data.message || "Test details saved successfully!"
-          );
-          fetchTestDetails(patientId, date, testName);
-        } catch (postError) {
-          console.error("Error saving test details:", postError);
-          alert("Failed to save test details.");
+      testDetails.forEach((test) => {
+        if (
+          test.parameters &&
+          Array.isArray(test.parameters) &&
+          test.parameters.length > 0
+        ) {
+          test.parameters.forEach((param) => {
+            const paramName = param.name || param.test_name;
+            const uniqueKey = `${test.testname}_${paramName}`;
+            const paramValue = values[uniqueKey];
+
+            try {
+              validateTestValue(paramValue, paramName, test.testname);
+            } catch (error) {
+              validationErrors.push(error.message);
+            }
+          });
+        } else {
+          const testValue = values[test.testname];
+          try {
+            validateTestValue(testValue, test.testname, test.testname);
+          } catch (error) {
+            validationErrors.push(error.message);
+          }
         }
-      } else {
-        console.error("Error updating test details:", patchError);
-        alert("Failed to update test details.");
+      });
+
+      if (validationErrors.length > 0) {
+        const errorMessage =
+          "Please fill in all required values:\n\n" +
+          validationErrors
+            .map((error, index) => `${index + 1}. ${error}`)
+            .join("\n");
+        alert(errorMessage);
+        return;
       }
+
+      const testDetailsData = testDetails.map((test) => {
+        if (
+          test.parameters &&
+          Array.isArray(test.parameters) &&
+          test.parameters.length > 0
+        ) {
+          return {
+            testname: test.testname,
+            rerun: parameterEditMode ? false : test.rerun, // Set rerun to false if parameter remarks are being edited
+            approve: false,
+            approve_time: "null",
+            dispatch: false,
+            dispatch_time: "null",
+            department: test.department || "N/A",
+            remarks: parameterRemarks || "", // Store common parameter remarks at test level
+            parameters: test.parameters.map((param) => {
+              const paramName = param.name || param.test_name;
+              const uniqueKey = `${test.testname}_${paramName}`;
+
+              return {
+                name: paramName,
+                value: values[uniqueKey] || "",
+                unit: param.unit || "N/A",
+                specimen_type: test.specimen_type || "N/A",
+                reference_range: param.reference_range || "N/A",
+                method: param.method || "",
+                // Don't store remarks in individual parameters - use common remarks from test level
+              };
+            }),
+          };
+        } else {
+          return {
+            testname: test.testname,
+            specimen_type: test.specimen_type || "N/A",
+            value: values[test.testname] || "",
+            unit: test.unit || "N/A",
+            reference_range: test.reference_range || "N/A",
+            method: test.method || "",
+            department: test.department || "",
+            remarks: remarks[test.testname] || "", // Include test remarks
+            rerun: editMode[test.testname] ? false : test.rerun, // Set rerun to false if test remarks are being edited
+            approve: false,
+            approve_time: "null",
+            dispatch: false,
+            dispatch_time: "null",
+          };
+        }
+      });
+
+      const payload = {
+        patient_id: patientId,
+        date: date,
+        barcode: barcode,
+        testdetails: testDetailsData,
+        verified_by: verified_by,
+      };
+
+      console.log("Submitting payload:", payload);
+
+      try {
+        const response = await axios.patch(
+          `${Labbaseurl}test-value/save/`,
+          payload
+        );
+        alert(response.data.message || "Test details updated successfully!");
+        fetchTestDetails(patientId, date, testName);
+        // Reset edit modes after successful save
+        setEditMode({});
+        setParameterEditMode(false);
+      } catch (patchError) {
+        console.error("Patch error:", patchError);
+
+        if (patchError.response && patchError.response.status === 404) {
+          try {
+            console.log("Record not found, trying POST instead");
+            const postResponse = await axios.post(
+              `${Labbaseurl}test-value/save/`,
+              payload
+            );
+            alert(
+              postResponse.data.message || "Test details saved successfully!"
+            );
+            fetchTestDetails(patientId, date, testName);
+            // Reset edit modes after successful save
+            setEditMode({});
+            setParameterEditMode(false);
+          } catch (postError) {
+            console.error("Error saving test details:", postError);
+            alert("Failed to save test details.");
+          }
+        } else {
+          console.error("Error updating test details:", patchError);
+          alert("Failed to update test details.");
+        }
+      }
+    } catch (validationError) {
+      console.error("Validation error:", validationError);
+      alert(`Please fill in all required values.`);
     }
   };
 
@@ -513,8 +539,6 @@ function TestDetails() {
       const response = await axios.get(`${Labbaseurl}test-value/save/`, {
         params: { patient_id: patientId, date: date, testname: testname },
       });
-
-      // console.log(`Fetched test value for ${testname}:`, response.data);
 
       const testData = response.data;
 
@@ -525,13 +549,30 @@ function TestDetails() {
         }));
       }
 
+      if (testData.remarks) {
+        // Check if this test has parameters - if so, load as parameter remarks
+        const currentTest = testDetails.find(
+          (test) => test.testname === testname
+        );
+        if (
+          currentTest &&
+          currentTest.parameters &&
+          Array.isArray(currentTest.parameters) &&
+          currentTest.parameters.length > 0
+        ) {
+          setParameterRemarks(testData.remarks);
+        } else {
+          setRemarks((prevRemarks) => ({
+            ...prevRemarks,
+            [testData.testname]: testData.remarks,
+          }));
+        }
+      }
+
       if (testData.parameters && Array.isArray(testData.parameters)) {
         testData.parameters.forEach((param) => {
-          // Handle both name formats
           const paramName = param.name || param.test_name;
           const uniqueKey = `${testData.testname}_${paramName}`;
-
-          // console.log(`Setting value for parameter ${paramName}: ${param.value}`);
 
           setValues((prevValues) => ({
             ...prevValues,
@@ -659,7 +700,21 @@ function TestDetails() {
                         />
                       </FormGroup>
 
-                      {editMode[test.testname] ? (
+                      <FormGroup style={{ alignSelf: "flex-end" }}>
+                        <EditButton
+                          type="button"
+                          onClick={() => toggleEditMode(test.testname)}
+                        >
+                          <Edit size={16} />
+                          {editMode[test.testname]
+                            ? "Cancel Edit"
+                            : "Edit Remarks"}
+                        </EditButton>
+                      </FormGroup>
+                    </FormRow>
+
+                    {editMode[test.testname] && (
+                      <RemarksSection>
                         <FormGroup>
                           <Label>Remarks</Label>
                           <TextArea
@@ -670,28 +725,8 @@ function TestDetails() {
                             placeholder="Enter remarks"
                           />
                         </FormGroup>
-                      ) : null}
-
-                      <FormGroup style={{ alignSelf: "flex-end" }}>
-                        {editMode[test.testname] ? (
-                          <UpdateButton
-                            type="button"
-                            onClick={() => handleUpdate(test.testname)}
-                          >
-                            <Check size={16} />
-                            Update
-                          </UpdateButton>
-                        ) : (
-                          <EditButton
-                            type="button"
-                            onClick={() => toggleEditMode(test.testname)}
-                          >
-                            <Edit size={16} />
-                            Edit Remarks
-                          </EditButton>
-                        )}
-                      </FormGroup>
-                    </FormRow>
+                      </RemarksSection>
+                    )}
                   </>
                 ) : null}
 
@@ -700,14 +735,20 @@ function TestDetails() {
                   Array.isArray(test.parameters) &&
                   test.parameters.length > 0 && (
                     <ParameterSection>
-                      <ParameterTitle>Parameters</ParameterTitle>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <ParameterTitle>Parameters</ParameterTitle>
+                      </div>
 
                       {test.parameters.map((param, paramIndex) => {
-                        // Handle both name formats
                         const paramName = param.name || param.test_name;
                         const uniqueKey = `${test.testname}_${paramName}`;
-
-                        // console.log(`Rendering parameter: ${paramName}, uniqueKey: ${uniqueKey}, value: ${values[uniqueKey]}`);
 
                         return (
                           <ParameterCard key={`${uniqueKey}-${paramIndex}`}>
@@ -740,6 +781,7 @@ function TestDetails() {
                                   placeholder="Enter value"
                                 />
                               </FormGroup>
+
                               <FormGroup>
                                 <Label>Unit</Label>
                                 <Input
@@ -760,6 +802,30 @@ function TestDetails() {
                           </ParameterCard>
                         );
                       })}
+
+                      <EditButton
+                        type="button"
+                        onClick={toggleParameterEditMode}
+                      >
+                        <Edit size={16} />
+                        {parameterEditMode ? "Cancel Edit" : "Edit Remarks"}
+                      </EditButton>
+
+                      {/* Common Parameter Remarks Section */}
+                      {parameterEditMode && (
+                        <RemarksSection>
+                          <FormGroup>
+                            <Label>
+                              Parameter Remarks (Common for all parameters)
+                            </Label>
+                            <TextArea
+                              value={parameterRemarks || ""}
+                              onChange={handleParameterRemarksChange}
+                              placeholder="Enter common remarks for all parameters"
+                            />
+                          </FormGroup>
+                        </RemarksSection>
+                      )}
                     </ParameterSection>
                   )}
               </TestContent>

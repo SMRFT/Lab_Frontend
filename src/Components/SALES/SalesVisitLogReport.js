@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faFilter, faCalendarDay, faCalendarWeek, faCalendarAlt, faUser } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import styled from "styled-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faDownload,
+  faFilter,
+  faCalendarDay,
+  faCalendarWeek,
+  faCalendarAlt,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 // Styled Components
 const PageContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
 `;
 
 const Header = styled.header`
@@ -66,7 +74,7 @@ const Select = styled.select`
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1rem;
-  
+
   &:focus {
     outline: none;
     border-color: #4299e1;
@@ -82,7 +90,7 @@ const DateInput = styled.input`
   font-size: 0.875rem;
   line-height: 1.5;
   color: #4a5568;
-  
+
   &:focus {
     outline: none;
     border-color: #4299e1;
@@ -95,20 +103,20 @@ const Button = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: ${props => props.primary ? '#4299e1' : 'white'};
-  color: ${props => props.primary ? 'white' : '#4a5568'};
-  border: 1px solid ${props => props.primary ? '#4299e1' : '#e2e8f0'};
+  background-color: ${(props) => (props.primary ? "#4299e1" : "white")};
+  color: ${(props) => (props.primary ? "white" : "#4a5568")};
+  border: 1px solid ${(props) => (props.primary ? "#4299e1" : "#e2e8f0")};
   border-radius: 6px;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
-    background-color: ${props => props.primary ? '#3182ce' : '#f7fafc'};
+    background-color: ${(props) => (props.primary ? "#3182ce" : "#f7fafc")};
   }
-  
+
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
@@ -126,7 +134,7 @@ const Table = styled.table`
 
 const TableHead = styled.thead`
   background-color: #f7fafc;
-  
+
   th {
     padding: 1rem;
     text-align: left;
@@ -136,6 +144,16 @@ const TableHead = styled.thead`
     border-bottom: 1px solid #e2e8f0;
     white-space: nowrap;
   }
+
+  th:nth-child(1) {
+    min-width: 100px;
+    width: 120px;
+  }
+
+  th:nth-child(2) {
+    min-width: 120px;
+    width: 140px;
+  }
 `;
 
 const TableBody = styled.tbody`
@@ -143,16 +161,26 @@ const TableBody = styled.tbody`
     &:hover {
       background-color: #f7fafc;
     }
-    
+
     &:not(:last-child) td {
       border-bottom: 1px solid #e2e8f0;
     }
   }
-  
+
   td {
     padding: 1rem;
     font-size: 0.875rem;
     color: #4a5568;
+  }
+
+  td:nth-child(1) {
+    min-width: 100px;
+    width: 120px;
+  }
+
+  td:nth-child(2) {
+    min-width: 120px;
+    width: 140px;
   }
 `;
 
@@ -206,6 +234,21 @@ const SummaryValue = styled.p`
   color: #2d3748;
 `;
 
+// Helper function to get current date in YYYY-MM-DD format
+const getCurrentDate = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
+};
+
+// Helper function to format date as dd-mm-yy
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear().toString().slice(-2);
+  return `${day}-${month}-${year}`;
+};
+
 // Main Component
 const SalesVisitLogReport = () => {
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
@@ -216,9 +259,9 @@ const SalesVisitLogReport = () => {
   const [loading, setLoading] = useState(false);
 
   const [filter, setFilter] = useState({
-    fromDate: '',
-    toDate: '',
-    salesPerson: '',
+    fromDate: getCurrentDate(),
+    toDate: getCurrentDate(),
+    salesPerson: "",
   });
 
   useEffect(() => {
@@ -250,7 +293,7 @@ const SalesVisitLogReport = () => {
       setLogs(response.data);
       updateVisitCounts(response.data);
     } catch (error) {
-      console.error('Error fetching logs:', error);
+      console.error("Error fetching logs:", error);
     } finally {
       setLoading(false);
     }
@@ -258,17 +301,19 @@ const SalesVisitLogReport = () => {
 
   const fetchSalesMapping = async () => {
     try {
-      const url = `${Labbaseurl}SalesVisitLog/`;
+      const url = `${Labbaseurl}registration/`;
       const response = await axios.get(url);
 
-      const salesMappingSet = new Set(response.data.map(item => item.salesMapping).filter(Boolean));
       const salesMappingArray = [
-        { id: 0, name: 'All' },
-        ...Array.from(salesMappingSet).map((name, index) => ({ id: index + 1, name }))
+        { id: 0, name: "All" },
+        ...response.data.map((person, index) => ({
+          id: index + 1,
+          name: person.name,
+        })),
       ];
       setSalesMapping(salesMappingArray);
     } catch (error) {
-      console.error('Error fetching salesMapping:', error);
+      console.error("Error fetching salesMapping:", error);
     }
   };
 
@@ -277,50 +322,67 @@ const SalesVisitLogReport = () => {
     let total = 0;
 
     data.forEach((log) => {
-      const name = log.salesPersonName || 'Unknown';
+      const name = log.salesPersonName || "Unknown";
       const visits = parseInt(log.noOfVisits, 10) || 0;
       visitCounts[name] = (visitCounts[name] || 0) + visits;
       total += visits;
     });
 
-    const visitData = Object.entries(visitCounts).map(([name, count]) => ({ name, count }));
+    const visitData = Object.entries(visitCounts).map(([name, count]) => ({
+      name,
+      count,
+    }));
     setSalespersonVisits(visitData);
     setTotalVisits(total);
   };
 
   const handleFilterChange = (key, value) => {
-    setFilter(prev => ({ ...prev, [key]: value }));
+    setFilter((prev) => ({ ...prev, [key]: value }));
   };
 
-const downloadCSV = () => {
-  const escapeCSV = (value) => {
-    if (value == null) return ''; // handles undefined/null
-    const str = value.toString().replace(/"/g, '""'); // escape quotes
-    return `"${str}"`; // wrap in quotes
+  const downloadCSV = () => {
+    const escapeCSV = (value) => {
+      if (value == null) return ""; // handles undefined/null
+      const str = value.toString().replace(/"/g, '""'); // escape quotes
+      return `"${str}"`; // wrap in quotes
+    };
+
+    const csvRows = [
+      [
+        "Date",
+        "Time",
+        "Salesperson",
+        "Clinical Name",
+        "Type",
+        "Person Who Met",
+        "Designation",
+        "Location",
+        "Visits",
+        "Comments",
+      ],
+      ...logs.map((log) => [
+        escapeCSV(formatDate(log.date)),
+        escapeCSV(log.time || "N/A"),
+        escapeCSV(log.salesMapping || "N/A"),
+        escapeCSV(log.clinicalname || "N/A"),
+        escapeCSV(log.type || "N/A"),
+        escapeCSV(log.personMet || "N/A"),
+        escapeCSV(log.designation || "N/A"),
+        escapeCSV(log.location || "N/A"),
+        escapeCSV(log.noOfVisits || 0),
+        escapeCSV(log.comments || "No comments"),
+      ]),
+    ];
+
+    const csvContent = csvRows.map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "sales_visit_log.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   };
-
-  const csvRows = [
-    ['Date', 'Time', 'Clinical Name', 'Salesperson', 'No of Visits', 'Comments'],
-    ...logs.map(log => [
-      escapeCSV(new Date(log.date).toLocaleDateString()),
-      escapeCSV(log.time || 'N/A'),
-      escapeCSV(log.clinicalname || 'N/A'),
-      escapeCSV(log.salesPersonName || 'N/A'),
-      escapeCSV(log.noOfVisits || 0),
-      escapeCSV(log.comments || 'No comments'),
-    ]),
-  ];
-
-  const csvContent = csvRows.map(row => row.join(',')).join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'sales_visit_log.csv';
-  link.click();
-  URL.revokeObjectURL(url);
-};
-
 
   return (
     <PageContainer>
@@ -337,7 +399,7 @@ const downloadCSV = () => {
           <DateInput
             type="date"
             value={filter.fromDate}
-            onChange={(e) => handleFilterChange('fromDate', e.target.value)}
+            onChange={(e) => handleFilterChange("fromDate", e.target.value)}
           />
         </FilterGroup>
 
@@ -349,7 +411,7 @@ const downloadCSV = () => {
           <DateInput
             type="date"
             value={filter.toDate}
-            onChange={(e) => handleFilterChange('toDate', e.target.value)}
+            onChange={(e) => handleFilterChange("toDate", e.target.value)}
           />
         </FilterGroup>
 
@@ -358,12 +420,15 @@ const downloadCSV = () => {
             <FontAwesomeIcon icon={faUser} />
             Salesperson:
           </FilterLabel>
-          <Select 
-            value={filter.salesPerson} 
-            onChange={(e) => handleFilterChange('salesPerson', e.target.value)}
+          <Select
+            value={filter.salesPerson}
+            onChange={(e) => handleFilterChange("salesPerson", e.target.value)}
           >
             {salesMapping.map((person) => (
-              <option key={person.id} value={person.name === 'All' ? '' : person.name}>
+              <option
+                key={person.id}
+                value={person.name === "All" ? "" : person.name}
+              >
                 {person.name}
               </option>
             ))}
@@ -379,10 +444,14 @@ const downloadCSV = () => {
       <Table>
         <TableHead>
           <tr>
-            <th>Clinical Name</th>
-            <th>Salesperson</th>
             <th>Date</th>
             <th>Time</th>
+            <th>Salesperson</th>
+            <th>Clinical Name</th>
+            <th>Type</th>
+            <th>Person Who Met</th>
+            <th>Designation</th>
+            <th>Location</th>
             <th>Visits</th>
             <th>Comments</th>
           </tr>
@@ -390,22 +459,26 @@ const downloadCSV = () => {
         <TableBody>
           {loading ? (
             <EmptyRow>
-              <td colSpan={6}>Loading data...</td>
+              <td colSpan={10}>Loading data...</td>
             </EmptyRow>
           ) : logs.length > 0 ? (
             logs.map((log, index) => (
               <tr key={index}>
-                <td>{log.clinicalname || 'N/A'}</td>
-                <td>{log.salesMapping || 'N/A'}</td>
-                <td>{new Date(log.date).toLocaleDateString()}</td>
-                <td>{log.time || 'N/A'}</td>
+                <td>{formatDate(log.date)}</td>
+                <td>{log.time || "N/A"}</td>
+                <td>{log.salesMapping || "N/A"}</td>
+                <td>{log.clinicalname || "N/A"}</td>
+                <td>{log.type || "N/A"}</td>
+                <td>{log.personMet || "N/A"}</td>
+                <td>{log.designation || "N/A"}</td>
+                <td>{log.location || "N/A"}</td>
                 <td>{log.noOfVisits || 0}</td>
-                <td>{log.comments || 'No comments'}</td>
+                <td>{log.comments || "No comments"}</td>
               </tr>
             ))
           ) : (
             <EmptyRow>
-              <td colSpan={6}>No data available for the selected filters.</td>
+              <td colSpan={10}>No data available for the selected filters.</td>
             </EmptyRow>
           )}
         </TableBody>
@@ -414,18 +487,16 @@ const downloadCSV = () => {
       <SummarySection>
         <SummaryTitle>Performance Summary</SummaryTitle>
         <SummaryGrid>
-          <SummaryCard>
+          <SummaryCard
+            style={{
+              gridColumn: "1 / -1",
+              maxWidth: "300px",
+              margin: "0 auto",
+            }}
+          >
             <SummaryLabel>Total Visits</SummaryLabel>
             <SummaryValue>{totalVisits}</SummaryValue>
           </SummaryCard>
-
-          {salespersonVisits.map((person, index) => (
-            <SummaryCard key={index}>
-              <SummaryLabel>{person.name}</SummaryLabel>
-              <SummaryValue>{person.count}</SummaryValue>
-              <SummaryLabel>visits</SummaryLabel>
-            </SummaryCard>
-          ))}
         </SummaryGrid>
       </SummarySection>
     </PageContainer>

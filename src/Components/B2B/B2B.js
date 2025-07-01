@@ -1,41 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import styled, { createGlobalStyle } from 'styled-components';
-import { Save, ChevronRight, ChevronLeft, Mail, Phone, Check } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import styled, { createGlobalStyle } from "styled-components";
+import {
+  Save,
+  ChevronRight,
+  ChevronLeft,
+  Mail,
+  Phone,
+  Check,
+} from "lucide-react";
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
-  :root {
-    --primary: #4361ee;
-    --primary-light: #4895ef;
-    --primary-dark: #3a0ca3;
-    --secondary: #3f37c9;
-    --success: #4cc9f0;
-    --danger: #f72585;
-    --warning: #f8961e;
-    --info: #90e0ef;
-    --light: #f8f9fa;
-    --dark: #212529;
-    --gray: #6c757d;
-    --gray-light: #e9ecef;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #f5f7fb;
-    color: var(--dark);
-    line-height: 1.5;
-  }
+ :root {
+ --primary: #4361ee;
+ --primary-light: #4895ef;
+ --primary-dark: #3a0ca3;
+ --secondary: #3f37c9;
+ --success: #4cc9f0;
+ --danger: #f72585;
+ --warning: #f8961e;
+ --info: #90e0ef;
+ --light: #f8f9fa;
+ --dark: #212529;
+ --gray: #6c757d;
+ --gray-light: #e9ecef;
+ --border-radius: 8px;
+ --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+ --transition: all 0.3s ease;
+ }
+ 
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ }
+ 
+ body {
+ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+ Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+ background-color: #f5f7fb;
+ color: var(--dark);
+ line-height: 1.5;
+ }
 `;
 
 // Container for the main content
@@ -43,7 +50,7 @@ const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
@@ -63,7 +70,7 @@ const CardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
@@ -87,15 +94,15 @@ const TabContainer = styled.div`
   border-bottom: 1px solid var(--gray-light);
   margin-bottom: 1.5rem;
   overflow-x: auto;
-  
+
   &::-webkit-scrollbar {
     height: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: var(--gray-light);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background-color: var(--gray);
     border-radius: 20px;
@@ -108,15 +115,16 @@ const Tab = styled.button`
   border: none;
   font-size: 0.875rem;
   font-weight: 600;
-  color: ${props => props.active ? 'var(--primary)' : 'var(--gray)'};
-  border-bottom: 2px solid ${props => props.active ? 'var(--primary)' : 'transparent'};
+  color: ${(props) => (props.active ? "var(--primary)" : "var(--gray)")};
+  border-bottom: 2px solid
+    ${(props) => (props.active ? "var(--primary)" : "transparent")};
   cursor: pointer;
   white-space: nowrap;
   transition: var(--transition);
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  
+
   &:hover {
     color: var(--primary);
   }
@@ -149,7 +157,7 @@ const FormRow = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -169,13 +177,15 @@ const Label = styled.label`
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  
-  ${props => props.required && `
-    &::after {
-      content: '*';
-      color: var(--danger);
-    }
-  `}
+
+  ${(props) =>
+    props.required &&
+    `
+ &::after {
+ content: '*';
+ color: var(--danger);
+ }
+ `}
 `;
 
 const Input = styled.input`
@@ -184,16 +194,18 @@ const Input = styled.input`
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   transition: var(--transition);
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
   }
-  
-  ${props => props.hasIcon && `
-    padding-left: 2.5rem;
-  `}
+
+  ${(props) =>
+    props.hasIcon &&
+    `
+ padding-left: 2.5rem;
+ `}
 `;
 
 const Select = styled.select`
@@ -203,7 +215,7 @@ const Select = styled.select`
   font-size: 0.875rem;
   transition: var(--transition);
   background-color: white;
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
@@ -239,7 +251,7 @@ const Textarea = styled.textarea`
   transition: var(--transition);
   resize: vertical;
   min-height: 100px;
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
@@ -274,18 +286,20 @@ const Button = styled.button`
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: ${props => props.primary ? 'var(--primary)' : 'white'};
-  color: ${props => props.primary ? 'white' : 'var(--gray)'};
-  border: 1px solid ${props => props.primary ? 'var(--primary)' : 'var(--gray-light)'};
+  background-color: ${(props) => (props.primary ? "var(--primary)" : "white")};
+  color: ${(props) => (props.primary ? "white" : "var(--gray)")};
+  border: 1px solid
+    ${(props) => (props.primary ? "var(--primary)" : "var(--gray-light)")};
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   font-weight: 500;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   transition: var(--transition);
-  opacity: ${props => props.disabled ? '0.7' : '1'};
-  
+  opacity: ${(props) => (props.disabled ? "0.7" : "1")};
+
   &:hover {
-    background-color: ${props => props.primary ? 'var(--primary-dark)' : 'var(--gray-light)'};
+    background-color: ${(props) =>
+      props.primary ? "var(--primary-dark)" : "var(--gray-light)"};
   }
 `;
 
@@ -312,7 +326,7 @@ const ProgressBar = styled.div`
 const ProgressFill = styled.div`
   height: 100%;
   background-color: var(--primary);
-  width: ${props => props.progress}%;
+  width: ${(props) => props.progress}%;
   transition: width 0.3s ease;
 `;
 
@@ -323,18 +337,22 @@ const Alert = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  
-  ${props => props.type === 'success' && `
-    background-color: rgba(76, 201, 240, 0.1);
-    border-left: 4px solid var(--success);
-    color: var(--primary-dark);
-  `}
-  
-  ${props => props.type === 'error' && `
-    background-color: rgba(247, 37, 133, 0.1);
-    border-left: 4px solid var(--danger);
-    color: var(--danger);
-  `}
+
+  ${(props) =>
+    props.type === "success" &&
+    `
+ background-color: rgba(76, 201, 240, 0.1);
+ border-left: 4px solid var(--success);
+ color: var(--primary-dark);
+ `}
+
+  ${(props) =>
+    props.type === "error" &&
+    `
+ background-color: rgba(247, 37, 133, 0.1);
+ border-left: 4px solid var(--danger);
+ color: var(--danger);
+ `}
 `;
 
 const LoadingSpinner = styled.div`
@@ -344,10 +362,14 @@ const LoadingSpinner = styled.div`
   width: 16px;
   height: 16px;
   animation: spin 1s linear infinite;
-  
+
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -366,15 +388,23 @@ const Toast = styled.div`
   gap: 0.5rem;
   z-index: 1000;
   animation: slideIn 0.3s ease, fadeOut 0.5s ease 3.5s forwards;
-  
+
   @keyframes slideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
   }
-  
+
   @keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
   }
 `;
 
@@ -399,10 +429,10 @@ const B2B = () => {
     phone: "",
     alternateNumber: "",
     address: "",
-    area: "", 
-    state: "", 
-    city: "", 
-    pincode: "", 
+    area: "",
+    state: "",
+    city: "",
+    pincode: "",
 
     // Finance Tab
     b2bType: "",
@@ -420,7 +450,7 @@ const B2B = () => {
         const response = await axios.get(`${Labbaseurl}registration/`);
         setSalesPersons(response.data);
       } catch (error) {
-        console.error('Error fetching sales persons:', error);
+        console.error("Error fetching sales persons:", error);
       } finally {
         setIsLoading(false);
       }
@@ -431,16 +461,38 @@ const B2B = () => {
 
   // Tab management object
   const tabConfig = {
-    general: ["clinicalname", "referrerCode", "type", "salesMapping", "reportDelivery", "report"],
-    communication: ["email", "phone", "alternateNumber", "address", "area", "state", "city", "pincode"],
-    finance: ["b2bType", "creditType", "mouCopy", "creditLimit", "invoicePeriod"]
+    general: [
+      "clinicalname",
+      "referrerCode",
+      "type",
+      "salesMapping",
+      "reportDelivery",
+      "report",
+    ],
+    communication: [
+      "email",
+      "phone",
+      "alternateNumber",
+      "address",
+      "area",
+      "state",
+      "city",
+      "pincode",
+    ],
+    finance: [
+      "b2bType",
+      "creditType",
+      "mouCopy",
+      "creditLimit",
+      "invoicePeriod",
+    ],
   };
 
   // Validation functions for each tab
   const tabValidations = {
     general: () => formData.clinicalname.trim() !== "",
     communication: () => true, // No mandatory fields in communication
-    finance: () => formData.b2bType !== "" 
+    finance: () => formData.b2bType !== "",
   };
 
   // Fetch last referrer code on component mount
@@ -462,9 +514,11 @@ const B2B = () => {
     try {
       const response = await axios.get(`${Labbaseurl}clinical_name/last/`);
       const lastReferrerCode = response.data?.referrerCode || "SD0000";
-      const nextReferrerCode = `SD${String(parseInt(lastReferrerCode.substring(2), 10) + 1).padStart(4, "0")}`;
-  
-      setFormData(prev => ({
+      const nextReferrerCode = `SD${String(
+        parseInt(lastReferrerCode.substring(2), 10) + 1
+      ).padStart(4, "0")}`;
+
+      setFormData((prev) => ({
         ...prev,
         referrerCode: nextReferrerCode,
       }));
@@ -475,74 +529,73 @@ const B2B = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'file' ? (files[0] || null) : value
+      [name]: type === "file" ? files[0] || null : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-  
+
     try {
-        const submitFormData = new FormData();
-        
-        Object.keys(formData).forEach((key) => {
-            if (formData[key] !== null && formData[key] !== "") {
-                if (key === 'mouCopy' && formData[key] instanceof File) {
-                    submitFormData.append(key, formData[key], formData[key].name);
-                } else {
-                    submitFormData.append(key, formData[key]);
-                }
-            }
-        });
+      const submitFormData = new FormData();
 
-        // Submit directly to clinical_name endpoint - status will be set automatically
-        const response = await axios.post(
-            `${Labbaseurl}clinical_name/`,
-            submitFormData,
-            {
-                headers: { "Content-Type": "multipart/form-data" },
-            }
-        );
+      Object.keys(formData).forEach((key) => {
+        if (formData[key] !== null && formData[key] !== "") {
+          if (key === "mouCopy" && formData[key] instanceof File) {
+            submitFormData.append(key, formData[key], formData[key].name);
+          } else {
+            submitFormData.append(key, formData[key]);
+          }
+        }
+      });
 
-        // console.log("Submission successful:", response.data);
-        
-        // Show success toast
-        setShowToast(true);
-        
-        // Reset form after successful submission
-        setFormData({
-            clinicalname: '',
-            referrerCode: '',
-            type: '',
-            salesMapping: '',
-            reportDelivery: '',
-            report: '',
-            email: '',
-            phone: '',
-            alternateNumber: '',
-            address: '',
-            area: '', 
-            state: '', 
-            city: '', 
-            pincode: '', 
-            b2bType: '',
-            creditType: '',
-            mouCopy: null,
-            creditLimit: '',
-            invoicePeriod: '',
-        });
+      // Submit directly to clinical_name endpoint - status will be set automatically
+      const response = await axios.post(
+        `${Labbaseurl}clinical_name/`,
+        submitFormData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-        setActiveTab("general");
-        handleGetLastReferrerCode();
+      // console.log("Submission successful:", response.data);
 
+      // Show success toast
+      setShowToast(true);
+
+      // Reset form after successful submission
+      setFormData({
+        clinicalname: "",
+        referrerCode: "",
+        type: "",
+        salesMapping: "",
+        reportDelivery: "",
+        report: "",
+        email: "",
+        phone: "",
+        alternateNumber: "",
+        address: "",
+        area: "",
+        state: "",
+        city: "",
+        pincode: "",
+        b2bType: "",
+        creditType: "",
+        mouCopy: null,
+        creditLimit: "",
+        invoicePeriod: "",
+      });
+
+      setActiveTab("general");
+      handleGetLastReferrerCode();
     } catch (error) {
-        console.error("Error adding clinical name:", error);
+      console.error("Error adding clinical name:", error);
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -557,7 +610,7 @@ const B2B = () => {
     e.preventDefault(); // Prevent default form submission behavior
     const tabs = ["general", "communication", "finance"];
     const currentIndex = tabs.indexOf(activeTab);
-    
+
     // Validate current tab before moving
     if (!tabValidations[activeTab]()) {
       alert(`Please complete the ${activeTab} tab requirements`);
@@ -573,7 +626,7 @@ const B2B = () => {
     e.preventDefault(); // Prevent default form submission behavior
     const tabs = ["general", "communication", "finance"];
     const currentIndex = tabs.indexOf(activeTab);
-    
+
     if (currentIndex > 0) {
       setActiveTab(tabs[currentIndex - 1]);
     }
@@ -592,14 +645,14 @@ const B2B = () => {
           <CardHeader>
             <Title>B2B Master</Title>
           </CardHeader>
-          
+
           <CardBody>
             <Form onSubmit={(e) => e.preventDefault()}>
               <TabContainer>
                 {Object.keys(tabConfig).map((tab) => (
-                  <Tab 
+                  <Tab
                     key={tab}
-                    active={activeTab === tab} 
+                    active={activeTab === tab}
                     onClick={() => handleTabSwitch(tab)}
                     type="button" // Add type="button" to prevent form submission
                   >
@@ -607,19 +660,19 @@ const B2B = () => {
                   </Tab>
                 ))}
               </TabContainer>
-              
+
               {/* General Tab */}
               {activeTab === "general" && (
                 <FormSection>
-                  <SectionTitle>General Information</SectionTitle>                 
+                  <SectionTitle>General Information</SectionTitle>
                   <FormRow>
                     <FormGroup>
                       <Label required>Clinical Name</Label>
-                      <Input 
-                        type="text" 
-                        name="clinicalname" 
-                        value={formData.clinicalname} 
-                        onChange={handleInputChange} 
+                      <Input
+                        type="text"
+                        name="clinicalname"
+                        value={formData.clinicalname}
+                        onChange={handleInputChange}
                         placeholder="Enter clinical name"
                         required
                       />
@@ -639,22 +692,22 @@ const B2B = () => {
                       <Label>Type</Label>
                       <RadioGroup>
                         <RadioLabel>
-                          <input 
-                            type="radio" 
-                            name="type" 
-                            value="Standalone Lab" 
-                            checked={formData.type === "Standalone Lab"} 
-                            onChange={handleInputChange} 
+                          <input
+                            type="radio"
+                            name="type"
+                            value="Standalone Lab"
+                            checked={formData.type === "Standalone Lab"}
+                            onChange={handleInputChange}
                           />
                           Standalone Lab
                         </RadioLabel>
                         <RadioLabel>
-                          <input 
-                            type="radio" 
-                            name="type" 
-                            value="Hospital" 
-                            checked={formData.type === "Hospital"} 
-                            onChange={handleInputChange} 
+                          <input
+                            type="radio"
+                            name="type"
+                            value="Hospital"
+                            checked={formData.type === "Hospital"}
+                            onChange={handleInputChange}
                           />
                           Hospital
                         </RadioLabel>
@@ -663,25 +716,25 @@ const B2B = () => {
                   </FormRow>
 
                   <FormRow>
-                  <FormGroup>
-                    <Label>Sales Mapping</Label>
-                    {isLoading ? (
-                      <p>Loading sales persons...</p>
-                    ) : (
-                      <Select
-                        name="salesMapping" 
-                        value={formData.salesMapping} 
-                        onChange={handleInputChange} 
-                      >
-                        <option value="">Select Sales Person</option>
-                        {salesPersons.map((person) => (
-                          <option key={person._id} value={person.name}>
-                            {person.name}
-                          </option>
-                        ))}
-                      </Select>
-                    )}
-                  </FormGroup>
+                    <FormGroup>
+                      <Label>Sales Mapping</Label>
+                      {isLoading ? (
+                        <p>Loading sales persons...</p>
+                      ) : (
+                        <Select
+                          name="salesMapping"
+                          value={formData.salesMapping}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select Sales Person</option>
+                          {salesPersons.map((person) => (
+                            <option key={person._id} value={person.name}>
+                              {person.name}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
+                    </FormGroup>
                     <FormGroup>
                       <Label>Report Delivery</Label>
                       <Select
@@ -699,22 +752,22 @@ const B2B = () => {
                       <Label>Report</Label>
                       <RadioGroup>
                         <RadioLabel>
-                          <input 
-                            type="radio" 
-                            name="report" 
-                            value="With Letterpad" 
-                            checked={formData.report === "With Letterpad"} 
-                            onChange={handleInputChange} 
+                          <input
+                            type="radio"
+                            name="report"
+                            value="With Letterpad"
+                            checked={formData.report === "With Letterpad"}
+                            onChange={handleInputChange}
                           />
                           With Letterpad
                         </RadioLabel>
                         <RadioLabel>
-                          <input 
-                            type="radio" 
-                            name="report" 
-                            value="Without Letterpad" 
-                            checked={formData.report === "Without Letterpad"} 
-                            onChange={handleInputChange} 
+                          <input
+                            type="radio"
+                            name="report"
+                            value="Without Letterpad"
+                            checked={formData.report === "Without Letterpad"}
+                            onChange={handleInputChange}
                           />
                           Without Letterpad
                         </RadioLabel>
@@ -830,7 +883,7 @@ const B2B = () => {
                   </FormRow>
                 </FormSection>
               )}
-              
+
               {/* Finance Tab */}
               {activeTab === "finance" && (
                 <FormSection>
@@ -847,22 +900,22 @@ const B2B = () => {
                             checked={formData.b2bType === "Cash"}
                             onChange={handleInputChange}
                           />
-                          Cash & Carry
+                          Cash
                         </RadioLabel>
                         <RadioLabel>
                           <RadioInput
                             type="radio"
                             name="b2bType"
-                            value="Carry Credit"
-                            checked={formData.b2bType === "Carry Credit"}
+                            value="Credit"
+                            checked={formData.b2bType === "Credit"}
                             onChange={handleInputChange}
                           />
                           Credit
                         </RadioLabel>
                       </RadioGroup>
                     </FormGroup>
-                    
-                    {formData.b2bType === "Carry Credit" && (
+
+                    {formData.b2bType === "Credit" && (
                       <>
                         <FormGroup>
                           <Label>Credit Type</Label>
@@ -923,16 +976,19 @@ const B2B = () => {
                   </FormRow>
                 </FormSection>
               )}
- 
+
               <ProgressContainer>
                 <ProgressText>
-                  Step {["general", "communication", "finance"].indexOf(activeTab) + 1} of 3
+                  Step{" "}
+                  {["general", "communication", "finance"].indexOf(activeTab) +
+                    1}{" "}
+                  of 3
                 </ProgressText>
                 <ProgressBar>
                   <ProgressFill progress={getTabProgress()} />
                 </ProgressBar>
               </ProgressContainer>
-              
+
               <ButtonContainer>
                 <div>
                   {activeTab !== "general" && (
@@ -949,9 +1005,9 @@ const B2B = () => {
                       <ChevronRight size={16} />
                     </Button>
                   ) : (
-                    <Button 
-                      type="button" 
-                      primary 
+                    <Button
+                      type="button"
+                      primary
                       disabled={!tabValidations[activeTab]() || isSubmitting}
                       onClick={handleSubmit}
                     >
@@ -974,7 +1030,7 @@ const B2B = () => {
           </CardBody>
         </Card>
       </Container>
-      
+
       {/* Success Toast */}
       {showToast && (
         <Toast>
