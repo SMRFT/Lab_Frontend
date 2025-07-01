@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   PencilIcon,
   Filter,
@@ -16,21 +16,21 @@ import {
   ArrowDown,
   CheckCircle,
   AlertCircle,
-} from "lucide-react"
-import axios from "axios"
-import { toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
-import { ToastContainer } from "react-toastify"
-import Swal from "sweetalert2"
-import { jsPDF } from "jspdf"
-import "jspdf-autotable"
+} from "lucide-react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+import Swal from "sweetalert2";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 // Import styled components
-import styled, { keyframes, css } from "styled-components"
-import { Calendar, ChevronDown } from "lucide-react"
+import styled, { keyframes, css } from "styled-components";
+import { Calendar, ChevronDown } from "lucide-react";
 
 // Import header and footer images
-import headerImage from "../Images/Header.png"
-import FooterImage from "../Images/Footer.png"
+import headerImage from "../Images/Header.png";
+import FooterImage from "../Images/Footer.png";
 
 // Enhanced animations
 const fadeIn = keyframes`
@@ -42,7 +42,7 @@ const fadeIn = keyframes`
     opacity: 1;
     transform: translateY(0);
   }
-`
+`;
 
 const slideIn = keyframes`
   from {
@@ -53,7 +53,7 @@ const slideIn = keyframes`
     opacity: 1;
     transform: translateX(0);
   }
-`
+`;
 
 const pulse = keyframes`
   0% {
@@ -65,7 +65,7 @@ const pulse = keyframes`
   100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
-`
+`;
 
 const rotate = keyframes`
   from {
@@ -74,7 +74,7 @@ const rotate = keyframes`
   to {
     transform: rotate(360deg);
   }
-`
+`;
 
 const bounceArrow = keyframes`
   0%, 20%, 50%, 80%, 100% {
@@ -86,14 +86,14 @@ const bounceArrow = keyframes`
   60% {
     transform: translateY(-5px);
   }
-`
+`;
 
 export const Container = styled.div`
   padding: 32px;
   background: #f8fafc;
   min-height: 100vh;
   animation: ${fadeIn} 0.5s ease-out;
-`
+`;
 
 export const Header = styled.div`
   display: flex;
@@ -102,7 +102,7 @@ export const Header = styled.div`
   text-align: center;
   margin-bottom: 32px;
   animation: ${fadeIn} 0.6s ease-out;
-`
+`;
 
 export const Title = styled.h1`
   font-size: 32px;
@@ -112,9 +112,9 @@ export const Title = styled.h1`
   font-family: "Poppins", sans-serif;
   letter-spacing: 1px;
   position: relative;
-  
+
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -8px;
     left: 50%;
@@ -124,7 +124,7 @@ export const Title = styled.h1`
     background: linear-gradient(90deg, #3b82f6, #60a5fa);
     border-radius: 3px;
   }
-`
+`;
 
 export const Subtitle = styled.p`
   color: #64748b;
@@ -134,14 +134,14 @@ export const Subtitle = styled.p`
   line-height: 1.6;
   font-family: "Inter", sans-serif;
   margin-top: 16px;
-`
+`;
 
 export const TabsContainer = styled.div`
   display: flex;
   margin-bottom: 24px;
   border-bottom: 1px solid #e2e8f0;
   animation: ${fadeIn} 0.7s ease-out;
-`
+`;
 
 export const Tab = styled.button`
   padding: 16px 24px;
@@ -149,7 +149,8 @@ export const Tab = styled.button`
   font-weight: 600;
   background: none;
   border: none;
-  border-bottom: 3px solid ${(props) => (props.$active ? "#3b82f6" : "transparent")};
+  border-bottom: 3px solid
+    ${(props) => (props.$active ? "#3b82f6" : "transparent")};
   color: ${(props) => (props.$active ? "#3b82f6" : "#64748b")};
   cursor: pointer;
   transition: all 0.3s;
@@ -159,9 +160,9 @@ export const Tab = styled.button`
   &:hover {
     color: ${(props) => (props.$active ? "#3b82f6" : "#1e293b")};
   }
-  
+
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     left: 0;
@@ -171,11 +172,11 @@ export const Tab = styled.button`
     transform: translateX(${(props) => (props.$active ? "0" : "-100%")});
     transition: transform 0.3s ease;
   }
-  
+
   &:hover::before {
     transform: translateX(0);
   }
-`
+`;
 
 export const FiltersRow = styled.div`
   display: flex;
@@ -189,12 +190,12 @@ export const FiltersRow = styled.div`
   flex-wrap: wrap;
   animation: ${fadeIn} 0.8s ease-out;
   transition: all 0.3s ease;
-  
+
   &:hover {
     box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
   }
-`
+`;
 
 export const DateFilterGroup = styled.div`
   display: flex;
@@ -205,7 +206,7 @@ export const DateFilterGroup = styled.div`
   position: relative;
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     right: 0;
     top: 50%;
@@ -214,14 +215,14 @@ export const DateFilterGroup = styled.div`
     width: 1px;
     background: #e2e8f0;
   }
-`
+`;
 
 export const DateInputWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
   flex: 1;
-`
+`;
 
 export const DateInput = styled.input`
   padding: 12px 16px;
@@ -232,7 +233,7 @@ export const DateInput = styled.input`
   width: 100%;
   transition: all 0.3s;
   background: #f8fafc;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -244,7 +245,7 @@ export const DateInput = styled.input`
     border-color: #cbd5e1;
     transform: translateY(-1px);
   }
-`
+`;
 
 export const StyledCalendarIcon = styled(Calendar)`
   position: absolute;
@@ -253,21 +254,21 @@ export const StyledCalendarIcon = styled(Calendar)`
   width: 20px;
   height: 20px;
   transition: color 0.3s;
-  
+
   ${DateInputWrapper}:hover & {
     color: #3b82f6;
   }
-`
+`;
 
 export const SelectWrapper = styled.div`
   position: relative;
   min-width: 240px;
   transition: all 0.3s;
-  
+
   &:hover {
     transform: translateY(-1px);
   }
-`
+`;
 
 export const Select = styled.select`
   appearance: none;
@@ -280,7 +281,7 @@ export const Select = styled.select`
   background-color: #f8fafc;
   cursor: pointer;
   transition: all 0.3s;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -291,7 +292,7 @@ export const Select = styled.select`
   &:hover {
     border-color: #cbd5e1;
   }
-`
+`;
 
 export const StyledChevronDown = styled(ChevronDown)`
   position: absolute;
@@ -303,15 +304,16 @@ export const StyledChevronDown = styled(ChevronDown)`
   height: 20px;
   pointer-events: none;
   transition: transform 0.3s;
-  
+
   ${SelectWrapper}:hover & {
     color: #3b82f6;
     transform: translateY(-50%) rotate(-180deg);
   }
-`
+`;
 
 export const Button = styled.button`
-  background: ${(props) => (props.$primary ? "linear-gradient(90deg, #3b82f6, #60a5fa)" : "#fff")};
+  background: ${(props) =>
+    props.$primary ? "linear-gradient(90deg, #3b82f6, #60a5fa)" : "#fff"};
   color: ${(props) => (props.$primary ? "#fff" : "#3b82f6")};
   padding: 12px 20px;
   border: 1px solid ${(props) => (props.$primary ? "#3b82f6" : "#e2e8f0")};
@@ -325,24 +327,31 @@ export const Button = styled.button`
   gap: 8px;
   position: relative;
   overflow: hidden;
-  
+
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.1)
+    );
     transition: all 0.5s;
   }
-  
+
   &:hover {
-    background: ${(props) => (props.$primary ? "linear-gradient(90deg, #2563eb, #3b82f6)" : "#f8fafc")};
+    background: ${(props) =>
+      props.$primary ? "linear-gradient(90deg, #2563eb, #3b82f6)" : "#f8fafc"};
     border-color: ${(props) => (props.$primary ? "#2563eb" : "#cbd5e1")};
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, ${(props) => (props.$primary ? "0.3" : "0.1")});
-    
+    box-shadow: 0 4px 12px
+      rgba(59, 130, 246, ${(props) => (props.$primary ? "0.3" : "0.1")});
+
     &::before {
       left: 100%;
     }
@@ -350,42 +359,44 @@ export const Button = styled.button`
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(59, 130, 246, ${(props) => (props.$primary ? "0.2" : "0.05")});
+    box-shadow: 0 2px 6px
+      rgba(59, 130, 246, ${(props) => (props.$primary ? "0.2" : "0.05")});
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
-    
+
     &:hover {
       transform: none;
       box-shadow: none;
     }
   }
-  
+
   ${(props) =>
     props.$loading &&
     css`
-    position: relative;
-    color: transparent !important;
-    pointer-events: none;
-    
-    &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 20px;
-      height: 20px;
-      margin: -10px 0 0 -10px;
-      border: 2px solid ${props.$primary ? "rgba(255,255,255,0.2)" : "rgba(59,130,246,0.2)"};
-      border-top-color: ${props.$primary ? "#ffffff" : "#3b82f6"};
-      border-radius: 50%;
-      animation: ${rotate} 0.8s linear infinite;
-    }
-  `}
-`
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid
+          ${props.$primary ? "rgba(255,255,255,0.2)" : "rgba(59,130,246,0.2)"};
+        border-top-color: ${props.$primary ? "#ffffff" : "#3b82f6"};
+        border-radius: 50%;
+        animation: ${rotate} 0.8s linear infinite;
+      }
+    `}
+`;
 
 // New Invoice Success Banner
 export const InvoiceSuccessBanner = styled.div`
@@ -399,14 +410,14 @@ export const InvoiceSuccessBanner = styled.div`
   justify-content: space-between;
   animation: ${fadeIn} 0.5s ease-out;
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
-`
+`;
 
 export const BannerContent = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
-`
+`;
 
 export const BannerText = styled.div`
   h3 {
@@ -414,19 +425,19 @@ export const BannerText = styled.div`
     font-weight: 600;
     margin: 0 0 4px 0;
   }
-  
+
   p {
     font-size: 14px;
     opacity: 0.9;
     margin: 0;
   }
-`
+`;
 
 export const BannerActions = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-`
+`;
 
 export const ArrowPointer = styled.div`
   display: flex;
@@ -434,7 +445,7 @@ export const ArrowPointer = styled.div`
   align-items: center;
   margin: 20px 0;
   animation: ${fadeIn} 0.6s ease-out;
-`
+`;
 
 export const ArrowIcon = styled(ArrowDown)`
   color: #3b82f6;
@@ -442,7 +453,7 @@ export const ArrowIcon = styled(ArrowDown)`
   height: 32px;
   animation: ${bounceArrow} 2s infinite;
   filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
-`
+`;
 
 export const ArrowText = styled.p`
   color: #3b82f6;
@@ -450,7 +461,7 @@ export const ArrowText = styled.p`
   font-weight: 600;
   margin: 8px 0 0 0;
   text-align: center;
-`
+`;
 
 export const TableContainer = styled.div`
   background: white;
@@ -461,19 +472,19 @@ export const TableContainer = styled.div`
   overflow: hidden;
   animation: ${fadeIn} 0.9s ease-out;
   transition: all 0.3s ease;
-  
+
   &:hover {
     box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
   }
-`
+`;
 
 export const TableHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
-`
+`;
 
 export const TableTitle = styled.h3`
   font-size: 20px;
@@ -482,18 +493,18 @@ export const TableTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   svg {
     color: #3b82f6;
   }
-`
+`;
 
 export const Table = styled.table`
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   min-width: 800px;
-`
+`;
 
 export const Th = styled.th`
   background: #f8fafc;
@@ -513,12 +524,12 @@ export const Th = styled.th`
   &:last-child {
     border-top-right-radius: 12px;
   }
-  
+
   &:hover {
     background: #f1f5f9;
     color: #3b82f6;
   }
-`
+`;
 
 export const Td = styled.td`
   padding: 16px;
@@ -533,14 +544,14 @@ export const Td = styled.td`
     font-weight: 600;
     color: #059669;
   `}
-  
+
   ${(props) =>
     props.$pending &&
     `
     font-weight: 600;
     color: #e11d48;
   `}
-`
+`;
 
 export const TableRow = styled.tr`
   transition: all 0.3s;
@@ -551,7 +562,7 @@ export const TableRow = styled.tr`
     transform: translateX(4px);
     box-shadow: -4px 0 0 0 #3b82f6;
   }
-`
+`;
 
 export const IconButton = styled.button`
   background: none;
@@ -576,13 +587,13 @@ export const IconButton = styled.button`
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
   }
-`
+`;
 
 export const ActionContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-`
+`;
 
 export const AmountInput = styled.input`
   padding: 10px 14px;
@@ -593,17 +604,17 @@ export const AmountInput = styled.input`
   font-weight: 600;
   color: #059669;
   transition: all 0.3s;
-  
+
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     transform: scale(1.02);
   }
-  
+
   &:hover {
     border-color: #2563eb;
   }
-`
+`;
 
 export const Checkbox = styled.input`
   width: 18px;
@@ -619,17 +630,17 @@ export const Checkbox = styled.input`
     border-color: #3b82f6;
     animation: ${pulse} 0.5s;
   }
-  
+
   &:hover {
     border-color: #3b82f6;
     transform: scale(1.1);
   }
-`
+`;
 
 export const ScrollContainer = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  
+
   &::-webkit-scrollbar {
     height: 8px;
   }
@@ -648,7 +659,7 @@ export const ScrollContainer = styled.div`
   &::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
-`
+`;
 
 export const Badge = styled.span`
   padding: 4px 8px;
@@ -658,13 +669,13 @@ export const Badge = styled.span`
   font-size: 12px;
   font-weight: 500;
   transition: all 0.3s;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     background: ${(props) => (props.$primary ? "#bfdbfe" : "#e2e8f0")};
   }
-`
+`;
 
 export const SearchContainer = styled.div`
   position: relative;
@@ -672,7 +683,7 @@ export const SearchContainer = styled.div`
   display: flex;
   justify-content: flex-start;
   width: 100%;
-`
+`;
 
 export const SearchInput = styled.input`
   width: 50%;
@@ -691,12 +702,12 @@ export const SearchInput = styled.input`
     width: 60%;
     max-width: 400px;
   }
-  
+
   &:hover {
     border-color: #cbd5e1;
     transform: translateY(-1px);
   }
-`
+`;
 
 export const SearchIconWrapper = styled.div`
   position: absolute;
@@ -705,17 +716,17 @@ export const SearchIconWrapper = styled.div`
   transform: translateY(-50%);
   color: #64748b;
   transition: all 0.3s;
-  
+
   ${SearchContainer}:hover & {
     color: #3b82f6;
     transform: translateY(-50%) scale(1.1);
   }
-`
+`;
 
 export const TabContent = styled.div`
   display: ${(props) => (props.$active ? "block" : "none")};
   animation: ${fadeIn} 0.5s ease-out;
-`
+`;
 
 // Modal Components
 export const ModalOverlay = styled.div`
@@ -731,7 +742,7 @@ export const ModalOverlay = styled.div`
   z-index: 1000;
   animation: ${fadeIn} 0.3s ease-out;
   backdrop-filter: blur(4px);
-`
+`;
 
 export const ModalContainer = styled.div`
   background: white;
@@ -744,7 +755,7 @@ export const ModalContainer = styled.div`
   padding: 0;
   position: relative;
   animation: ${fadeIn} 0.4s ease-out;
-  
+
   &::-webkit-scrollbar {
     width: 8px;
   }
@@ -762,7 +773,7 @@ export const ModalContainer = styled.div`
   &::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
-`
+`;
 
 export const ModalHeader = styled.div`
   display: flex;
@@ -776,7 +787,7 @@ export const ModalHeader = styled.div`
   z-index: 10;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-`
+`;
 
 export const ModalTitle = styled.h3`
   font-size: 20px;
@@ -786,11 +797,11 @@ export const ModalTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   svg {
     color: #3b82f6;
   }
-`
+`;
 
 export const ModalCloseButton = styled.button`
   background: none;
@@ -803,17 +814,17 @@ export const ModalCloseButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
-  
+
   &:hover {
     background: #f1f5f9;
     color: #1e293b;
     transform: rotate(90deg);
   }
-`
+`;
 
 export const ModalBody = styled.div`
   padding: 24px;
-`
+`;
 
 export const ModalFooter = styled.div`
   padding: 16px 24px;
@@ -826,16 +837,16 @@ export const ModalFooter = styled.div`
   background: white;
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 16px;
-`
+`;
 
 export const ModalSection = styled.div`
   margin-bottom: 24px;
   animation: ${fadeIn} 0.5s ease-out;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-`
+`;
 
 export const ModalSectionTitle = styled.h4`
   font-size: 16px;
@@ -845,16 +856,16 @@ export const ModalSectionTitle = styled.h4`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   svg {
     color: #3b82f6;
     transition: transform 0.3s;
   }
-  
+
   &:hover svg {
     transform: rotate(15deg);
   }
-`
+`;
 
 export const AmountCard = styled.div`
   background: ${(props) => props.$color || "#f8fafc"};
@@ -863,43 +874,43 @@ export const AmountCard = styled.div`
   margin-bottom: 16px;
   transition: all 0.3s;
   border: 1px solid transparent;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border-color: ${(props) => {
-      if (props.$color === "#f0f9ff") return "#93c5fd"
-      if (props.$color === "#f0fff4") return "#86efac"
-      if (props.$color === "#fff5f5") return "#fca5a5"
-      if (props.$color === "#fffbeb") return "#fbbf24"
-      return "#e2e8f0"
+      if (props.$color === "#f0f9ff") return "#93c5fd";
+      if (props.$color === "#f0fff4") return "#86efac";
+      if (props.$color === "#fff5f5") return "#fca5a5";
+      if (props.$color === "#fffbeb") return "#fbbf24";
+      return "#e2e8f0";
     }};
   }
-`
+`;
 
 export const AmountRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${(props) => (props.$noMargin ? "0" : "12px")};
-`
+`;
 
 export const AmountLabel = styled.span`
   font-size: 14px;
   color: #64748b;
   font-weight: 500;
-`
+`;
 
 export const AmountValue = styled.div`
   font-size: ${(props) => (props.$large ? "24px" : "16px")};
   font-weight: 700;
   color: ${(props) => props.$color || "#334155"};
   transition: all 0.3s;
-  
+
   &:hover {
     transform: scale(1.05);
   }
-`
+`;
 
 export const EmptyState = styled.div`
   display: flex;
@@ -909,7 +920,7 @@ export const EmptyState = styled.div`
   padding: 40px 20px;
   text-align: center;
   animation: ${fadeIn} 0.5s ease-out;
-`
+`;
 
 export const EmptyStateIcon = styled.div`
   width: 80px;
@@ -920,27 +931,27 @@ export const EmptyStateIcon = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  
+
   svg {
     width: 40px;
     height: 40px;
     color: #94a3b8;
   }
-`
+`;
 
 export const EmptyStateTitle = styled.h4`
   font-size: 18px;
   font-weight: 600;
   color: #334155;
   margin-bottom: 8px;
-`
+`;
 
 export const EmptyStateText = styled.p`
   font-size: 14px;
   color: #64748b;
   margin-bottom: 20px;
   max-width: 400px;
-`
+`;
 
 export const RefreshButton = styled.button`
   background: none;
@@ -955,30 +966,30 @@ export const RefreshButton = styled.button`
   padding: 6px 12px;
   border-radius: 6px;
   transition: all 0.3s;
-  
+
   &:hover {
     background: #f1f5f9;
     transform: translateY(-1px);
   }
-  
+
   svg {
     transition: transform 0.3s;
   }
-  
+
   &:hover svg {
     transform: rotate(180deg);
   }
-  
+
   ${(props) =>
     props.$loading &&
     css`
-    pointer-events: none;
-    
-    svg {
-      animation: ${rotate} 1s linear infinite;
-    }
-  `}
-`
+      pointer-events: none;
+
+      svg {
+        animation: ${rotate} 1s linear infinite;
+      }
+    `}
+`;
 
 // New styled components for proportional credit distribution
 export const ProportionalCreditContainer = styled.div`
@@ -988,7 +999,7 @@ export const ProportionalCreditContainer = styled.div`
   padding: 20px;
   margin-top: 20px;
   animation: ${fadeIn} 0.5s ease-out;
-`
+`;
 
 export const ProportionalTitle = styled.h4`
   color: #1e40af;
@@ -998,15 +1009,15 @@ export const ProportionalTitle = styled.h4`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   svg {
     transition: transform 0.3s;
   }
-  
+
   &:hover svg {
     transform: rotate(15deg);
   }
-`
+`;
 
 export const ProportionalItem = styled.div`
   display: flex;
@@ -1015,36 +1026,36 @@ export const ProportionalItem = styled.div`
   padding: 12px 0;
   border-bottom: 1px dashed #bfdbfe;
   transition: all 0.3s;
-  
+
   &:last-child {
     border-bottom: none;
     padding-bottom: 0;
   }
-  
+
   &:hover {
     background: rgba(59, 130, 246, 0.05);
     padding: 12px 8px;
     border-radius: 6px;
     margin: 0 -8px;
   }
-`
+`;
 
 export const ProportionalPatient = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-`
+`;
 
 export const PatientName = styled.span`
   font-weight: 600;
   color: #1e293b;
   font-size: 14px;
-`
+`;
 
 export const PatientId = styled.span`
   font-size: 12px;
   color: #64748b;
-`
+`;
 
 export const ProportionalAmount = styled.div`
   display: flex;
@@ -1052,16 +1063,16 @@ export const ProportionalAmount = styled.div`
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-`
+`;
 
 export const OriginalAmount = styled.span`
   color: #64748b;
   text-decoration: line-through;
-`
+`;
 
 export const NewAmount = styled.span`
   color: #059669;
-`
+`;
 
 export const PaymentInputRow = styled.div`
   display: flex;
@@ -1069,7 +1080,7 @@ export const PaymentInputRow = styled.div`
   align-items: center;
   margin-bottom: 16px;
   animation: ${slideIn} 0.3s ease-out;
-`
+`;
 
 export const PaymentLabel = styled.label`
   font-size: 14px;
@@ -1077,11 +1088,11 @@ export const PaymentLabel = styled.label`
   color: #64748b;
   min-width: 120px;
   transition: color 0.3s;
-  
+
   ${PaymentInputRow}:hover & {
     color: #3b82f6;
   }
-`
+`;
 
 export const PaymentMethodSelect = styled.select`
   padding: 10px 14px;
@@ -1091,18 +1102,18 @@ export const PaymentMethodSelect = styled.select`
   width: 100%;
   max-width: 200px;
   transition: all 0.3s;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   &:hover {
     border-color: #cbd5e1;
     transform: translateY(-1px);
   }
-`
+`;
 
 export const PaymentDetailsInput = styled.input`
   padding: 10px 14px;
@@ -1112,18 +1123,18 @@ export const PaymentDetailsInput = styled.input`
   width: 100%;
   max-width: 300px;
   transition: all 0.3s;
-  
+
   &:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
-  
+
   &:hover {
     border-color: #cbd5e1;
     transform: translateY(-1px);
   }
-`
+`;
 
 // Payment History Components
 export const PaymentHistoryContainer = styled.div`
@@ -1133,7 +1144,7 @@ export const PaymentHistoryContainer = styled.div`
   padding: 20px;
   margin-top: 20px;
   animation: ${fadeIn} 0.5s ease-out;
-`
+`;
 
 export const PaymentHistoryTitle = styled.h4`
   color: #334155;
@@ -1143,7 +1154,7 @@ export const PaymentHistoryTitle = styled.h4`
   display: flex;
   align-items: center;
   gap: 8px;
-`
+`;
 
 export const PaymentHistoryItem = styled.div`
   display: flex;
@@ -1152,26 +1163,24 @@ export const PaymentHistoryItem = styled.div`
   padding: 12px 0;
   border-bottom: 1px dashed #cbd5e1;
   transition: all 0.3s;
-  
+
   &:last-child {
     border-bottom: none;
     padding-bottom: 0;
   }
-  
+
   &:hover {
     background: rgba(59, 130, 246, 0.05);
     padding: 12px 8px;
     border-radius: 6px;
     margin: 0 -8px;
   }
-`
-
-
+`;
 
 // Enhanced Print Styles - Single Page Only with Header/Footer Images
 export const PrintContainer = styled.div`
   display: none;
-  
+
   @media print {
     display: block !important;
     position: fixed;
@@ -1183,10 +1192,10 @@ export const PrintContainer = styled.div`
     z-index: 9999;
     padding: 0;
     margin: 0;
-    font-family: 'Arial', sans-serif;
+    font-family: "Arial", sans-serif;
     color: #000 !important;
     overflow: hidden;
-    
+
     * {
       -webkit-print-color-adjust: exact !important;
       color-adjust: exact !important;
@@ -1196,13 +1205,13 @@ export const PrintContainer = styled.div`
       page-break-before: avoid !important;
     }
   }
-  
+
   @page {
     size: A4;
     margin: 5mm;
     page-break-after: avoid;
   }
-`
+`;
 
 export const PrintPage = styled.div`
   width: 210mm;
@@ -1217,7 +1226,7 @@ export const PrintPage = styled.div`
   overflow: hidden;
   page-break-after: avoid;
   page-break-inside: avoid;
-  
+
   @media print {
     margin: 0;
     padding: 5mm;
@@ -1228,7 +1237,7 @@ export const PrintPage = styled.div`
     max-height: none;
     overflow: hidden;
   }
-`
+`;
 
 export const PrintHeaderImage = styled.div`
   width: 100%;
@@ -1240,13 +1249,13 @@ export const PrintHeaderImage = styled.div`
   border-radius: 8px;
   margin-bottom: 10px;
   flex-shrink: 0;
-  
+
   @media print {
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-`
+`;
 
 export const PrintFooterImage = styled.div`
   width: 100%;
@@ -1258,13 +1267,13 @@ export const PrintFooterImage = styled.div`
   border-radius: 8px;
   margin-top: auto;
   flex-shrink: 0;
-  
+
   @media print {
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-`
+`;
 
 export const PrintInvoiceHeader = styled.div`
   display: flex;
@@ -1274,11 +1283,11 @@ export const PrintInvoiceHeader = styled.div`
   padding: 10px 0;
   border-bottom: 2px solid #e2e8f0;
   flex-shrink: 0;
-`
+`;
 
 export const PrintInvoiceTitle = styled.div`
   text-align: left;
-`
+`;
 
 export const PrintInvoiceNumber = styled.h1`
   font-size: 24px;
@@ -1286,14 +1295,14 @@ export const PrintInvoiceNumber = styled.h1`
   color: #2563eb;
   margin: 0 0 5px 0;
   letter-spacing: 1px;
-`
+`;
 
 export const PrintInvoiceSubtitle = styled.p`
   font-size: 14px;
   color: #64748b;
   margin: 0;
   font-weight: 500;
-`
+`;
 
 // Print Stats Section - Overall Statistics
 export const PrintStatsSection = styled.div`
@@ -1302,7 +1311,7 @@ export const PrintStatsSection = styled.div`
   gap: 15px;
   margin: 15px 0;
   flex-shrink: 0;
-`
+`;
 
 export const PrintStatCard = styled.div`
   background: #f0f9ff;
@@ -1310,7 +1319,7 @@ export const PrintStatCard = styled.div`
   border-radius: 8px;
   padding: 15px;
   text-align: center;
-  
+
   @media print {
     background: #f0f9ff !important;
     border: 2px solid #3b82f6 !important;
@@ -1318,26 +1327,26 @@ export const PrintStatCard = styled.div`
     color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-`
+`;
 
 export const PrintStatTitle = styled.h3`
   font-size: 14px;
   font-weight: bold;
   color: #1e40af;
   margin: 0 0 8px 0;
-`
+`;
 
 export const PrintStatValue = styled.div`
   font-size: 20px;
   font-weight: bold;
   color: #1e293b;
   margin-bottom: 4px;
-`
+`;
 
 export const PrintStatSubtext = styled.div`
   font-size: 11px;
   color: #64748b;
-`
+`;
 
 export const PrintSummaryGrid = styled.div`
   display: grid;
@@ -1346,14 +1355,14 @@ export const PrintSummaryGrid = styled.div`
   margin: 15px 0;
   flex: 1;
   min-height: 0;
-`
+`;
 
 export const PrintSummaryBox = styled.div`
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 15px;
-  
+
   @media print {
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
@@ -1361,7 +1370,7 @@ export const PrintSummaryBox = styled.div`
     color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-`
+`;
 
 export const PrintSummaryTitle = styled.h3`
   font-size: 16px;
@@ -1371,13 +1380,13 @@ export const PrintSummaryTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   &::before {
-    content: '●';
+    content: "●";
     color: #3b82f6;
     font-size: 12px;
   }
-`
+`;
 
 export const PrintSummaryItem = styled.div`
   display: flex;
@@ -1387,7 +1396,7 @@ export const PrintSummaryItem = styled.div`
   font-size: 12px;
   padding: 4px 0;
   border-bottom: 1px dotted #cbd5e1;
-  
+
   &:last-child {
     margin-bottom: 0;
     padding-top: 8px;
@@ -1397,17 +1406,17 @@ export const PrintSummaryItem = styled.div`
     font-size: 14px;
     color: #1e40af;
   }
-  
+
   span:first-child {
     color: #64748b;
     font-weight: 500;
   }
-  
+
   span:last-child {
     color: #1e293b;
     font-weight: 600;
   }
-`
+`;
 
 // Regeneration Prompt Component
 export const RegenerationPrompt = styled.div`
@@ -1421,7 +1430,7 @@ export const RegenerationPrompt = styled.div`
   justify-content: space-between;
   animation: ${fadeIn} 0.5s ease-out;
   box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
-`
+`;
 
 // Add these styled components after the existing ones
 export const CollapsibleHeader = styled.div`
@@ -1437,19 +1446,19 @@ export const CollapsibleHeader = styled.div`
   transition: all 0.3s ease;
   animation: ${fadeIn} 0.5s ease-out;
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(16, 185, 129, 0.3);
   }
-`
+`;
 
 export const CollapsibleContent = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
-`
+`;
 
 export const CollapsibleText = styled.div`
   h3 {
@@ -1457,21 +1466,22 @@ export const CollapsibleText = styled.div`
     font-weight: 600;
     margin: 0 0 4px 0;
   }
-  
+
   p {
     font-size: 14px;
     opacity: 0.9;
     margin: 0;
   }
-`
+`;
 
 export const CollapsibleArrow = styled(ArrowDown)`
   color: white;
   width: 24px;
   height: 24px;
   transition: transform 0.3s ease;
-  transform: ${(props) => (props.$expanded ? "rotate(180deg)" : "rotate(0deg)")};
-`
+  transform: ${(props) =>
+    props.$expanded ? "rotate(180deg)" : "rotate(0deg)"};
+`;
 
 export const CollapsibleBody = styled.div`
   overflow: hidden;
@@ -1479,7 +1489,7 @@ export const CollapsibleBody = styled.div`
   max-height: ${(props) => (props.$expanded ? "2000px" : "0")};
   opacity: ${(props) => (props.$expanded ? "1" : "0")};
   margin-bottom: ${(props) => (props.$expanded ? "24px" : "0")};
-`
+`;
 
 export const PatientListToggle = styled.div`
   display: flex;
@@ -1489,7 +1499,7 @@ export const PatientListToggle = styled.div`
   font-weight: 500;
   color: white;
   opacity: 0.9;
-`
+`;
 
 // Payment History Model Components
 export const PaymentHistoryModal = styled.div`
@@ -1505,7 +1515,7 @@ export const PaymentHistoryModal = styled.div`
   z-index: 1000;
   animation: ${fadeIn} 0.3s ease-out;
   backdrop-filter: blur(4px);
-`
+`;
 
 export const PaymentHistoryContent = styled.div`
   background: white;
@@ -1516,7 +1526,7 @@ export const PaymentHistoryContent = styled.div`
   overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   animation: ${fadeIn} 0.4s ease-out;
-`
+`;
 
 export const PaymentHistoryHeader = styled.div`
   display: flex;
@@ -1530,11 +1540,11 @@ export const PaymentHistoryHeader = styled.div`
   z-index: 10;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-`
+`;
 
 export const PaymentHistoryBody = styled.div`
   padding: 24px;
-`
+`;
 
 export const PaymentHistoryCard = styled.div`
   background: linear-gradient(135deg, #f8fafc, #f1f5f9);
@@ -1544,70 +1554,70 @@ export const PaymentHistoryCard = styled.div`
   margin-bottom: 16px;
   transition: all 0.3s ease;
   animation: ${slideIn} 0.3s ease-out;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     border-color: #3b82f6;
   }
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-`
+`;
 
 export const PaymentHistoryCardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
-`
+`;
 
 export const PaymentHistoryDate = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-`
+`;
 
 export const PaymentDatePrimary = styled.span`
   font-size: 16px;
   font-weight: 600;
   color: #1e293b;
-`
+`;
 
 export const PaymentDateSecondary = styled.span`
   font-size: 12px;
   color: #64748b;
-`
+`;
 
 export const PaymentHistoryAmount = styled.div`
   text-align: right;
-`
+`;
 
 export const PaymentAmountPrimary = styled.div`
   font-size: 24px;
   font-weight: 700;
   color: #059669;
   margin-bottom: 4px;
-`
+`;
 
 export const PaymentAmountSecondary = styled.div`
   font-size: 12px;
   color: #64748b;
-`
+`;
 
 export const PaymentHistoryDetails = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
   margin-bottom: 16px;
-`
+`;
 
 export const PaymentDetailItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-`
+`;
 
 export const PaymentDetailLabel = styled.span`
   font-size: 12px;
@@ -1615,13 +1625,13 @@ export const PaymentDetailLabel = styled.span`
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-`
+`;
 
 export const PaymentDetailValue = styled.span`
   font-size: 14px;
   font-weight: 600;
   color: #334155;
-`
+`;
 
 export const PaymentMethodBadge = styled.span`
   display: inline-flex;
@@ -1631,62 +1641,63 @@ export const PaymentMethodBadge = styled.span`
   background: ${(props) => {
     switch (props.$method) {
       case "Cash":
-        return "#fef3c7"
+        return "#fef3c7";
       case "Bank Transfer":
-        return "#dbeafe"
+        return "#dbeafe";
       case "UPI":
-        return "#dcfce7"
+        return "#dcfce7";
       case "Credit Card":
-        return "#fce7f3"
+        return "#fce7f3";
       case "Cheque":
-        return "#f3e8ff"
+        return "#f3e8ff";
       default:
-        return "#f1f5f9"
+        return "#f1f5f9";
     }
   }};
   color: ${(props) => {
     switch (props.$method) {
       case "Cash":
-        return "#92400e"
+        return "#92400e";
       case "Bank Transfer":
-        return "#1e40af"
+        return "#1e40af";
       case "UPI":
-        return "#166534"
+        return "#166534";
       case "Credit Card":
-        return "#be185d"
+        return "#be185d";
       case "Cheque":
-        return "#7c3aed"
+        return "#7c3aed";
       default:
-        return "#475569"
+        return "#475569";
     }
   }};
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid ${(props) => {
-    switch (props.$method) {
-      case "Cash":
-        return "#fbbf24"
-      case "Bank Transfer":
-        return "#3b82f6"
-      case "UPI":
-        return "#10b981"
-      case "Credit Card":
-        return "#ec4899"
-      case "Cheque":
-        return "#8b5cf6"
-      default:
-        return "#cbd5e1"
-    }
-  }};
-`
+  border: 1px solid
+    ${(props) => {
+      switch (props.$method) {
+        case "Cash":
+          return "#fbbf24";
+        case "Bank Transfer":
+          return "#3b82f6";
+        case "UPI":
+          return "#10b981";
+        case "Credit Card":
+          return "#ec4899";
+        case "Cheque":
+          return "#8b5cf6";
+        default:
+          return "#cbd5e1";
+      }
+    }};
+`;
 
 export const PaymentHistoryProgress = styled.div`
   background: #f1f5f9;
   border-radius: 8px;
   padding: 12px;
   margin-top: 16px;
-`
+`;
 
 export const PaymentProgressLabel = styled.div`
   display: flex;
@@ -1696,7 +1707,7 @@ export const PaymentProgressLabel = styled.div`
   font-size: 12px;
   font-weight: 500;
   color: #64748b;
-`
+`;
 
 export const PaymentProgressBar = styled.div`
   width: 100%;
@@ -1704,7 +1715,7 @@ export const PaymentProgressBar = styled.div`
   background: #e2e8f0;
   border-radius: 4px;
   overflow: hidden;
-`
+`;
 
 export const PaymentProgressFill = styled.div`
   height: 100%;
@@ -1712,14 +1723,14 @@ export const PaymentProgressFill = styled.div`
   border-radius: 4px;
   transition: width 0.5s ease;
   width: ${(props) => props.$percentage}%;
-`
+`;
 
 export const PaymentHistoryStats = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
-`
+`;
 
 export const PaymentStatCard = styled.div`
   background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
@@ -1728,19 +1739,19 @@ export const PaymentStatCard = styled.div`
   padding: 16px;
   text-align: center;
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(14, 165, 233, 0.2);
   }
-`
+`;
 
 export const PaymentStatValue = styled.div`
   font-size: 24px;
   font-weight: 700;
   color: #0c4a6e;
   margin-bottom: 4px;
-`
+`;
 
 export const PaymentStatLabel = styled.div`
   font-size: 12px;
@@ -1748,7 +1759,7 @@ export const PaymentStatLabel = styled.div`
   color: #0369a1;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-`
+`;
 
 export const EmptyPaymentHistory = styled.div`
   display: flex;
@@ -1757,7 +1768,7 @@ export const EmptyPaymentHistory = styled.div`
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-`
+`;
 
 export const EmptyPaymentIcon = styled.div`
   width: 80px;
@@ -1768,44 +1779,44 @@ export const EmptyPaymentIcon = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  
+
   svg {
     width: 40px;
     height: 40px;
     color: #94a3b8;
   }
-`
+`;
 
 export const EmptyPaymentTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
   color: #334155;
   margin-bottom: 8px;
-`
+`;
 
 export const EmptyPaymentText = styled.p`
   font-size: 14px;
   color: #64748b;
   max-width: 400px;
   line-height: 1.5;
-`
+`;
 
 const B2BPatients = () => {
-  const [activeTab, setActiveTab] = useState("generate")
-  const [patients, setPatients] = useState([])
-  const [clinicalNames, setClinicalNames] = useState([])
-  const [selectedClinicalName, setSelectedClinicalName] = useState("")
-  const [selectedPatients, setSelectedPatients] = useState([])
-  const [invoices, setInvoices] = useState([])
-  const [fromDate, setFromDate] = useState("")
-  const [toDate, setToDate] = useState("")
-  const [editingInvoice, setEditingInvoice] = useState(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [showPrintModal, setShowPrintModal] = useState(false)
-  const [printInvoice, setPrintInvoice] = useState(null)
-  const [lastGeneratedInvoice, setLastGeneratedInvoice] = useState(null)
-  const [showInvoiceSuccess, setShowInvoiceSuccess] = useState(false)
+  const [activeTab, setActiveTab] = useState("generate");
+  const [patients, setPatients] = useState([]);
+  const [clinicalNames, setClinicalNames] = useState([]);
+  const [selectedClinicalName, setSelectedClinicalName] = useState("");
+  const [selectedPatients, setSelectedPatients] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [editingInvoice, setEditingInvoice] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printInvoice, setPrintInvoice] = useState(null);
+  const [lastGeneratedInvoice, setLastGeneratedInvoice] = useState(null);
+  const [showInvoiceSuccess, setShowInvoiceSuccess] = useState(false);
   const [loading, setLoading] = useState({
     patients: false,
     invoices: true,
@@ -1813,143 +1824,160 @@ const B2BPatients = () => {
     generateInvoice: false,
     updateInvoice: false,
     refreshData: false,
-  })
+  });
 
-  const [showPatientList, setShowPatientList] = useState(false)
-  const [showPaymentHistoryModal, setShowPaymentHistoryModal] = useState(false)
-  const [selectedInvoiceForHistory, setSelectedInvoiceForHistory] = useState(null)
+  const [showPatientList, setShowPatientList] = useState(false);
+  const [showPaymentHistoryModal, setShowPaymentHistoryModal] = useState(false);
+  const [selectedInvoiceForHistory, setSelectedInvoiceForHistory] =
+    useState(null);
 
-  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL || "http://localhost:8000/api/"
+  const Labbaseurl =
+    process.env.REACT_APP_BACKEND_LAB_BASE_URL || "http://localhost:8000/api/";
 
   useEffect(() => {
-    fetchClinicalNames()
-    fetchInvoices()
-  }, [])
+    fetchClinicalNames();
+    fetchInvoices();
+  }, []);
 
   useEffect(() => {
     if (selectedClinicalName) {
-      fetchPatients()
+      fetchPatients();
     } else {
-      setPatients([])
+      setPatients([]);
     }
-  }, [selectedClinicalName, fromDate, toDate])
+  }, [selectedClinicalName, fromDate, toDate]);
 
   const fetchClinicalNames = async () => {
     try {
-      setLoading((prev) => ({ ...prev, clinicalNames: true }))
-      const response = await axios.get(`${Labbaseurl}get_clinicalname/`)
-      const carryCredits = response.data.filter((clinical) => clinical.b2bType === "Carry Credit")
-      setClinicalNames(carryCredits)
+      setLoading((prev) => ({ ...prev, clinicalNames: true }));
+      const response = await axios.get(`${Labbaseurl}get_clinicalname/`);
+      const carryCredits = response.data.filter(
+        (clinical) => clinical.b2bType === "Credit"
+      );
+      setClinicalNames(carryCredits);
     } catch (error) {
-      console.error("Error fetching clinical names:", error)
-      toast.error("Failed to load clinical names", { autoClose: 3000 })
+      console.error("Error fetching clinical names:", error);
+      toast.error("Failed to load clinical names", { autoClose: 3000 });
     } finally {
-      setLoading((prev) => ({ ...prev, clinicalNames: false }))
+      setLoading((prev) => ({ ...prev, clinicalNames: false }));
     }
-  }
+  };
 
   const fetchPatients = async () => {
-    if (!selectedClinicalName) return
+    if (!selectedClinicalName) return;
 
     try {
-      setLoading((prev) => ({ ...prev, patients: true }))
-      const queryParams = new URLSearchParams()
-      queryParams.append("clinical_name", selectedClinicalName)
-      queryParams.append("segment", "B2B")
-      queryParams.append("min_credit", "0.01")
-      if (fromDate) queryParams.append("from_date", fromDate)
-      if (toDate) queryParams.append("to_date", toDate)
+      setLoading((prev) => ({ ...prev, patients: true }));
+      const queryParams = new URLSearchParams();
+      queryParams.append("clinical_name", selectedClinicalName);
+      queryParams.append("segment", "B2B");
+      queryParams.append("min_credit", "0.01");
+      if (fromDate) queryParams.append("from_date", fromDate);
+      if (toDate) queryParams.append("to_date", toDate);
 
-      const response = await axios.get(`${Labbaseurl}all-patients/?${queryParams.toString()}`)
+      const response = await axios.get(
+        `${Labbaseurl}all-patients/?${queryParams.toString()}`
+      );
       const filteredData = response.data.filter(
-        (patient) => patient.segment === "B2B" && Number(patient.credit_amount) > 0,
-      )
-      setPatients(filteredData)
+        (patient) =>
+          patient.segment === "B2B" && Number(patient.credit_amount) > 0
+      );
+      setPatients(filteredData);
     } catch (error) {
-      console.error("Error fetching patients:", error)
-      toast.error("Failed to load patients data", { autoClose: 3000 })
+      console.error("Error fetching patients:", error);
+      toast.error("Failed to load patients data", { autoClose: 3000 });
     } finally {
-      setLoading((prev) => ({ ...prev, patients: false }))
+      setLoading((prev) => ({ ...prev, patients: false }));
     }
-  }
+  };
 
   const fetchInvoices = async () => {
     try {
-      setLoading((prev) => ({ ...prev, invoices: true }))
-      const response = await axios.get(`${Labbaseurl}get-invoices/`)
-      setInvoices(response.data)
+      setLoading((prev) => ({ ...prev, invoices: true }));
+      const response = await axios.get(`${Labbaseurl}get-invoices/`);
+      setInvoices(response.data);
     } catch (error) {
-      console.error("Error fetching invoices:", error)
-      toast.error("Failed to load invoices data", { autoClose: 3000 })
+      console.error("Error fetching invoices:", error);
+      toast.error("Failed to load invoices data", { autoClose: 3000 });
     } finally {
-      setLoading((prev) => ({ ...prev, invoices: false }))
+      setLoading((prev) => ({ ...prev, invoices: false }));
     }
-  }
+  };
 
   const handleSelectPatient = (patientId) => {
     setSelectedPatients((prev) =>
-      prev.includes(patientId) ? prev.filter((id) => id !== patientId) : [...prev, patientId],
-    )
-  }
+      prev.includes(patientId)
+        ? prev.filter((id) => id !== patientId)
+        : [...prev, patientId]
+    );
+  };
 
   const handleSelectAll = () => {
-    const filteredPatients = getFilteredPatients()
+    const filteredPatients = getFilteredPatients();
     setSelectedPatients(
-      filteredPatients.length === selectedPatients.length ? [] : filteredPatients.map((p) => p.patient_id),
-    )
-  }
+      filteredPatients.length === selectedPatients.length
+        ? []
+        : filteredPatients.map((p) => p.patient_id)
+    );
+  };
 
   const getFilteredPatients = () => {
     return patients.filter((p) => {
       const isDateMatch =
-        (!fromDate || new Date(p.date) >= new Date(fromDate)) && (!toDate || new Date(p.date) <= new Date(toDate))
-      return isDateMatch
-    })
-  }
+        (!fromDate || new Date(p.date) >= new Date(fromDate)) &&
+        (!toDate || new Date(p.date) <= new Date(toDate));
+      return isDateMatch;
+    });
+  };
 
   const calculateProportionalCredits = (patients, totalPaid, totalCredit) => {
-    const proportionalCredits = []
-    let remainingPaid = Number(totalPaid)
-    const totalCreditNum = Number(totalCredit)
+    const proportionalCredits = [];
+    let remainingPaid = Number(totalPaid);
+    const totalCreditNum = Number(totalCredit);
 
     patients.forEach((patient, index) => {
-      const patientCredit = Number(patient.credit_amount)
-      const proportion = patientCredit / totalCreditNum
+      const patientCredit = Number(patient.credit_amount);
+      const proportion = patientCredit / totalCreditNum;
 
       if (index === patients.length - 1) {
         proportionalCredits.push({
           ...patient,
           proportionalCredit: Math.max(0, remainingPaid).toFixed(2),
           proportion: ((remainingPaid / patientCredit) * 100).toFixed(1),
-        })
+        });
       } else {
-        const proportionalAmount = totalPaid * proportion
+        const proportionalAmount = totalPaid * proportion;
         proportionalCredits.push({
           ...patient,
           proportionalCredit: proportionalAmount.toFixed(2),
           proportion: (proportion * 100).toFixed(1),
-        })
-        remainingPaid -= proportionalAmount
+        });
+        remainingPaid -= proportionalAmount;
       }
-    })
+    });
 
-    return proportionalCredits
-  }
+    return proportionalCredits;
+  };
 
   const handleGenerateInvoice = async () => {
-    const selectedData = patients.filter((p) => selectedPatients.includes(p.patient_id))
+    const selectedData = patients.filter((p) =>
+      selectedPatients.includes(p.patient_id)
+    );
     if (selectedData.length === 0) {
-      toast.warn("Please select at least one patient.", { autoClose: 3000 })
-      return
+      toast.warn("Please select at least one patient.", { autoClose: 3000 });
+      return;
     }
 
     if (!selectedClinicalName) {
-      toast.warn("Please select a clinical name.", { autoClose: 3000 })
-      return
+      toast.warn("Please select a clinical name.", { autoClose: 3000 });
+      return;
     }
 
-    setLoading((prev) => ({ ...prev, generateInvoice: true }))
-    const totalCreditAmount = selectedData.reduce((sum, p) => sum + Number(p.credit_amount), 0)
+    setLoading((prev) => ({ ...prev, generateInvoice: true }));
+    const totalCreditAmount = selectedData.reduce(
+      (sum, p) => sum + Number(p.credit_amount),
+      0
+    );
 
     const invoiceData = {
       clinicalName: selectedClinicalName,
@@ -1964,43 +1992,45 @@ const B2BPatients = () => {
       paymentDetails: {},
       proportionalCredits: [],
       paymentHistory: [],
-    }
+    };
 
     try {
-      await axios.post(`${Labbaseurl}generate-invoice/`, invoiceData)
-      toast.success("Invoice Generated Successfully!", { autoClose: 3000 })
+      await axios.post(`${Labbaseurl}generate-invoice/`, invoiceData);
+      toast.success("Invoice Generated Successfully!", { autoClose: 3000 });
 
       // Set the last generated invoice and show success banner
-      setLastGeneratedInvoice(invoiceData)
-      setShowInvoiceSuccess(true)
+      setLastGeneratedInvoice(invoiceData);
+      setShowInvoiceSuccess(true);
 
-      fetchInvoices()
-      setSelectedPatients([])
+      fetchInvoices();
+      setSelectedPatients([]);
 
       // Auto-hide success banner after 10 seconds
       setTimeout(() => {
-        setShowInvoiceSuccess(false)
-      }, 10000)
+        setShowInvoiceSuccess(false);
+      }, 10000);
     } catch (error) {
-      console.error("Error generating invoice:", error)
-      toast.error("Failed to generate invoice. Please try again.", { autoClose: 3000 })
+      console.error("Error generating invoice:", error);
+      toast.error("Failed to generate invoice. Please try again.", {
+        autoClose: 3000,
+      });
     } finally {
-      setLoading((prev) => ({ ...prev, generateInvoice: false }))
+      setLoading((prev) => ({ ...prev, generateInvoice: false }));
     }
-  }
+  };
 
   const handleEditInvoice = (invoice) => {
     const paymentDetails = invoice.paymentDetails
       ? typeof invoice.paymentDetails === "string"
         ? JSON.parse(invoice.paymentDetails)
         : invoice.paymentDetails
-      : {}
+      : {};
 
     const paymentHistory = invoice.paymentHistory
       ? typeof invoice.paymentHistory === "string"
         ? JSON.parse(invoice.paymentHistory)
         : invoice.paymentHistory
-      : []
+      : [];
 
     setEditingInvoice({
       ...invoice,
@@ -2015,35 +2045,38 @@ const B2BPatients = () => {
       originalPaidAmount: invoice.paidAmount || "0.00",
       originalPendingAmount: invoice.pendingAmount || invoice.totalCreditAmount,
       originalTotalAmount: invoice.totalCreditAmount,
-    })
+    });
 
-    setShowEditModal(true)
-  }
+    setShowEditModal(true);
+  };
 
   const handleUpdateInvoice = async (invoiceNumber) => {
     try {
-      setLoading((prev) => ({ ...prev, updateInvoice: true }))
+      setLoading((prev) => ({ ...prev, updateInvoice: true }));
 
-      const totalAmount = Number.parseFloat(editingInvoice.newAmount)
-      const currentTotalPaid = Number.parseFloat(editingInvoice.currentTotalPaid)
-      const newPaymentAmount = Number.parseFloat(editingInvoice.newPaidAmount)
+      const totalAmount = Number.parseFloat(editingInvoice.newAmount);
+      const currentTotalPaid = Number.parseFloat(
+        editingInvoice.currentTotalPaid
+      );
+      const newPaymentAmount = Number.parseFloat(editingInvoice.newPaidAmount);
 
-      const updatedTotalPaid = currentTotalPaid + newPaymentAmount
-      const pendingAmount = Math.max(0, totalAmount - updatedTotalPaid).toFixed(2)
+      const updatedTotalPaid = currentTotalPaid + newPaymentAmount;
+      const pendingAmount = Math.max(0, totalAmount - updatedTotalPaid).toFixed(
+        2
+      );
 
       const paymentDetails = {
         paymentDate: editingInvoice.paymentDate || "",
         paymentMethod: editingInvoice.paymentMethod || "",
         paymentAmount: newPaymentAmount.toFixed(2),
         details: editingInvoice.paymentDetails || "",
-      }
-
+      };
 
       const proportionalCredits = calculateProportionalCredits(
         editingInvoice.patients || [],
         updatedTotalPaid,
-        totalAmount,
-      )
+        totalAmount
+      );
 
       const paymentHistoryEntry = {
         date: new Date().toISOString(),
@@ -2056,21 +2089,21 @@ const B2BPatients = () => {
         paymentDetails: editingInvoice.paymentDetails,
         proportionalCredits: proportionalCredits,
         updatedBy: localStorage.getItem("name") || "System",
-      }
+      };
 
-      const existingHistory = editingInvoice.paymentHistory || []
-      const updatedHistory = [...existingHistory, paymentHistoryEntry]
+      const existingHistory = editingInvoice.paymentHistory || [];
+      const updatedHistory = [...existingHistory, paymentHistoryEntry];
 
       await axios.put(`${Labbaseurl}update-invoice/${invoiceNumber}/`, {
         totalCreditAmount: editingInvoice.newAmount,
         paidAmount: updatedTotalPaid.toFixed(2),
         pendingAmount: pendingAmount,
-        paymentDetails: JSON.stringify(paymentDetails), 
+        paymentDetails: JSON.stringify(paymentDetails),
         paymentHistory: JSON.stringify(updatedHistory),
         proportionalCredits: JSON.stringify(proportionalCredits),
-      })
+      });
 
-      toast.success("Invoice Updated successfully!", { autoClose: 3000 })
+      toast.success("Invoice Updated successfully!", { autoClose: 3000 });
 
       setInvoices(
         invoices.map((invoice) =>
@@ -2084,19 +2117,19 @@ const B2BPatients = () => {
                 paymentHistory: updatedHistory,
                 proportionalCredits: proportionalCredits,
               }
-            : invoice,
-        ),
-      )
+            : invoice
+        )
+      );
 
-      setEditingInvoice(null)
-      setShowEditModal(false)
+      setEditingInvoice(null);
+      setShowEditModal(false);
     } catch (error) {
-      console.error("Error updating invoice:", error)
-      toast.error("Failed to update invoice", { autoClose: 3000 })
+      console.error("Error updating invoice:", error);
+      toast.error("Failed to update invoice", { autoClose: 3000 });
     } finally {
-      setLoading((prev) => ({ ...prev, updateInvoice: false }))
+      setLoading((prev) => ({ ...prev, updateInvoice: false }));
     }
-  }
+  };
 
   const handleDeleteInvoice = async (invoiceNumber) => {
     const result = await Swal.fire({
@@ -2107,47 +2140,51 @@ const B2BPatients = () => {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
-    })
+    });
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${Labbaseurl}delete-invoice/${invoiceNumber}/`)
-        setInvoices(invoices.filter((invoice) => invoice.invoiceNumber !== invoiceNumber))
-        Swal.fire("Deleted!", "The invoice has been deleted.", "success")
+        await axios.delete(`${Labbaseurl}delete-invoice/${invoiceNumber}/`);
+        setInvoices(
+          invoices.filter((invoice) => invoice.invoiceNumber !== invoiceNumber)
+        );
+        Swal.fire("Deleted!", "The invoice has been deleted.", "success");
       } catch (error) {
-        Swal.fire("Error!", "Failed to delete the invoice.", "error")
+        Swal.fire("Error!", "Failed to delete the invoice.", "error");
       }
     }
-  }
+  };
 
   const getFilteredInvoices = () => {
     return invoices.filter((invoice) =>
-      (invoice.clinicalName || invoice.labName || "").toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-  }
+      (invoice.clinicalName || invoice.labName || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    );
+  };
 
   const handleAmountChange = (e) => {
-    const value = e.target.value
+    const value = e.target.value;
     setEditingInvoice((prev) => {
-      const newTotal = Number.parseFloat(value) || 0
-      const currentTotalPaid = Number.parseFloat(prev.currentTotalPaid) || 0
-      const newPending = Math.max(0, newTotal - currentTotalPaid).toFixed(2)
+      const newTotal = Number.parseFloat(value) || 0;
+      const currentTotalPaid = Number.parseFloat(prev.currentTotalPaid) || 0;
+      const newPending = Math.max(0, newTotal - currentTotalPaid).toFixed(2);
 
       return {
         ...prev,
         newAmount: value,
         newPendingAmount: newPending,
-      }
-    })
-  }
+      };
+    });
+  };
 
   const handleNewPaidAmountChange = (e) => {
-    const value = e.target.value
+    const value = e.target.value;
     setEditingInvoice((prev) => ({
       ...prev,
       newPaidAmount: value,
-    }))
-  }
+    }));
+  };
 
   // Enhanced PDF generation - Patient Details Only
   const generatePDF = async (invoice) => {
@@ -2155,61 +2192,56 @@ const B2BPatients = () => {
       orientation: "portrait",
       unit: "mm",
       format: "a4",
-    })
+    });
 
     try {
-      // Add header image
-      const headerImg = new Image()
-      headerImg.crossOrigin = "anonymous"
+      const headerImg = new Image();
+      headerImg.crossOrigin = "anonymous";
       headerImg.onload = () => {
-        doc.addImage(headerImg, "PNG", 10, 10, 190, 30)
+        doc.addImage(headerImg, "PNG", 10, 10, 190, 30);
 
-        // Title
-        doc.setFont("helvetica", "bold")
-        doc.setFontSize(20)
-        doc.setTextColor(44, 62, 80)
-        doc.text("PATIENT DETAILS REPORT", 105, 55, { align: "center" })
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(20);
+        doc.setTextColor(44, 62, 80);
+        doc.text("PATIENT DETAILS REPORT", 105, 55, { align: "center" });
 
-        // Invoice details
-        doc.setFont("helvetica", "normal")
-        doc.setFontSize(12)
-        doc.text(`Invoice Number: ${invoice.invoiceNumber}`, 14, 70)
-        doc.text(`Clinical Name: ${invoice.clinicalName || invoice.labName}`, 14, 77)
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 84)
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(`Invoice Number: ${invoice.invoiceNumber}`, 14, 70);
+        doc.text(
+          `Clinical Name: ${invoice.clinicalName || invoice.labName}`,
+          14,
+          77
+        );
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 84);
 
         if (invoice.fromDate && invoice.toDate) {
           doc.text(
-            `Period: ${new Date(invoice.fromDate).toLocaleDateString()} - ${new Date(invoice.toDate).toLocaleDateString()}`,
+            `Period: ${new Date(
+              invoice.fromDate
+            ).toLocaleDateString()} - ${new Date(
+              invoice.toDate
+            ).toLocaleDateString()}`,
             14,
-            91,
-          )
+            91
+          );
         }
 
-        // Patient Details Table - Focus on patient information
+        // Updated Patient Details Table
         if (invoice.patients && invoice.patients.length > 0) {
-          const tableData = invoice.patients.map((patient, index) => {
-            const proportionalCredits = invoice.proportionalCredits
-              ? typeof invoice.proportionalCredits === "string"
-                ? JSON.parse(invoice.proportionalCredits)
-                : invoice.proportionalCredits
-              : []
-
-            const proportionalCredit =
-              proportionalCredits.find((p) => p.patient_id === patient.patient_id)?.proportionalCredit || "0.00"
-
-            return [
-              (index + 1).toString(),
-              patient.patient_id,
-              patient.patientname,
-              new Date(patient.date).toLocaleDateString(),
-              `₹${Number.parseFloat(patient.credit_amount).toFixed(2)}`,
-              `₹${proportionalCredit}`,
-            ]
-          })
+          const tableData = invoice.patients.map((patient, index) => [
+            (index + 1).toString(),
+            patient.patient_id,
+            patient.patientname,
+            new Date(patient.date).toLocaleDateString(),
+            patient.credit_amount?.toString() || "",
+          ]);
 
           doc.autoTable({
             startY: 105,
-            head: [["S.No", "Patient ID", "Patient Name", "Date", "Original Credit", "Proportional Credit"]],
+            head: [
+              ["S.No", "Patient ID", "Patient Name", "Date", "Credit Amount"],
+            ],
             body: tableData,
             theme: "grid",
             styles: {
@@ -2223,59 +2255,89 @@ const B2BPatients = () => {
             },
             margin: { top: 105, bottom: 50 },
             pageBreak: "auto",
-          })
+          });
         }
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text("Summary", 14, finalY);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Total Patients: ${invoice.patients.length}`, 14, finalY + 7);
+        doc.text(
+          `Total Credit Amount: ${invoice.totalCreditAmount}`,
+          90,
+          finalY + 7
+        );
+        doc.text(`Paid: ${invoice.paidAmount || "0.00"}`, 14, finalY + 14);
+        doc.text(
+          `Pending: ${invoice.pendingAmount || invoice.totalCreditAmount}`,
+          90,
+          finalY + 14
+        );
 
-        // Add footer image
-        const footerImg = new Image()
-        footerImg.crossOrigin = "anonymous"
+        const footerImg = new Image();
+        footerImg.crossOrigin = "anonymous";
         footerImg.onload = () => {
-          const pageHeight = doc.internal.pageSize.height
-          doc.addImage(footerImg, "PNG", 10, pageHeight - 40, 190, 25)
+          const pageHeight = doc.internal.pageSize.height;
+          doc.addImage(footerImg, "PNG", 10, pageHeight - 40, 190, 25);
 
-          // Footer text
-          doc.setFont("helvetica", "italic")
-          doc.setFontSize(8)
-          doc.text(`Generated on: ${new Date().toLocaleString()} | Patient Details Report`, 14, pageHeight - 10)
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(8);
+          doc.text(
+            `Generated on: ${new Date().toLocaleString()} | Patient Details Report`,
+            14,
+            pageHeight - 10
+          );
 
-          doc.save(`Patient-Details-${invoice.invoiceNumber}.pdf`)
-        }
-        footerImg.src = FooterImage
-      }
-      headerImg.src = headerImage
+          doc.save(`Patient-Details-${invoice.invoiceNumber}.pdf`);
+        };
+        footerImg.src = FooterImage;
+      };
+      headerImg.src = headerImage;
     } catch (error) {
-      console.error("Error generating PDF:", error)
-      toast.error("Failed to generate PDF", { autoClose: 3000 })
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF", { autoClose: 3000 });
     }
-  }
+  };
 
   const handlePrintInvoice = (invoice) => {
-    setPrintInvoice(invoice)
-    setShowPrintModal(true)
+    setPrintInvoice(invoice);
+    setShowPrintModal(true);
 
     setTimeout(() => {
-      window.print()
-    }, 500)
-  }
+      window.print();
+    }, 500);
+  };
 
   const handleRefreshData = async () => {
-    setLoading((prev) => ({ ...prev, refreshData: true }))
+    setLoading((prev) => ({ ...prev, refreshData: true }));
     try {
-      await Promise.all([fetchClinicalNames(), fetchPatients(), fetchInvoices()])
-      toast.success("Data refreshed successfully", { autoClose: 2000 })
+      await Promise.all([
+        fetchClinicalNames(),
+        fetchPatients(),
+        fetchInvoices(),
+      ]);
+      toast.success("Data refreshed successfully", { autoClose: 2000 });
     } catch (error) {
-      console.error("Error refreshing data:", error)
-      toast.error("Failed to refresh data", { autoClose: 3000 })
+      console.error("Error refreshing data:", error);
+      toast.error("Failed to refresh data", { autoClose: 3000 });
     } finally {
-      setLoading((prev) => ({ ...prev, refreshData: false }))
+      setLoading((prev) => ({ ...prev, refreshData: false }));
     }
-  }
+  };
 
   const calculateInvoiceStats = (invoice) => {
-    const patients = invoice.patients || []
-    const totalTests = patients.reduce((sum, patient) => sum + (patient.test_count || 1), 0)
-    const totalPatients = patients.length
-    const avgCreditPerPatient = totalPatients > 0 ? Number.parseFloat(invoice.totalCreditAmount) / totalPatients : 0
+    const patients = invoice.patients || [];
+    const totalTests = patients.reduce(
+      (sum, patient) => sum + (patient.test_count || 1),
+      0
+    );
+    const totalPatients = patients.length;
+    const avgCreditPerPatient =
+      totalPatients > 0
+        ? Number.parseFloat(invoice.totalCreditAmount) / totalPatients
+        : 0;
 
     return {
       totalPatients,
@@ -2283,53 +2345,57 @@ const B2BPatients = () => {
       avgCreditPerPatient: avgCreditPerPatient.toFixed(2),
       totalAmount: Number.parseFloat(invoice.totalCreditAmount || 0),
       paidAmount: Number.parseFloat(invoice.paidAmount || 0),
-      pendingAmount: Number.parseFloat(invoice.pendingAmount || invoice.totalCreditAmount || 0),
+      pendingAmount: Number.parseFloat(
+        invoice.pendingAmount || invoice.totalCreditAmount || 0
+      ),
       paymentPercentage:
         invoice.totalCreditAmount > 0
-          ? ((Number.parseFloat(invoice.paidAmount || 0) / Number.parseFloat(invoice.totalCreditAmount)) * 100).toFixed(
-              1,
-            )
+          ? (
+              (Number.parseFloat(invoice.paidAmount || 0) /
+                Number.parseFloat(invoice.totalCreditAmount)) *
+              100
+            ).toFixed(1)
           : 0,
-    }
-  }
+    };
+  };
 
   // Helper function to safely parse payment history
   const getPaymentHistory = (invoice) => {
-    if (!invoice?.paymentHistory) return []
+    if (!invoice?.paymentHistory) return [];
 
     try {
       if (typeof invoice.paymentHistory === "string") {
-        return JSON.parse(invoice.paymentHistory)
+        return JSON.parse(invoice.paymentHistory);
       }
       if (Array.isArray(invoice.paymentHistory)) {
-        return invoice.paymentHistory
+        return invoice.paymentHistory;
       }
-      return []
+      return [];
     } catch (error) {
-      console.error("Error parsing payment history:", error)
-      return []
+      console.error("Error parsing payment history:", error);
+      return [];
     }
-  }
+  };
 
   const handleRegenerateInvoice = () => {
-    setShowInvoiceSuccess(false)
-    setLastGeneratedInvoice(null)
+    setShowInvoiceSuccess(false);
+    setLastGeneratedInvoice(null);
     // Reset form state
-    setSelectedClinicalName("")
-    setSelectedPatients([])
-    setFromDate("")
-    setToDate("")
-  }
+    setSelectedClinicalName("");
+    setSelectedPatients([]);
+    setFromDate("");
+    setToDate("");
+  };
 
   const handleViewGeneratedInvoices = () => {
-    setActiveTab("generated")
-    setShowInvoiceSuccess(false)
-  }
+    setActiveTab("generated");
+    setShowInvoiceSuccess(false);
+  };
 
   const handleViewPaymentHistory = (invoice) => {
-    setSelectedInvoiceForHistory(invoice)
-    setShowPaymentHistoryModal(true)
-  }
+    setSelectedInvoiceForHistory(invoice);
+    setShowPaymentHistoryModal(true);
+  };
 
   const getPaymentHistoryStats = (paymentHistory) => {
     if (!paymentHistory || paymentHistory.length === 0) {
@@ -2339,26 +2405,29 @@ const B2BPatients = () => {
         averagePayment: 0,
         lastPaymentDate: null,
         mostUsedMethod: "N/A",
-      }
+      };
     }
 
-    const totalAmount = paymentHistory.reduce((sum, payment) => sum + Number.parseFloat(payment.paymentAmount || 0), 0)
-    const totalPayments = paymentHistory.length
-    const averagePayment = totalPayments > 0 ? totalAmount / totalPayments : 0
+    const totalAmount = paymentHistory.reduce(
+      (sum, payment) => sum + Number.parseFloat(payment.paymentAmount || 0),
+      0
+    );
+    const totalPayments = paymentHistory.length;
+    const averagePayment = totalPayments > 0 ? totalAmount / totalPayments : 0;
 
-    const lastPayment = paymentHistory[paymentHistory.length - 1]
-    const lastPaymentDate = lastPayment ? new Date(lastPayment.date) : null
+    const lastPayment = paymentHistory[paymentHistory.length - 1];
+    const lastPaymentDate = lastPayment ? new Date(lastPayment.date) : null;
 
     const methodCounts = paymentHistory.reduce((acc, payment) => {
-      const method = payment.paymentMethod || "Unknown"
-      acc[method] = (acc[method] || 0) + 1
-      return acc
-    }, {})
+      const method = payment.paymentMethod || "Unknown";
+      acc[method] = (acc[method] || 0) + 1;
+      return acc;
+    }, {});
 
     const mostUsedMethod = Object.keys(methodCounts).reduce(
       (a, b) => (methodCounts[a] > methodCounts[b] ? a : b),
-      "N/A",
-    )
+      "N/A"
+    );
 
     return {
       totalPayments,
@@ -2366,8 +2435,8 @@ const B2BPatients = () => {
       averagePayment,
       lastPaymentDate,
       mostUsedMethod,
-    }
-  }
+    };
+  };
 
   return (
     <Container>
@@ -2375,14 +2444,23 @@ const B2BPatients = () => {
 
       <Header>
         <Title>Carry Credit Management</Title>
-        <Subtitle>Manage carry credit patients and generate proportional invoices for clinical names</Subtitle>
+        <Subtitle>
+          Manage carry credit patients and generate proportional invoices for
+          clinical names
+        </Subtitle>
       </Header>
 
       <TabsContainer>
-        <Tab $active={activeTab === "generate"} onClick={() => setActiveTab("generate")}>
+        <Tab
+          $active={activeTab === "generate"}
+          onClick={() => setActiveTab("generate")}
+        >
           Generate Invoice
         </Tab>
-        <Tab $active={activeTab === "generated"} onClick={() => setActiveTab("generated")}>
+        <Tab
+          $active={activeTab === "generated"}
+          onClick={() => setActiveTab("generated")}
+        >
           Generated Invoices
         </Tab>
       </TabsContainer>
@@ -2396,24 +2474,34 @@ const B2BPatients = () => {
               <BannerText>
                 <h3>Invoice Generated Successfully!</h3>
                 <p>
-                  Invoice {lastGeneratedInvoice.invoiceNumber} for {lastGeneratedInvoice.clinicalName} has been created
+                  Invoice {lastGeneratedInvoice.invoiceNumber} for{" "}
+                  {lastGeneratedInvoice.clinicalName} has been created
                 </p>
               </BannerText>
             </BannerContent>
             <BannerActions>
               <Button
                 onClick={handleViewGeneratedInvoices}
-                style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}
+                style={{
+                  background: "rgba(255,255,255,0.2)",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                }}
               >
                 View Invoices
               </Button>
               <Button
                 onClick={handleRegenerateInvoice}
-                style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}
+                style={{
+                  background: "rgba(255,255,255,0.2)",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                }}
               >
                 Generate Another
               </Button>
-              <IconButton onClick={() => setShowInvoiceSuccess(false)} style={{ color: "white" }}>
+              <IconButton
+                onClick={() => setShowInvoiceSuccess(false)}
+                style={{ color: "white" }}
+              >
                 <X size={20} />
               </IconButton>
             </BannerActions>
@@ -2427,11 +2515,18 @@ const B2BPatients = () => {
               <AlertCircle size={24} />
               <BannerText>
                 <h3>Ready to Generate Invoice</h3>
-                <p>Select a clinical name and patients to generate a new carry credit invoice</p>
+                <p>
+                  Select a clinical name and patients to generate a new carry
+                  credit invoice
+                </p>
               </BannerText>
             </BannerContent>
             <BannerActions>
-              <RefreshButton onClick={handleRefreshData} $loading={loading.refreshData} style={{ color: "white" }}>
+              <RefreshButton
+                onClick={handleRefreshData}
+                $loading={loading.refreshData}
+                style={{ color: "white" }}
+              >
                 <RefreshCw size={16} />
                 Refresh Data
               </RefreshButton>
@@ -2447,7 +2542,9 @@ const B2BPatients = () => {
               disabled={loading.clinicalNames}
             >
               <option value="">
-                {loading.clinicalNames ? "Loading clinical names..." : "Select Clinical Name (Carry Credit)"}
+                {loading.clinicalNames
+                  ? "Loading clinical names..."
+                  : "Select Clinical Name (Carry Credit)"}
               </option>
               {clinicalNames.map((clinical) => (
                 <option key={clinical.id} value={clinical.clinicalname}>
@@ -2481,39 +2578,57 @@ const B2BPatients = () => {
             </DateInputWrapper>
           </DateFilterGroup>
 
-          <Button onClick={handleSelectAll} disabled={!selectedClinicalName || getFilteredPatients().length === 0}>
+          <Button
+            onClick={handleSelectAll}
+            disabled={
+              !selectedClinicalName || getFilteredPatients().length === 0
+            }
+          >
             <Filter size={18} />
-            {selectedPatients.length === getFilteredPatients().length ? "Deselect All" : "Select All"}
+            {selectedPatients.length === getFilteredPatients().length
+              ? "Deselect All"
+              : "Select All"}
           </Button>
 
           {selectedPatients.length > 0 && (
-            <Button $primary onClick={handleGenerateInvoice} $loading={loading.generateInvoice}>
+            <Button
+              $primary
+              onClick={handleGenerateInvoice}
+              $loading={loading.generateInvoice}
+            >
               Generate Invoice
             </Button>
           )}
           <Button
             onClick={() => {
-              const newParams = new URLSearchParams()
-              newParams.append("clinical_name", selectedClinicalName)
-              newParams.append("segment", "B2B")
-              newParams.append("min_credit", "0.01")
-              newParams.append("include_invoiced", "true")
-              if (fromDate) newParams.append("from_date", fromDate)
-              if (toDate) newParams.append("to_date", toDate)
+              const newParams = new URLSearchParams();
+              newParams.append("clinical_name", selectedClinicalName);
+              newParams.append("segment", "B2B");
+              newParams.append("min_credit", "0.01");
+              newParams.append("include_invoiced", "true");
+              if (fromDate) newParams.append("from_date", fromDate);
+              if (toDate) newParams.append("to_date", toDate);
 
               // Fetch patients including invoiced ones
               axios
                 .get(`${Labbaseurl}all-patients/?${newParams.toString()}`)
                 .then((response) => {
                   const allData = response.data.filter(
-                    (patient) => patient.segment === "B2B" && Number(patient.credit_amount) > 0,
-                  )
-                  setPatients(allData)
-                  toast.info("Now showing all patients including invoiced ones", { autoClose: 3000 })
+                    (patient) =>
+                      patient.segment === "B2B" &&
+                      Number(patient.credit_amount) > 0
+                  );
+                  setPatients(allData);
+                  toast.info(
+                    "Now showing all patients including invoiced ones",
+                    { autoClose: 3000 }
+                  );
                 })
                 .catch((error) => {
-                  toast.error("Failed to load all patients", { autoClose: 3000 })
-                })
+                  toast.error("Failed to load all patients", {
+                    autoClose: 3000,
+                  });
+                });
             }}
             disabled={!selectedClinicalName}
             style={{ fontSize: "12px", padding: "8px 12px" }}
@@ -2526,19 +2641,26 @@ const B2BPatients = () => {
         {/* Collapsible Patient List - Show when invoice is generated */}
         {showInvoiceSuccess && (
           <>
-            <CollapsibleHeader onClick={() => setShowPatientList(!showPatientList)}>
+            <CollapsibleHeader
+              onClick={() => setShowPatientList(!showPatientList)}
+            >
               <CollapsibleContent>
                 <CheckCircle size={20} />
                 <CollapsibleText>
                   <h3>Invoice Generated - View Patient Details</h3>
                   <p>
-                    Click to {showPatientList ? "hide" : "show"} the {lastGeneratedInvoice?.patients?.length || 0}{" "}
-                    patients included in this invoice
+                    Click to {showPatientList ? "hide" : "show"} the{" "}
+                    {lastGeneratedInvoice?.patients?.length || 0} patients
+                    included in this invoice
                   </p>
                 </CollapsibleText>
               </CollapsibleContent>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <PatientListToggle>{showPatientList ? "Hide" : "Show"} Patient List</PatientListToggle>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+              >
+                <PatientListToggle>
+                  {showPatientList ? "Hide" : "Show"} Patient List
+                </PatientListToggle>
                 <CollapsibleArrow $expanded={showPatientList} />
               </div>
             </CollapsibleHeader>
@@ -2548,11 +2670,22 @@ const B2BPatients = () => {
                 <TableHeader>
                   <TableTitle>
                     <Users size={18} />
-                    Generated Invoice Patients - {lastGeneratedInvoice?.clinicalName}
+                    Generated Invoice Patients -{" "}
+                    {lastGeneratedInvoice?.clinicalName}
                   </TableTitle>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Badge $primary>{lastGeneratedInvoice?.patients?.length || 0} Patients</Badge>
-                    <Badge>Total: ₹{lastGeneratedInvoice?.totalCreditAmount}</Badge>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <Badge $primary>
+                      {lastGeneratedInvoice?.patients?.length || 0} Patients
+                    </Badge>
+                    <Badge>
+                      Total: ₹{lastGeneratedInvoice?.totalCreditAmount}
+                    </Badge>
                   </div>
                 </TableHeader>
 
@@ -2571,24 +2704,36 @@ const B2BPatients = () => {
                       {lastGeneratedInvoice?.patients?.map((patient, index) => (
                         <TableRow key={patient.patient_id}>
                           <Td>
-                            {new Date(patient.date).toLocaleDateString("en-IN", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}
+                            {new Date(patient.date).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              }
+                            )}
                           </Td>
                           <Td>{patient.patient_id}</Td>
                           <Td>{patient.patientname}</Td>
                           <Td $amount>₹{patient.credit_amount}</Td>
                           <Td>
-                            <Badge style={{ background: "#dcfce7", color: "#15803d" }}>Invoiced</Badge>
+                            <Badge
+                              style={{
+                                background: "#dcfce7",
+                                color: "#15803d",
+                              }}
+                            >
+                              Invoiced
+                            </Badge>
                           </Td>
                         </TableRow>
                       )) || (
                         <tr>
                           <td colSpan={5}>
                             <EmptyState>
-                              <EmptyStateTitle>No patients data available</EmptyStateTitle>
+                              <EmptyStateTitle>
+                                No patients data available
+                              </EmptyStateTitle>
                             </EmptyState>
                           </td>
                         </tr>
@@ -2605,18 +2750,31 @@ const B2BPatients = () => {
           <TableHeader>
             <TableTitle>
               <Users size={18} />
-              Available Patients - {selectedClinicalName || "Select Clinical Name"}
-              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "normal", marginLeft: "8px" }}>
+              Available Patients -{" "}
+              {selectedClinicalName || "Select Clinical Name"}
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#64748b",
+                  fontWeight: "normal",
+                  marginLeft: "8px",
+                }}
+              >
                 (Excluding already invoiced patients)
               </span>
             </TableTitle>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <RefreshButton onClick={handleRefreshData} $loading={loading.refreshData}>
+              <RefreshButton
+                onClick={handleRefreshData}
+                $loading={loading.refreshData}
+              >
                 <RefreshCw size={16} />
                 Refresh
               </RefreshButton>
               <Badge $primary>{getFilteredPatients().length} Patients</Badge>
-              {selectedPatients.length > 0 && <Badge>{selectedPatients.length} Selected</Badge>}
+              {selectedPatients.length > 0 && (
+                <Badge>{selectedPatients.length} Selected</Badge>
+              )}
             </div>
           </TableHeader>
 
@@ -2639,27 +2797,52 @@ const B2BPatients = () => {
                       <TableRow key={`skeleton-${index}`}>
                         <Td>
                           <div
-                            style={{ width: "18px", height: "18px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "18px",
+                              height: "18px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "80px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "80px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "80px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "80px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "150px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "150px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "60px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "60px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                       </TableRow>
@@ -2670,8 +2853,12 @@ const B2BPatients = () => {
                       <Td>
                         <Checkbox
                           type="checkbox"
-                          checked={selectedPatients.includes(patient.patient_id)}
-                          onChange={() => handleSelectPatient(patient.patient_id)}
+                          checked={selectedPatients.includes(
+                            patient.patient_id
+                          )}
+                          onChange={() =>
+                            handleSelectPatient(patient.patient_id)
+                          }
                         />
                       </Td>
                       <Td>
@@ -2694,7 +2881,9 @@ const B2BPatients = () => {
                           <Users size={40} />
                         </EmptyStateIcon>
                         <EmptyStateTitle>
-                          {selectedClinicalName ? "No carry credit patients found" : "Select a clinical name"}
+                          {selectedClinicalName
+                            ? "No carry credit patients found"
+                            : "Select a clinical name"}
                         </EmptyStateTitle>
                         <EmptyStateText>
                           {selectedClinicalName
@@ -2719,7 +2908,10 @@ const B2BPatients = () => {
               Generated Carry Credit Invoices
             </TableTitle>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <RefreshButton onClick={handleRefreshData} $loading={loading.refreshData}>
+              <RefreshButton
+                onClick={handleRefreshData}
+                $loading={loading.refreshData}
+              >
                 <RefreshCw size={16} />
                 Refresh
               </RefreshButton>
@@ -2760,37 +2952,72 @@ const B2BPatients = () => {
                       <TableRow key={`skeleton-${index}`}>
                         <Td>
                           <div
-                            style={{ width: "80px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "80px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "100px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "100px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "150px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "150px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "60px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "60px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "60px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "60px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "60px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "60px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                         <Td>
                           <div
-                            style={{ width: "120px", height: "14px", background: "#f1f5f9", borderRadius: "4px" }}
+                            style={{
+                              width: "120px",
+                              height: "14px",
+                              background: "#f1f5f9",
+                              borderRadius: "4px",
+                            }}
                           ></div>
                         </Td>
                       </TableRow>
@@ -2804,27 +3031,43 @@ const B2BPatients = () => {
                       </Td>
                       <Td>
                         {invoice.fromDate && invoice.toDate
-                          ? `${new Date(invoice.fromDate).toLocaleDateString()} - ${new Date(invoice.toDate).toLocaleDateString()}`
+                          ? `${new Date(
+                              invoice.fromDate
+                            ).toLocaleDateString()} - ${new Date(
+                              invoice.toDate
+                            ).toLocaleDateString()}`
                           : "N/A"}
                       </Td>
                       <Td $amount>₹{invoice.totalCreditAmount}</Td>
                       <Td $amount>₹{invoice.paidAmount || "0.00"}</Td>
-                      <Td $pending>₹{invoice.pendingAmount || invoice.totalCreditAmount}</Td>
+                      <Td $pending>
+                        ₹{invoice.pendingAmount || invoice.totalCreditAmount}
+                      </Td>
                       <Td>
                         <ActionContainer>
-                          <IconButton onClick={() => handleEditInvoice(invoice)}>
+                          <IconButton
+                            onClick={() => handleEditInvoice(invoice)}
+                          >
                             <PencilIcon size={18} />
                           </IconButton>
                           <IconButton
-                            onClick={() => handleDeleteInvoice(invoice.invoiceNumber)}
+                            onClick={() =>
+                              handleDeleteInvoice(invoice.invoiceNumber)
+                            }
                             style={{ color: "red" }}
                           >
                             <Trash2 size={18} />
                           </IconButton>
-                          <IconButton onClick={() => generatePDF(invoice)} style={{ color: "green" }}>
+                          <IconButton
+                            onClick={() => generatePDF(invoice)}
+                            style={{ color: "green" }}
+                          >
                             <Download size={18} />
                           </IconButton>
-                          <IconButton onClick={() => handlePrintInvoice(invoice)} style={{ color: "purple" }}>
+                          <IconButton
+                            onClick={() => handlePrintInvoice(invoice)}
+                            style={{ color: "purple" }}
+                          >
                             <Printer size={18} />
                           </IconButton>
                           <IconButton
@@ -2866,7 +3109,11 @@ const B2BPatients = () => {
                             ? `No invoices match your search for "${searchQuery}"`
                             : "Generate your first carry credit invoice by selecting patients in the Generate Invoice tab"}
                         </EmptyStateText>
-                        {searchQuery && <Button onClick={() => setSearchQuery("")}>Clear Search</Button>}
+                        {searchQuery && (
+                          <Button onClick={() => setSearchQuery("")}>
+                            Clear Search
+                          </Button>
+                        )}
                       </EmptyState>
                     </td>
                   </tr>
@@ -2901,14 +3148,20 @@ const B2BPatients = () => {
                 <AmountCard $color="#f0f9ff">
                   <AmountRow>
                     <AmountLabel>Total Credit Amount</AmountLabel>
-                    <AmountInput type="number" value={editingInvoice.newAmount} onChange={handleAmountChange} />
+                    <AmountInput
+                      type="number"
+                      value={editingInvoice.newAmount}
+                      onChange={handleAmountChange}
+                    />
                   </AmountRow>
                 </AmountCard>
 
                 <AmountCard $color="#f0fff4">
                   <AmountRow>
                     <AmountLabel>Already Paid Amount</AmountLabel>
-                    <AmountValue $color="#059669">₹{editingInvoice.currentTotalPaid}</AmountValue>
+                    <AmountValue $color="#059669">
+                      ₹{editingInvoice.currentTotalPaid}
+                    </AmountValue>
                   </AmountRow>
                 </AmountCard>
 
@@ -2952,7 +3205,14 @@ const B2BPatients = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <rect
+                      x="1"
+                      y="4"
+                      width="22"
+                      height="16"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="1" y1="10" x2="23" y2="10"></line>
                   </svg>
                   Payment Details
@@ -2963,7 +3223,12 @@ const B2BPatients = () => {
                   <DateInput
                     type="date"
                     value={editingInvoice.paymentDate}
-                    onChange={(e) => setEditingInvoice((prev) => ({ ...prev, paymentDate: e.target.value }))}
+                    onChange={(e) =>
+                      setEditingInvoice((prev) => ({
+                        ...prev,
+                        paymentDate: e.target.value,
+                      }))
+                    }
                   />
                 </PaymentInputRow>
 
@@ -2971,7 +3236,12 @@ const B2BPatients = () => {
                   <PaymentLabel>Payment Method:</PaymentLabel>
                   <PaymentMethodSelect
                     value={editingInvoice.paymentMethod}
-                    onChange={(e) => setEditingInvoice((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+                    onChange={(e) =>
+                      setEditingInvoice((prev) => ({
+                        ...prev,
+                        paymentMethod: e.target.value,
+                      }))
+                    }
                   >
                     <option value="">Select Method</option>
                     <option value="Cash">Cash</option>
@@ -2988,29 +3258,39 @@ const B2BPatients = () => {
                     type="text"
                     placeholder="Transaction ID, Cheque No, etc."
                     value={editingInvoice.paymentDetails}
-                    onChange={(e) => setEditingInvoice((prev) => ({ ...prev, paymentDetails: e.target.value }))}
+                    onChange={(e) =>
+                      setEditingInvoice((prev) => ({
+                        ...prev,
+                        paymentDetails: e.target.value,
+                      }))
+                    }
                   />
                 </PaymentInputRow>
               </ModalSection>
 
-              {editingInvoice.paymentHistory && editingInvoice.paymentHistory.length > 0 && (
-                <ModalSection>
-                  <PaymentHistoryContainer>
-                    <PaymentHistoryTitle>Payment History</PaymentHistoryTitle>
-                    {editingInvoice.paymentHistory.map((payment, index) => (
-                      <PaymentHistoryItem key={index}>
-                        <PaymentHistoryDate>{new Date(payment.date).toLocaleDateString()}</PaymentHistoryDate>
-                        <PaymentHistoryDetails>
-                          <div>Payment: ₹{payment.paymentAmount}</div>
-                          <div>Method: {payment.paymentMethod}</div>
-                          <div>By: {payment.updatedBy}</div>
-                        </PaymentHistoryDetails>
-                        <PaymentHistoryAmount>Total Paid: ₹{payment.newTotalPaid}</PaymentHistoryAmount>
-                      </PaymentHistoryItem>
-                    ))}
-                  </PaymentHistoryContainer>
-                </ModalSection>
-              )}
+              {editingInvoice.paymentHistory &&
+                editingInvoice.paymentHistory.length > 0 && (
+                  <ModalSection>
+                    <PaymentHistoryContainer>
+                      <PaymentHistoryTitle>Payment History</PaymentHistoryTitle>
+                      {editingInvoice.paymentHistory.map((payment, index) => (
+                        <PaymentHistoryItem key={index}>
+                          <PaymentHistoryDate>
+                            {new Date(payment.date).toLocaleDateString()}
+                          </PaymentHistoryDate>
+                          <PaymentHistoryDetails>
+                            <div>Payment: ₹{payment.paymentAmount}</div>
+                            <div>Method: {payment.paymentMethod}</div>
+                            <div>By: {payment.updatedBy}</div>
+                          </PaymentHistoryDetails>
+                          <PaymentHistoryAmount>
+                            Total Paid: ₹{payment.newTotalPaid}
+                          </PaymentHistoryAmount>
+                        </PaymentHistoryItem>
+                      ))}
+                    </PaymentHistoryContainer>
+                  </ModalSection>
+                )}
 
               {editingInvoice.patients &&
                 editingInvoice.patients.length > 0 &&
@@ -3025,7 +3305,7 @@ const B2BPatients = () => {
                       {calculateProportionalCredits(
                         editingInvoice.patients,
                         Number(editingInvoice.newPaidAmount),
-                        Number(editingInvoice.newAmount),
+                        Number(editingInvoice.newAmount)
                       ).map((patient, index) => (
                         <ProportionalItem key={index}>
                           <ProportionalPatient>
@@ -3033,10 +3313,22 @@ const B2BPatients = () => {
                             <PatientId>ID: {patient.patient_id}</PatientId>
                           </ProportionalPatient>
                           <ProportionalAmount>
-                            <OriginalAmount>₹{patient.credit_amount}</OriginalAmount>
-                            <span style={{ color: "#3b82f6", fontWeight: "bold" }}>→</span>
+                            <OriginalAmount>
+                              ₹{patient.credit_amount}
+                            </OriginalAmount>
+                            <span
+                              style={{ color: "#3b82f6", fontWeight: "bold" }}
+                            >
+                              →
+                            </span>
                             <NewAmount>₹{patient.proportionalCredit}</NewAmount>
-                            <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "8px" }}>
+                            <span
+                              style={{
+                                fontSize: "12px",
+                                color: "#64748b",
+                                marginLeft: "8px",
+                              }}
+                            >
                               ({patient.proportion}%)
                             </span>
                           </ProportionalAmount>
@@ -3051,9 +3343,14 @@ const B2BPatients = () => {
               <Button onClick={() => setShowEditModal(false)}>Cancel</Button>
               <Button
                 $primary
-                onClick={() => handleUpdateInvoice(editingInvoice.invoiceNumber)}
+                onClick={() =>
+                  handleUpdateInvoice(editingInvoice.invoiceNumber)
+                }
                 $loading={loading.updateInvoice}
-                disabled={!editingInvoice.newPaidAmount || Number(editingInvoice.newPaidAmount) <= 0}
+                disabled={
+                  !editingInvoice.newPaidAmount ||
+                  Number(editingInvoice.newPaidAmount) <= 0
+                }
               >
                 Save Payment
               </Button>
@@ -3071,14 +3368,23 @@ const B2BPatients = () => {
 
               <PrintInvoiceHeader>
                 <PrintInvoiceTitle>
-                  <PrintInvoiceNumber>Invoice #{printInvoice.invoiceNumber}</PrintInvoiceNumber>
-                  <PrintInvoiceSubtitle>Carry Credit Management - Overall Statistics</PrintInvoiceSubtitle>
+                  <PrintInvoiceNumber>
+                    Invoice #{printInvoice.invoiceNumber}
+                  </PrintInvoiceNumber>
+                  <PrintInvoiceSubtitle>
+                    Carry Credit Management - Overall Statistics
+                  </PrintInvoiceSubtitle>
                 </PrintInvoiceTitle>
                 <div>
-                  <PrintInvoiceSubtitle style={{ fontSize: "12px", color: "#64748b" }}>
-                    Clinical: {printInvoice.clinicalName || printInvoice.labName}
+                  <PrintInvoiceSubtitle
+                    style={{ fontSize: "12px", color: "#64748b" }}
+                  >
+                    Clinical:{" "}
+                    {printInvoice.clinicalName || printInvoice.labName}
                   </PrintInvoiceSubtitle>
-                  <PrintInvoiceSubtitle style={{ fontSize: "12px", color: "#64748b" }}>
+                  <PrintInvoiceSubtitle
+                    style={{ fontSize: "12px", color: "#64748b" }}
+                  >
                     Generated: {new Date().toLocaleDateString()}
                   </PrintInvoiceSubtitle>
                 </div>
@@ -3088,19 +3394,25 @@ const B2BPatients = () => {
               <PrintStatsSection>
                 <PrintStatCard>
                   <PrintStatTitle>Total Patients</PrintStatTitle>
-                  <PrintStatValue>{calculateInvoiceStats(printInvoice).totalPatients}</PrintStatValue>
+                  <PrintStatValue>
+                    {calculateInvoiceStats(printInvoice).totalPatients}
+                  </PrintStatValue>
                   <PrintStatSubtext>Carry Credit Patients</PrintStatSubtext>
                 </PrintStatCard>
 
                 <PrintStatCard>
                   <PrintStatTitle>Average Credit</PrintStatTitle>
-                  <PrintStatValue>₹{calculateInvoiceStats(printInvoice).avgCreditPerPatient}</PrintStatValue>
+                  <PrintStatValue>
+                    ₹{calculateInvoiceStats(printInvoice).avgCreditPerPatient}
+                  </PrintStatValue>
                   <PrintStatSubtext>Per Patient</PrintStatSubtext>
                 </PrintStatCard>
 
                 <PrintStatCard>
                   <PrintStatTitle>Payment Status</PrintStatTitle>
-                  <PrintStatValue>{calculateInvoiceStats(printInvoice).paymentPercentage}%</PrintStatValue>
+                  <PrintStatValue>
+                    {calculateInvoiceStats(printInvoice).paymentPercentage}%
+                  </PrintStatValue>
                   <PrintStatSubtext>Completed</PrintStatSubtext>
                 </PrintStatCard>
               </PrintStatsSection>
@@ -3111,16 +3423,30 @@ const B2BPatients = () => {
                   <PrintSummaryTitle>Financial Summary</PrintSummaryTitle>
                   <PrintSummaryItem>
                     <span>Total Credit Amount:</span>
-                    <span>₹{Number.parseFloat(printInvoice.totalCreditAmount).toFixed(2)}</span>
+                    <span>
+                      ₹
+                      {Number.parseFloat(
+                        printInvoice.totalCreditAmount
+                      ).toFixed(2)}
+                    </span>
                   </PrintSummaryItem>
                   <PrintSummaryItem>
                     <span>Paid Amount:</span>
-                    <span>₹{Number.parseFloat(printInvoice.paidAmount || 0).toFixed(2)}</span>
+                    <span>
+                      ₹
+                      {Number.parseFloat(printInvoice.paidAmount || 0).toFixed(
+                        2
+                      )}
+                    </span>
                   </PrintSummaryItem>
                   <PrintSummaryItem>
                     <span>Outstanding Balance:</span>
                     <span>
-                      ₹{Number.parseFloat(printInvoice.pendingAmount || printInvoice.totalCreditAmount).toFixed(2)}
+                      ₹
+                      {Number.parseFloat(
+                        printInvoice.pendingAmount ||
+                          printInvoice.totalCreditAmount
+                      ).toFixed(2)}
                     </span>
                   </PrintSummaryItem>
                 </PrintSummaryBox>
@@ -3147,8 +3473,12 @@ const B2BPatients = () => {
                   <PrintSummaryItem>
                     <span>Status:</span>
                     <span>
-                      {printInvoice.paidAmount && Number.parseFloat(printInvoice.paidAmount) > 0
-                        ? Number.parseFloat(printInvoice.pendingAmount || printInvoice.totalCreditAmount) > 0
+                      {printInvoice.paidAmount &&
+                      Number.parseFloat(printInvoice.paidAmount) > 0
+                        ? Number.parseFloat(
+                            printInvoice.pendingAmount ||
+                              printInvoice.totalCreditAmount
+                          ) > 0
                           ? "Partial Payment"
                           : "Fully Paid"
                         : "Pending"}
@@ -3166,7 +3496,8 @@ const B2BPatients = () => {
                     .map((payment, index) => (
                       <PrintSummaryItem key={index}>
                         <span>
-                          {new Date(payment.date).toLocaleDateString()} - {payment.paymentMethod}
+                          {new Date(payment.date).toLocaleDateString()} -{" "}
+                          {payment.paymentMethod}
                         </span>
                         <span>₹{payment.paymentAmount}</span>
                       </PrintSummaryItem>
@@ -3204,15 +3535,19 @@ const B2BPatients = () => {
                 </svg>
                 Payment History - {selectedInvoiceForHistory.invoiceNumber}
               </ModalTitle>
-              <ModalCloseButton onClick={() => setShowPaymentHistoryModal(false)}>
+              <ModalCloseButton
+                onClick={() => setShowPaymentHistoryModal(false)}
+              >
                 <X size={20} />
               </ModalCloseButton>
             </PaymentHistoryHeader>
 
             <PaymentHistoryBody>
               {(() => {
-                const paymentHistory = getPaymentHistory(selectedInvoiceForHistory)
-                const stats = getPaymentHistoryStats(paymentHistory)
+                const paymentHistory = getPaymentHistory(
+                  selectedInvoiceForHistory
+                );
+                const stats = getPaymentHistoryStats(paymentHistory);
 
                 if (paymentHistory.length === 0) {
                   return (
@@ -3222,11 +3557,11 @@ const B2BPatients = () => {
                       </EmptyPaymentIcon>
                       <EmptyPaymentTitle>No Payment History</EmptyPaymentTitle>
                       <EmptyPaymentText>
-                        This invoice doesn't have any payment records yet. Payments will appear here once they are
-                        recorded.
+                        This invoice doesn't have any payment records yet.
+                        Payments will appear here once they are recorded.
                       </EmptyPaymentText>
                     </EmptyPaymentHistory>
-                  )
+                  );
                 }
 
                 return (
@@ -3234,31 +3569,41 @@ const B2BPatients = () => {
                     {/* Payment Statistics */}
                     <PaymentHistoryStats>
                       <PaymentStatCard>
-                        <PaymentStatValue>{stats.totalPayments}</PaymentStatValue>
+                        <PaymentStatValue>
+                          {stats.totalPayments}
+                        </PaymentStatValue>
                         <PaymentStatLabel>Total Payments</PaymentStatLabel>
                       </PaymentStatCard>
                       <PaymentStatCard>
-                        <PaymentStatValue>₹{stats.totalAmount.toFixed(2)}</PaymentStatValue>
+                        <PaymentStatValue>
+                          ₹{stats.totalAmount.toFixed(2)}
+                        </PaymentStatValue>
                         <PaymentStatLabel>Total Amount</PaymentStatLabel>
                       </PaymentStatCard>
                       <PaymentStatCard>
-                        <PaymentStatValue>₹{stats.averagePayment.toFixed(2)}</PaymentStatValue>
+                        <PaymentStatValue>
+                          ₹{stats.averagePayment.toFixed(2)}
+                        </PaymentStatValue>
                         <PaymentStatLabel>Average Payment</PaymentStatLabel>
                       </PaymentStatCard>
                       <PaymentStatCard>
-                        <PaymentStatValue>{stats.mostUsedMethod}</PaymentStatValue>
+                        <PaymentStatValue>
+                          {stats.mostUsedMethod}
+                        </PaymentStatValue>
                         <PaymentStatLabel>Most Used Method</PaymentStatLabel>
                       </PaymentStatCard>
                     </PaymentHistoryStats>
 
                     {/* Payment History Cards */}
                     {paymentHistory.map((payment, index) => {
-                      const paymentDate = new Date(payment.date)
+                      const paymentDate = new Date(payment.date);
                       const progressPercentage = (
                         (Number.parseFloat(payment.newTotalPaid) /
-                          Number.parseFloat(selectedInvoiceForHistory.totalCreditAmount)) *
+                          Number.parseFloat(
+                            selectedInvoiceForHistory.totalCreditAmount
+                          )) *
                         100
-                      ).toFixed(1)
+                      ).toFixed(1);
 
                       return (
                         <PaymentHistoryCard key={index}>
@@ -3279,44 +3624,73 @@ const B2BPatients = () => {
                               </PaymentDateSecondary>
                             </PaymentHistoryDate>
                             <PaymentHistoryAmount>
-                              <PaymentAmountPrimary>₹{payment.paymentAmount}</PaymentAmountPrimary>
-                              <PaymentAmountSecondary>Payment #{index + 1}</PaymentAmountSecondary>
+                              <PaymentAmountPrimary>
+                                ₹{payment.paymentAmount}
+                              </PaymentAmountPrimary>
+                              <PaymentAmountSecondary>
+                                Payment #{index + 1}
+                              </PaymentAmountSecondary>
                             </PaymentHistoryAmount>
                           </PaymentHistoryCardHeader>
 
                           <PaymentHistoryDetails>
                             <PaymentDetailItem>
-                              <PaymentDetailLabel>Payment Method</PaymentDetailLabel>
+                              <PaymentDetailLabel>
+                                Payment Method
+                              </PaymentDetailLabel>
                               <PaymentDetailValue>
-                                <PaymentMethodBadge $method={payment.paymentMethod}>
+                                <PaymentMethodBadge
+                                  $method={payment.paymentMethod}
+                                >
                                   {payment.paymentMethod || "Not specified"}
                                 </PaymentMethodBadge>
                               </PaymentDetailValue>
                             </PaymentDetailItem>
                             <PaymentDetailItem>
-                              <PaymentDetailLabel>Transaction Details</PaymentDetailLabel>
-                              <PaymentDetailValue>{payment.paymentDetails || "No details provided"}</PaymentDetailValue>
+                              <PaymentDetailLabel>
+                                Transaction Details
+                              </PaymentDetailLabel>
+                              <PaymentDetailValue>
+                                {payment.paymentDetails ||
+                                  "No details provided"}
+                              </PaymentDetailValue>
                             </PaymentDetailItem>
                             <PaymentDetailItem>
-                              <PaymentDetailLabel>Updated By</PaymentDetailLabel>
-                              <PaymentDetailValue>{payment.updatedBy || "System"}</PaymentDetailValue>
+                              <PaymentDetailLabel>
+                                Updated By
+                              </PaymentDetailLabel>
+                              <PaymentDetailValue>
+                                {payment.updatedBy || "System"}
+                              </PaymentDetailValue>
                             </PaymentDetailItem>
                           </PaymentHistoryDetails>
 
                           <PaymentHistoryDetails>
                             <PaymentDetailItem>
-                              <PaymentDetailLabel>Previous Total Paid</PaymentDetailLabel>
-                              <PaymentDetailValue>₹{payment.previousTotalPaid}</PaymentDetailValue>
+                              <PaymentDetailLabel>
+                                Previous Total Paid
+                              </PaymentDetailLabel>
+                              <PaymentDetailValue>
+                                ₹{payment.previousTotalPaid}
+                              </PaymentDetailValue>
                             </PaymentDetailItem>
                             <PaymentDetailItem>
-                              <PaymentDetailLabel>New Total Paid</PaymentDetailLabel>
-                              <PaymentDetailValue style={{ color: "#059669", fontWeight: "700" }}>
+                              <PaymentDetailLabel>
+                                New Total Paid
+                              </PaymentDetailLabel>
+                              <PaymentDetailValue
+                                style={{ color: "#059669", fontWeight: "700" }}
+                              >
                                 ₹{payment.newTotalPaid}
                               </PaymentDetailValue>
                             </PaymentDetailItem>
                             <PaymentDetailItem>
-                              <PaymentDetailLabel>Remaining Balance</PaymentDetailLabel>
-                              <PaymentDetailValue style={{ color: "#e11d48", fontWeight: "700" }}>
+                              <PaymentDetailLabel>
+                                Remaining Balance
+                              </PaymentDetailLabel>
+                              <PaymentDetailValue
+                                style={{ color: "#e11d48", fontWeight: "700" }}
+                              >
                                 ₹{payment.newPending}
                               </PaymentDetailValue>
                             </PaymentDetailItem>
@@ -3328,21 +3702,23 @@ const B2BPatients = () => {
                               <span>{progressPercentage}% Complete</span>
                             </PaymentProgressLabel>
                             <PaymentProgressBar>
-                              <PaymentProgressFill $percentage={progressPercentage} />
+                              <PaymentProgressFill
+                                $percentage={progressPercentage}
+                              />
                             </PaymentProgressBar>
                           </PaymentHistoryProgress>
                         </PaymentHistoryCard>
-                      )
+                      );
                     })}
                   </>
-                )
+                );
               })()}
             </PaymentHistoryBody>
           </PaymentHistoryContent>
         </PaymentHistoryModal>
       )}
     </Container>
-  )
-}
+  );
+};
 
-export default B2BPatients
+export default B2BPatients;

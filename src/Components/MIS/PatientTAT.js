@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
-import { FiDownload, FiFilter, FiDatabase, FiInfo, FiList } from 'react-icons/fi';
-import * as XLSX from 'xlsx';
+import React, { useState, useEffect } from "react";
+import styled, { createGlobalStyle } from "styled-components";
+import {
+  FiDownload,
+  FiFilter,
+  FiDatabase,
+  FiInfo,
+  FiList,
+} from "react-icons/fi";
+import * as XLSX from "xlsx";
 
-// All styled components remain the same as before
 // Global styles
 const GlobalStyle = createGlobalStyle`
   :root {
@@ -44,7 +49,7 @@ const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
@@ -64,7 +69,7 @@ const CardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
@@ -104,7 +109,6 @@ const THead = styled.thead`
   }
 `;
 
-
 const Th = styled.th`
   padding: 1rem;
   text-align: left;
@@ -124,7 +128,7 @@ const Tr = styled.tr`
   &:nth-child(even) {
     background-color: var(--light);
   }
-  
+
   &:hover {
     background-color: rgba(67, 97, 238, 0.05);
   }
@@ -136,18 +140,35 @@ const Button = styled.button`
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: ${props => props.primary ? 'var(--primary)' : props.success ? 'var(--success)' : 'white'};
-  color: ${props => (props.primary || props.success) ? 'white' : 'var(--gray)'};
-  border: 1px solid ${props => props.primary ? 'var(--primary)' : props.success ? 'var(--success)' : 'var(--gray-light)'};
+  background-color: ${(props) =>
+    props.primary
+      ? "var(--primary)"
+      : props.success
+      ? "var(--success)"
+      : "white"};
+  color: ${(props) =>
+    props.primary || props.success ? "white" : "var(--gray)"};
+  border: 1px solid
+    ${(props) =>
+      props.primary
+        ? "var(--primary)"
+        : props.success
+        ? "var(--success)"
+        : "var(--gray-light)"};
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   font-weight: 500;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   transition: var(--transition);
-  opacity: ${props => props.disabled ? '0.7' : '1'};
-  
+  opacity: ${(props) => (props.disabled ? "0.7" : "1")};
+
   &:hover {
-    background-color: ${props => props.primary ? 'var(--primary-dark)' : props.success ? 'var(--primary-light)' : 'var(--gray-light)'};
+    background-color: ${(props) =>
+      props.primary
+        ? "var(--primary-dark)"
+        : props.success
+        ? "var(--primary-light)"
+        : "var(--gray-light)"};
   }
 `;
 
@@ -158,20 +179,26 @@ const Alert = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  
-  ${props => props.type === 'success' && `
+
+  ${(props) =>
+    props.type === "success" &&
+    `
     background-color: rgba(76, 201, 240, 0.1);
     border-left: 4px solid var(--success);
     color: var(--primary-dark);
   `}
-  
-  ${props => props.type === 'error' && `
+
+  ${(props) =>
+    props.type === "error" &&
+    `
     background-color: rgba(247, 37, 133, 0.1);
     border-left: 4px solid var(--danger);
     color: var(--danger);
   `}
   
-  ${props => props.type === 'info' && `
+  ${(props) =>
+    props.type === "info" &&
+    `
     background-color: rgba(144, 224, 239, 0.1);
     border-left: 4px solid var(--info);
     color: var(--primary-dark);
@@ -185,10 +212,14 @@ const LoadingSpinner = styled.div`
   width: 16px;
   height: 16px;
   animation: spin 1s linear infinite;
-  
+
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
@@ -199,13 +230,17 @@ const Badge = styled.span`
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 9999px;
-  
-  ${props => props.type === 'primary' && `
+
+  ${(props) =>
+    props.type === "primary" &&
+    `
     background-color: rgba(67, 97, 238, 0.1);
     color: var(--primary);
   `}
-  
-  ${props => props.type === 'secondary' && `
+
+  ${(props) =>
+    props.type === "secondary" &&
+    `
     background-color: rgba(63, 55, 201, 0.1);
     color: var(--secondary);
   `}
@@ -229,7 +264,7 @@ const IconCircle = styled.div`
   background-color: rgba(76, 201, 240, 0.1);
   border-radius: 50%;
   margin-bottom: 1rem;
-  
+
   svg {
     color: var(--primary);
     width: 1.75rem;
@@ -242,7 +277,7 @@ const FilterContainer = styled.div`
   flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
   }
@@ -283,7 +318,7 @@ const Input = styled.input`
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   transition: var(--transition);
-  
+
   &:focus {
     outline: none;
     border-color: var(--primary);
@@ -295,7 +330,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 0.5rem;
   align-self: flex-end;
-  
+
   @media (max-width: 768px) {
     width: 100%;
     margin-top: 1rem;
@@ -307,7 +342,7 @@ const PaginationContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-top: 1.5rem;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 1rem;
@@ -348,7 +383,7 @@ const TestNameItem = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -366,11 +401,11 @@ const ViewDetailsButton = styled.button`
   justify-content: center;
   margin-left: 8px;
   cursor: pointer;
-  
+
   &:hover {
     background: var(--primary);
   }
-  
+
   svg {
     width: 14px;
     height: 14px;
@@ -389,9 +424,9 @@ const Tooltip = styled.div`
   z-index: 10;
   margin-bottom: 8px;
   border: 1px solid var(--gray-light);
-  
+
   &:after {
-    content: '';
+    content: "";
     position: absolute;
     top: 100%;
     left: 20px;
@@ -422,528 +457,630 @@ const TestItem = styled.li`
   padding: 0.4rem 0;
   font-size: 0.75rem;
   border-bottom: 1px dashed var(--gray-light);
-  
+
   &:last-child {
     border-bottom: none;
   }
 `;
 
 const PatientDataTable = () => {
-    const [patients, setPatients] = useState([]);
-    const [allPatients, setAllPatients] = useState([]); // Store all fetched patients
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [patientsPerPage] = useState(10);
-    const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Initialize filters with today's date for both from and to
-    const [filters, setFilters] = useState({
-      patient_id: '',
-      from_date: today,
-      to_date: today
-    });
-    
-    const [activeTooltipId, setActiveTooltipId] = useState(null);
-    
-    // API base URL - replace with your actual API endpoint
-    const API_BASE_URL = `${Labbaseurl}overall_report/`;
-  
-    // Fetch data from API
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // We still send filters to backend for patient_id if provided
-        const queryParams = new URLSearchParams();
-        if (filters.patient_id) queryParams.append('patient_id', filters.patient_id);
-        
-        const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        setAllPatients(data); // Store all fetched data
-        
-        // Apply date filters in the frontend
-        const filteredData = applyDateFilters(data);
-        setPatients(filteredData);
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(`Error fetching data: ${err.message}`);
-        setPatients([]);
-        setAllPatients([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    useEffect(() => {
-      // Fetch data when component mounts or when patient_id filter changes
-      fetchData();
-    }, [filters.patient_id]); // Only re-fetch when patient_id changes
-    
-    // Also apply date filters immediately when component mounts
-    useEffect(() => {
-      if (allPatients.length > 0) {
-        const filteredData = applyDateFilters(allPatients);
-        setPatients(filteredData);
-      }
-    }, []); // Empty dependency array means this runs once on mount
-  
-    // Apply date filters to the data in the frontend
-    const applyDateFilters = (data) => {
-      if (!filters.from_date && !filters.to_date) {
-        return data; // Return all data if no date filters
-      }
-  
-      return data.filter(patient => {
-        const patientDate = new Date(patient.date);
-        
-        // Set time to midnight for accurate date comparison
-        patientDate.setHours(0, 0, 0, 0);
-        
-        let fromDateObj = null;
-        let toDateObj = null;
-        
-        if (filters.from_date) {
-          fromDateObj = new Date(filters.from_date);
-          fromDateObj.setHours(0, 0, 0, 0);
-        }
-        
-        if (filters.to_date) {
-          toDateObj = new Date(filters.to_date);
-          // Set to end of day for inclusive "to" date
-          toDateObj.setHours(23, 59, 59, 999);
-        }
-        
-        // Apply date range filter
-        if (fromDateObj && toDateObj) {
-          return patientDate >= fromDateObj && patientDate <= toDateObj;
-        } else if (fromDateObj) {
-          return patientDate >= fromDateObj;
-        } else if (toDateObj) {
-          return patientDate <= toDateObj;
-        }
-        
-        return true;
-      });
-    };
-  
-    const handleFilterChange = (e) => {
-      setFilters({
-        ...filters,
-        [e.target.name]: e.target.value
-      });
-    };
-  
-    const handleApplyFilter = () => {
-      if (filters.patient_id) {
-        // If patient_id changed, we need to fetch from API
-        fetchData();
-      } else {
-        // Just apply date filters to existing data
-        const filteredData = applyDateFilters(allPatients);
-        setPatients(filteredData);
-        setCurrentPage(1); // Reset to first page when filters change
-      }
-    };
-  
-    const handleClearFilter = () => {
-      // Set today's date for from_date and to_date when clearing filters
-      setFilters({
-        patient_id: '',
-        from_date: today,
-        to_date: today
-      });
-      
-      // Apply the default today's date filter to data
-      if (allPatients.length > 0) {
-        const filteredData = applyDateFilters(allPatients);
-        setPatients(filteredData);
-      }
-      setCurrentPage(1);
-    };
-  
-    // Toggle tooltip visibility
-    const toggleTooltip = (id) => {
-      if (activeTooltipId === id) {
-        setActiveTooltipId(null);
-      } else {
-        setActiveTooltipId(id);
-      }
-    };
-    
-    // Close tooltip when clicking outside
-    useEffect(() => {
-      const handleOutsideClick = (e) => {
-        if (activeTooltipId !== null && !e.target.closest('.test-name-container')) {
-          setActiveTooltipId(null);
-        }
-      };
-      
-      document.addEventListener('click', handleOutsideClick);
-      return () => {
-        document.removeEventListener('click', handleOutsideClick);
-      };
-    }, [activeTooltipId]);
+  const [patients, setPatients] = useState([]);
+  const [allPatients, setAllPatients] = useState([]); // Store all fetched patients
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [patientsPerPage] = useState(10);
+  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
 
-    // Helper function to parse test names string with parentheses handling
-    const parseTestNamesString = (testNamesStr) => {
-      if (!testNamesStr) return [];
-      
-      // Parse the string handling parentheses correctly
-      const result = [];
-      let currentTest = "";
-      let insideParentheses = 0;
-      
-      // Go through each character one by one
-      for (let i = 0; i < testNamesStr.length; i++) {
-        const char = testNamesStr[i];
-        
-        // Track parentheses depth
-        if (char === '(') {
-          insideParentheses++;
-          currentTest += char;
-        } 
-        else if (char === ')') {
-          insideParentheses--;
-          currentTest += char;
-        }
-        // If we find a comma and we're not inside parentheses, it's a test separator
-        else if (char === ',' && insideParentheses === 0) {
-          result.push(currentTest.trim());
-          currentTest = "";
-        }
-        // Handle - and ; as separators when not inside parentheses
-        else if ((char === '-' || char === ';') && insideParentheses === 0 && 
-                (i === 0 || testNamesStr[i-1] === ' ') && 
-                (i+1 < testNamesStr.length && testNamesStr[i+1] === ' ')) {
-          result.push(currentTest.trim());
-          currentTest = "";
-        }
-        // Otherwise, add to current test
-        else {
-          currentTest += char;
-        }
-      }
-      
-      // Add the last test if any
-      if (currentTest.trim()) {
-        result.push(currentTest.trim());
-      }
-      
-      // Return the final array of tests
-      return result;
-    };
+  // Initialize filters with today's date for both from and to
+  const [filters, setFilters] = useState({
+    patient_id: "",
+    from_date: today,
+    to_date: today,
+  });
 
-    // Get test names from patient object
-    const getTestNames = (patient) => {
-      if (Array.isArray(patient.testname) && patient.testname.length > 0) {
-        if (typeof patient.testname[0] === 'object' && patient.testname[0].testname) {
-          return patient.testname.map(t => t.testname);
-        } else {
-          return patient.testname;
-        }
-      } else if (patient.test_names) {
-        if (Array.isArray(patient.test_names)) {
-          return patient.test_names;
-        } else if (typeof patient.test_names === 'string') {
-          return parseTestNamesString(patient.test_names);
-        }
-        return [patient.test_names];
-      } else if (patient.testname && typeof patient.testname === 'string') {
-        return parseTestNamesString(patient.testname);
-      }
-      return [];
-    };
-    
-    // Count tests for a patient
-    const countTests = (patient) => {
-      const testNames = getTestNames(patient);
-      return testNames.length;
-    };
+  const [activeTooltipId, setActiveTooltipId] = useState(null);
 
-    // Export data to Excel
-    const exportToExcel = () => {
-      // Prepare data for export - using the filtered data
-      const exportData = patients.map(p => {
-        // Get test names as a formatted string
-        const testNames = getTestNames(p);
-        const testNamesStr = testNames.join(', ');
-        
-        return {
-          'Patient ID': p.patient_id,
-          'Name': p.patientname || p.patient_name, // Handle different field names
-          'Age': p.age,
-          'Gender': p.gender,
-          'Date': new Date(p.date).toLocaleDateString(),
-          'Referred By': p.refby,
-          'Branch': p.branch,
-          'Segment': p.segment,
-          'No. of Tests': countTests(p), // Add number of tests
-          'Test Name(s)': testNamesStr, // Add test names
-          'Total Amount': p.totalAmount || p.total_amount, // Handle different field names
-          'Payment Method': typeof p.payment_method === 'object' ? p.payment_method.paymentmethod : p.payment_method,
-          'Credit Amount': p.credit_amount,
-          'Bill No': p.bill_no,
-          'Registered By': p.registeredby
-        };
-      });
-      
-      // Create workbook and worksheet
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Patient Report');
-      
-      // Generate filename with current date and date range if filtered
-      let fileName = 'patient_report';
-      
+  // API base URL - replace with your actual API endpoint
+  const API_BASE_URL = `${Labbaseurl}overall_report/`;
+
+  // Fetch data from API
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // We still send filters to backend for patient_id if provided
+      const queryParams = new URLSearchParams();
+      if (filters.patient_id)
+        queryParams.append("patient_id", filters.patient_id);
+
+      const response = await fetch(`${API_BASE_URL}?${queryParams.toString()}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAllPatients(data); // Store all fetched data
+
+      // Apply date filters in the frontend
+      const filteredData = applyDateFilters(data);
+      setPatients(filteredData);
+
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError(`Error fetching data: ${err.message}`);
+      setPatients([]);
+      setAllPatients([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch data when component mounts or when patient_id filter changes
+    fetchData();
+  }, [filters.patient_id]); // Only re-fetch when patient_id changes
+
+  // Also apply date filters immediately when component mounts
+  useEffect(() => {
+    if (allPatients.length > 0) {
+      const filteredData = applyDateFilters(allPatients);
+      setPatients(filteredData);
+    }
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Apply date filters to the data in the frontend
+  const applyDateFilters = (data) => {
+    if (!filters.from_date && !filters.to_date) {
+      return data; // Return all data if no date filters
+    }
+
+    return data.filter((patient) => {
+      const patientDate = new Date(patient.date);
+
+      // Set time to midnight for accurate date comparison
+      patientDate.setHours(0, 0, 0, 0);
+
+      let fromDateObj = null;
+      let toDateObj = null;
+
       if (filters.from_date) {
-        fileName += `_from_${filters.from_date}`;
+        fromDateObj = new Date(filters.from_date);
+        fromDateObj.setHours(0, 0, 0, 0);
       }
-      
+
       if (filters.to_date) {
-        fileName += `_to_${filters.to_date}`;
+        toDateObj = new Date(filters.to_date);
+        // Set to end of day for inclusive "to" date
+        toDateObj.setHours(23, 59, 59, 999);
       }
-      
-      if (!filters.from_date && !filters.to_date) {
-        fileName += `_${new Date().toISOString().split('T')[0]}`;
+
+      // Apply date range filter
+      if (fromDateObj && toDateObj) {
+        return patientDate >= fromDateObj && patientDate <= toDateObj;
+      } else if (fromDateObj) {
+        return patientDate >= fromDateObj;
+      } else if (toDateObj) {
+        return patientDate <= toDateObj;
       }
-      
-      fileName += '.xlsx';
-      
-      // Export to file
-      XLSX.writeFile(workbook, fileName);
+
+      return true;
+    });
+  };
+
+  const handleFilterChange = (e) => {
+    setFilters({
+      ...filters,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleApplyFilter = () => {
+    if (filters.patient_id) {
+      // If patient_id changed, we need to fetch from API
+      fetchData();
+    } else {
+      // Just apply date filters to existing data
+      const filteredData = applyDateFilters(allPatients);
+      setPatients(filteredData);
+      setCurrentPage(1); // Reset to first page when filters change
+    }
+  };
+
+  const handleClearFilter = () => {
+    // Set today's date for from_date and to_date when clearing filters
+    setFilters({
+      patient_id: "",
+      from_date: today,
+      to_date: today,
+    });
+
+    // Apply the default today's date filter to data
+    if (allPatients.length > 0) {
+      const filteredData = applyDateFilters(allPatients);
+      setPatients(filteredData);
+    }
+    setCurrentPage(1);
+  };
+
+  // Toggle tooltip visibility
+  const toggleTooltip = (id) => {
+    if (activeTooltipId === id) {
+      setActiveTooltipId(null);
+    } else {
+      setActiveTooltipId(id);
+    }
+  };
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (
+        activeTooltipId !== null &&
+        !e.target.closest(".test-name-container")
+      ) {
+        setActiveTooltipId(null);
+      }
     };
-  
-    // Get current patients for pagination
-    const indexOfLastPatient = currentPage * patientsPerPage;
-    const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
-    const currentPatients = patients.slice(indexOfFirstPatient, indexOfLastPatient);
-    
-    // Change page
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  
-    return (
-      <>
-        <GlobalStyle />
-        <Container>
-          <Card>
-            <CardHeader>
-              <Title>Patient Report</Title>
-              <Button 
-                primary
-                onClick={exportToExcel}
-                disabled={loading || patients.length === 0}
-              >
-                <FiDownload /> Export to Excel
-              </Button>
-            </CardHeader>
-            <CardBody>
-              <FilterContainer>
-                <FilterGroup>
-                  <FormLabel>Patient ID</FormLabel>
-                  <InputGroup>
-                    <Input
-                      type="text"
-                      name="patient_id"
-                      value={filters.patient_id}
-                      onChange={handleFilterChange}
-                      placeholder="Enter Patient ID"
-                    />
-                  </InputGroup>
-                </FilterGroup>
-                
-                <FilterGroup>
-                  <FormLabel>From Date</FormLabel>
-                  <InputGroup>
-                    <Input
-                      type="date"
-                      name="from_date"
-                      value={filters.from_date}
-                      onChange={handleFilterChange}
-                    />
-                  </InputGroup>
-                </FilterGroup>
-                
-                <FilterGroup>
-                  <FormLabel>To Date</FormLabel>
-                  <InputGroup>
-                    <Input
-                      type="date"
-                      name="to_date"
-                      value={filters.to_date}
-                      onChange={handleFilterChange}
-                    />
-                  </InputGroup>
-                </FilterGroup>
-                
-                <ButtonGroup>
-                  <Button primary onClick={handleApplyFilter}>
-                    <FiFilter /> Apply Filters
-                  </Button>
-                  <Button onClick={handleClearFilter}>
-                    Clear
-                  </Button>
-                </ButtonGroup>
-              </FilterContainer>
-              
-              {error && (
-                <Alert type="error">
-                  <FiInfo />
-                  <div>{error}</div>
-                </Alert>
-              )}
-              
-              {loading ? (
-                <EmptyState>
-                  <LoadingSpinner />
-                  <p style={{ marginTop: '1rem' }}>Loading patient data...</p>
-                </EmptyState>
-              ) : patients.length === 0 ? (
-                <EmptyState>
-                  <IconCircle>
-                    <FiDatabase />
-                  </IconCircle>
-                  <h3 style={{ marginBottom: '0.5rem', fontWeight: '500' }}>No patient data found</h3>
-                  <p style={{ color: 'var(--gray)' }}>Try adjusting your filters or add new patients to the system.</p>
-                </EmptyState>
-              ) : (
-                <>
-                  <div style={{ overflowX: 'auto' }}>
-                    <Table>
-                      <THead type="primary">
-                        <Tr>
-                          <Th>Date</Th>
-                          <Th>Patient ID</Th>
-                          <Th>Name</Th>
-                          <Th>Age/Gender</Th>
-                          <Th>Referred By</Th>
-                          <Th>No. of Tests</Th>  
-                          <Th>Test Names</Th>  
-                          <Th>Total Amount</Th>
-                          <Th>Payment Method</Th>
-                          <Th>Credit Amount</Th>
-                        </Tr>
-                      </THead>
-                      <tbody>
-                        {currentPatients.map((patient, index) => {
-                          const patientId = patient._id || `patient-${index}`;
-                          const testNames = getTestNames(patient);
-                          const testCount = countTests(patient);
-                          
-                          return (
-                            <Tr key={patientId}>
-                              <Td>{new Date(patient.date).toLocaleDateString()}</Td>
-                              <Td>
-                                <Badge type="primary">{patient.patient_id}</Badge>
-                              </Td>
-                              <Td style={{ fontWeight: '500' }}>{patient.patientname || patient.patient_name}</Td>
-                              <Td>{`${patient.age} / ${patient.gender}`}</Td>
-                              <Td>{patient.refby}</Td>
-                              {/* No. of Tests Column */}
-                              <Td>
-                                <Badge type="secondary">
-                                  {testCount}
-                                </Badge>
-                              </Td>
+
+    document.addEventListener("click", handleOutsideClick);
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [activeTooltipId]);
+
+  // Helper function to parse test names string with parentheses handling
+  const parseTestNamesString = (testNamesStr) => {
+    if (!testNamesStr) return [];
+
+    // Parse the string handling parentheses correctly
+    const result = [];
+    let currentTest = "";
+    let insideParentheses = 0;
+
+    // Go through each character one by one
+    for (let i = 0; i < testNamesStr.length; i++) {
+      const char = testNamesStr[i];
+
+      // Track parentheses depth
+      if (char === "(") {
+        insideParentheses++;
+        currentTest += char;
+      } else if (char === ")") {
+        insideParentheses--;
+        currentTest += char;
+      }
+      // If we find a comma and we're not inside parentheses, it's a test separator
+      else if (char === "," && insideParentheses === 0) {
+        result.push(currentTest.trim());
+        currentTest = "";
+      }
+      // Handle - and ; as separators when not inside parentheses
+      else if (
+        (char === "-" || char === ";") &&
+        insideParentheses === 0 &&
+        (i === 0 || testNamesStr[i - 1] === " ") &&
+        i + 1 < testNamesStr.length &&
+        testNamesStr[i + 1] === " "
+      ) {
+        result.push(currentTest.trim());
+        currentTest = "";
+      }
+      // Otherwise, add to current test
+      else {
+        currentTest += char;
+      }
+    }
+
+    // Add the last test if any
+    if (currentTest.trim()) {
+      result.push(currentTest.trim());
+    }
+
+    // Return the final array of tests
+    return result;
+  };
+
+  // Get test names from patient object
+  const getTestNames = (patient) => {
+    if (Array.isArray(patient.testname) && patient.testname.length > 0) {
+      if (
+        typeof patient.testname[0] === "object" &&
+        patient.testname[0].testname
+      ) {
+        return patient.testname.map((t) => t.testname);
+      } else {
+        return patient.testname;
+      }
+    } else if (patient.test_names) {
+      if (Array.isArray(patient.test_names)) {
+        return patient.test_names;
+      } else if (typeof patient.test_names === "string") {
+        return parseTestNamesString(patient.test_names);
+      }
+      return [patient.test_names];
+    } else if (patient.testname && typeof patient.testname === "string") {
+      return parseTestNamesString(patient.testname);
+    }
+    return [];
+  };
+
+  // Count tests for a patient
+  const countTests = (patient) => {
+    const testNames = getTestNames(patient);
+    return testNames.length;
+  };
+
+  // Helper function to get payment method and details
+  const getPaymentInfo = (patient) => {
+    let paymentMethod = "";
+    let paymentDetails = "";
+
+    if (typeof patient.payment_method === "object" && patient.payment_method) {
+      paymentMethod = patient.payment_method.paymentmethod || "";
+
+      // Extract payment details as-is without labels
+      if (patient.payment_method.chequedetails) {
+        paymentDetails = patient.payment_method.chequedetails;
+      } else if (patient.payment_method.carddetails) {
+        paymentDetails = patient.payment_method.carddetails;
+      } else if (patient.payment_method.upidetails) {
+        paymentDetails = patient.payment_method.upidetails;
+      } else if (patient.payment_method.netbankingdetails) {
+        paymentDetails = patient.payment_method.netbankingdetails;
+      } else if (patient.payment_method.details) {
+        paymentDetails = patient.payment_method.details;
+      }
+    } else if (typeof patient.payment_method === "string") {
+      paymentMethod = patient.payment_method;
+    }
+
+    return { paymentMethod, paymentDetails };
+  };
+
+  // Export data to Excel
+  const exportToExcel = () => {
+    // Prepare data for export - using the filtered data
+    const exportData = patients.map((p) => {
+      // Get test names as a formatted string
+      const testNames = getTestNames(p);
+      const testNamesStr = testNames.join(", ");
+
+      // Get payment information
+      const { paymentMethod, paymentDetails } = getPaymentInfo(p);
+
+      return {
+        "Patient ID": p.patient_id,
+        Name: p.patientname || p.patient_name, // Handle different field names
+        Age: p.age,
+        Gender: p.gender,
+        Date: new Date(p.date).toLocaleDateString("en-GB"),
+        "Referred By": p.refby,
+        Branch: p.branch,
+        Segment: p.segment,
+        "No. of Tests": countTests(p), // Add number of tests
+        "Test Name(s)": testNamesStr, // Add test names
+        "Total Amount": p.totalAmount || p.total_amount, // Handle different field names
+        "Payment Method": paymentMethod,
+        "Payment Details": paymentDetails, // Add payment details
+        "Credit Amount": p.credit_amount,
+        "Bill No": p.bill_no,
+        "Registered By": p.registeredby,
+      };
+    });
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Patient Report");
+
+    // Generate filename with current date and date range if filtered
+    let fileName = "patient_report";
+
+    if (filters.from_date) {
+      fileName += `_from_${filters.from_date}`;
+    }
+
+    if (filters.to_date) {
+      fileName += `_to_${filters.to_date}`;
+    }
+
+    if (!filters.from_date && !filters.to_date) {
+      fileName += `_${new Date().toISOString().split("T")[0]}`;
+    }
+
+    fileName += ".xlsx";
+
+    // Export to file
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // Get current patients for pagination
+  const indexOfLastPatient = currentPage * patientsPerPage;
+  const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
+  const currentPatients = patients.slice(
+    indexOfFirstPatient,
+    indexOfLastPatient
+  );
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  return (
+    <>
+      <GlobalStyle />
+      <Container>
+        <Card>
+          <CardHeader>
+            <Title>Patient Report</Title>
+            <Button
+              primary
+              onClick={exportToExcel}
+              disabled={loading || patients.length === 0}
+            >
+              <FiDownload /> Export to Excel
+            </Button>
+          </CardHeader>
+          <CardBody>
+            <FilterContainer>
+              <FilterGroup>
+                <FormLabel>Patient ID</FormLabel>
+                <InputGroup>
+                  <Input
+                    type="text"
+                    name="patient_id"
+                    value={filters.patient_id}
+                    onChange={handleFilterChange}
+                    placeholder="Enter Patient ID"
+                  />
+                </InputGroup>
+              </FilterGroup>
+
+              <FilterGroup>
+                <FormLabel>From Date</FormLabel>
+                <InputGroup>
+                  <Input
+                    type="date"
+                    name="from_date"
+                    value={filters.from_date}
+                    onChange={handleFilterChange}
+                  />
+                </InputGroup>
+              </FilterGroup>
+
+              <FilterGroup>
+                <FormLabel>To Date</FormLabel>
+                <InputGroup>
+                  <Input
+                    type="date"
+                    name="to_date"
+                    value={filters.to_date}
+                    onChange={handleFilterChange}
+                  />
+                </InputGroup>
+              </FilterGroup>
+
+              <ButtonGroup>
+                <Button primary onClick={handleApplyFilter}>
+                  <FiFilter /> Apply Filters
+                </Button>
+                <Button onClick={handleClearFilter}>Clear</Button>
+              </ButtonGroup>
+            </FilterContainer>
+
+            {error && (
+              <Alert type="error">
+                <FiInfo />
+                <div>{error}</div>
+              </Alert>
+            )}
+
+            {loading ? (
+              <EmptyState>
+                <LoadingSpinner />
+                <p style={{ marginTop: "1rem" }}>Loading patient data...</p>
+              </EmptyState>
+            ) : patients.length === 0 ? (
+              <EmptyState>
+                <IconCircle>
+                  <FiDatabase />
+                </IconCircle>
+                <h3 style={{ marginBottom: "0.5rem", fontWeight: "500" }}>
+                  No patient data found
+                </h3>
+                <p style={{ color: "var(--gray)" }}>
+                  Try adjusting your filters or add new patients to the system.
+                </p>
+              </EmptyState>
+            ) : (
+              <>
+                <div style={{ overflowX: "auto" }}>
+                  <Table>
+                    <THead type="primary">
+                      <Tr>
+                        <Th>Date</Th>
+                        <Th>Patient ID</Th>
+                        <Th>Name</Th>
+                        <Th>Age/Gender</Th>
+                        <Th>Referred By</Th>
+                        <Th>No. of Tests</Th>
+                        <Th>Test Names</Th>
+                        <Th>Total Amount</Th>
+                        <Th>Payment Method</Th>
+                        <Th>Payment Details</Th>
+                        <Th>Credit Amount</Th>
+                      </Tr>
+                    </THead>
+                    <tbody>
+                      {currentPatients.map((patient, index) => {
+                        const patientId = patient._id || `patient-${index}`;
+                        const testNames = getTestNames(patient);
+                        const testCount = countTests(patient);
+                        const { paymentMethod, paymentDetails } =
+                          getPaymentInfo(patient);
+
+                        return (
+                          <Tr key={patientId}>
+                            <Td>
+                              {new Date(patient.date).toLocaleDateString(
+                                "en-GB"
+                              )}
+                            </Td>
+                            <Td>
+                              <Badge type="primary">{patient.patient_id}</Badge>
+                            </Td>
+                            <Td style={{ fontWeight: "500" }}>
+                              {patient.patientname || patient.patient_name}
+                            </Td>
+                            <Td>{`${patient.age} / ${patient.gender}`}</Td>
+                            <Td>{patient.refby}</Td>
+                            {/* No. of Tests Column */}
+                            <Td>
+                              <Badge type="secondary">{testCount}</Badge>
+                            </Td>
 
                             {/* Test Names Column - Enhanced with tooltip */}
                             <Td>
-                            <TestNameContainer className="test-name-container">
+                              <TestNameContainer className="test-name-container">
                                 <TestNamePreview>
-                                {testNames.length > 0 ? (
-                                    testNames.slice(0, 3).map((test, i) => (
-                                    <TestNameItem key={i}>• {test.trim()}</TestNameItem>
-                                    ))
-                                ) : (
-                                    <span style={{ color: 'var(--gray)' }}>No tests</span>
-                                )}
-                                {testNames.length > 3 && (
-                                    <TestNameItem style={{ color: 'var(--primary)' }}>
-                                    +{testNames.length - 3} more...
+                                  {testNames.length > 0 ? (
+                                    testNames
+                                      .slice(0, 3)
+                                      .map((test, i) => (
+                                        <TestNameItem key={i}>
+                                          • {test.trim()}
+                                        </TestNameItem>
+                                      ))
+                                  ) : (
+                                    <span style={{ color: "var(--gray)" }}>
+                                      No tests
+                                    </span>
+                                  )}
+                                  {testNames.length > 3 && (
+                                    <TestNameItem
+                                      style={{ color: "var(--primary)" }}
+                                    >
+                                      +{testNames.length - 3} more...
                                     </TestNameItem>
-                                )}
+                                  )}
                                 </TestNamePreview>
-                                
+
                                 {testNames.length > 0 && (
-                                <ViewDetailsButton 
-                                    title="View all test names" 
+                                  <ViewDetailsButton
+                                    title="View all test names"
                                     onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleTooltip(patientId);
+                                      e.stopPropagation();
+                                      toggleTooltip(patientId);
                                     }}
-                                >
+                                  >
                                     <FiList />
-                                </ViewDetailsButton>
+                                  </ViewDetailsButton>
                                 )}
-                                
-                                {activeTooltipId === patientId && testNames.length > 0 && (
-                                <Tooltip>
-                                    <TooltipHeader>Test Names ({testNames.length})</TooltipHeader>
-                                    <TestList>
-                                    {testNames.map((test, i) => (
-                                        <TestItem key={i}>• {test.trim()}</TestItem>
-                                    ))}
-                                    </TestList>
-                                </Tooltip>
-                                )}
-                            </TestNameContainer>
+
+                                {activeTooltipId === patientId &&
+                                  testNames.length > 0 && (
+                                    <Tooltip>
+                                      <TooltipHeader>
+                                        Test Names ({testNames.length})
+                                      </TooltipHeader>
+                                      <TestList>
+                                        {testNames.map((test, i) => (
+                                          <TestItem key={i}>
+                                            • {test.trim()}
+                                          </TestItem>
+                                        ))}
+                                      </TestList>
+                                    </Tooltip>
+                                  )}
+                              </TestNameContainer>
                             </Td>
 
-                              <Td>₹{parseInt(patient.totalAmount || patient.total_amount || 0).toLocaleString()}</Td>
-                              <Td>
-                                {typeof patient.payment_method === 'object' 
-                                  ? patient.payment_method.paymentmethod || '-' 
-                                  : patient.payment_method || '-'}
-                              </Td>
-                              <Td>
-                                {parseInt(patient.credit_amount) > 0 
-                                  ? <span style={{ color: 'var(--danger)' }}>₹{parseInt(patient.credit_amount).toLocaleString()}</span> 
-                                  : <span style={{ color: 'var(--gray)' }}>-</span>}
-                              </Td>
-                            </Tr>
-                          );
-                        })}
-                      </tbody>
-                    </Table>
-                  </div>
-                  
-                  <PaginationContainer>
-                    <PaginationInfo>
-                      Showing <strong>{patients.length > 0 ? indexOfFirstPatient + 1 : 0}</strong> to <strong>{Math.min(indexOfLastPatient, patients.length)}</strong> of <strong>{patients.length}</strong> entries
-                    </PaginationInfo>
-                    <PaginationButtons>
-                      <Button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        primary
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={indexOfLastPatient >= patients.length}
-                      >
-                        Next
-                      </Button>
-                    </PaginationButtons>
-                  </PaginationContainer>
-                </>
-              )}
-            </CardBody>
-          </Card>
-        </Container>
-      </>
-    );
-  };
-  
-  export default PatientDataTable;
+                            <Td>
+                              ₹
+                              {parseInt(
+                                patient.totalAmount || patient.total_amount || 0
+                              ).toLocaleString()}
+                            </Td>
+                            <Td>
+                              <Badge
+                                type={paymentMethod ? "info" : "secondary"}
+                              >
+                                {paymentMethod || "-"}
+                              </Badge>
+                            </Td>
+                            <Td>
+                              {paymentDetails ? (
+                                <span
+                                  style={{
+                                    fontSize: "0.85em",
+                                    color: "var(--text-secondary)",
+                                  }}
+                                >
+                                  {paymentDetails}
+                                </span>
+                              ) : (
+                                <span style={{ color: "var(--gray)" }}>-</span>
+                              )}
+                            </Td>
+                            <Td>
+                              {parseInt(patient.credit_amount) > 0 ? (
+                                <span style={{ color: "var(--danger)" }}>
+                                  ₹
+                                  {parseInt(
+                                    patient.credit_amount
+                                  ).toLocaleString()}
+                                </span>
+                              ) : (
+                                <span style={{ color: "var(--gray)" }}>-</span>
+                              )}
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
+
+                <PaginationContainer>
+                  <PaginationInfo>
+                    Showing{" "}
+                    <strong>
+                      {patients.length > 0 ? indexOfFirstPatient + 1 : 0}
+                    </strong>{" "}
+                    to{" "}
+                    <strong>
+                      {Math.min(indexOfLastPatient, patients.length)}
+                    </strong>{" "}
+                    of <strong>{patients.length}</strong> entries
+                  </PaginationInfo>
+                  <PaginationButtons>
+                    <Button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      primary
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={indexOfLastPatient >= patients.length}
+                    >
+                      Next
+                    </Button>
+                  </PaginationButtons>
+                </PaginationContainer>
+              </>
+            )}
+          </CardBody>
+        </Card>
+      </Container>
+    </>
+  );
+};
+
+export default PatientDataTable;

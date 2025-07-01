@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -288,31 +286,45 @@ const BarcodeItem = styled.div`
   height: 25mm;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
   overflow: hidden;
   page-break-before: always;
+  padding: 1mm;
+  box-sizing: border-box;
 `;
 
 const BarcodeText = styled.p`
-  font-size: 10px;
-  margin: 0;
+  font-size: 8px;
+  margin: 0 0 1px 0;
   white-space: nowrap;
+  text-align: left;
+  width: 100%;
 `;
 
 const BarcodeDate = styled.p`
-  font-size: 9px;
-  margin: 0;
+  font-size: 7px;
+  margin: 0 0 2px 0;
+  text-align: left;
+  width: 100%;
 `;
 
 const ContainerName = styled.div`
-  font-size: 5px;
+  font-size: 6px;
   font-weight: bold;
-  margin: 2px 0 0 0;
-  text-align: right;
+  margin: 1px 0 0 0;
+  text-align: left;
   width: 100%;
   color: #333;
+`;
+
+const BarcodeContainer = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin: 1px 0;
 `;
 
 const EmptyState = styled.div`
@@ -641,61 +653,75 @@ const BarcodeTestDetails = () => {
 
     doc.open();
     doc.write(`
-    <html>
-    <head>
-      <style>
-        @page {
-          size: 50mm 25mm;
-          margin: 0;
-        }
-        body {
-          font-family: Arial, sans-serif;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          align-items: center;
-        }
-        .barcode-item {
-          width: 50mm;
-          height: 25mm;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          overflow: hidden;
-          page-break-before: always;
-        }
-        .barcode-text {
-          font-size: 10px;
-          margin: 0;
-          white-space: nowrap;
-        }
-        .barcode-date {
-          font-size: 9px;
-          margin: 0;
-        }
-        .container-name {
-          font-size: 10px;
-          font-weight: bold;
-          margin: 2px 0 0 0;
-          text-align: right;
-          width: 100%;
-          color: #333;
-        }
-        svg {
-          width: 48mm !important;
-          height: 18mm !important;
-        }
-      </style>
-    </head>
-    <body>
-      ${printSectionRef.current.innerHTML}
-    </body>
-    </html>
-  `);
+ <html>
+ <head>
+ <style>
+ @page {
+ size: 50mm 25mm;
+ margin: 0;
+ }
+ body {
+ font-family: Arial, sans-serif;
+ margin: 0;
+ padding: 0;
+ display: flex;
+ flex-wrap: wrap;
+ justify-content: flex-start;
+ align-items: flex-start;
+ }
+ .barcode-item {
+ width: 50mm;
+ height: 25mm;
+ display: flex;
+ flex-direction: column;
+ align-items: flex-start;
+ justify-content: flex-start;
+ text-align: left;
+ overflow: hidden;
+ page-break-before: always;
+ padding: 1mm;
+ box-sizing: border-box;
+ }
+ .barcode-text {
+ font-size: 5px;
+ margin: 0 0 1px 0;
+ white-space: nowrap;
+ text-align: left;
+ width: 60%;
+ }
+ .barcode-date {
+ font-size: 7px;
+ margin: 0 0 2px 0;
+ text-align: left;
+ width: 100%;
+ }
+ .container-name {
+ font-size: 6px;
+ font-weight: bold;
+ margin: 1px 0 0 0;
+ text-align: left;
+ width: 100%;
+ color: #333;
+ }
+ .barcode-container {
+ display: flex;
+ justify-content: flex-start;
+ align-items: left;
+ width: 100%;
+ margin: 1px 0;
+ }
+ svg {
+ width: 35mm !important;
+ height: 12mm !important;
+ align-self: flex-start;
+ }
+ </style>
+ </head>
+ <body>
+ ${printSectionRef.current.innerHTML}
+ </body>
+ </html>
+ `);
     doc.close();
 
     iframe.contentWindow.onload = () => {
@@ -869,9 +895,22 @@ const BarcodeTestDetails = () => {
                       <td>{test.collection_container}</td>
                       <td>
                         {test.barcode ? (
-                          <svg
-                            ref={(el) => el && JsBarcode(el, test.barcode)}
-                          />
+                          <BarcodeContainer>
+                            <svg
+                              ref={(el) => {
+                                if (el && test.barcode) {
+                                  JsBarcode(el, test.barcode, {
+                                    format: "CODE128",
+                                    width: 1,
+                                    height: 30,
+                                    displayValue: true,
+                                    fontSize: 10,
+                                    margin: 0,
+                                  });
+                                }
+                              }}
+                            />
+                          </BarcodeContainer>
                         ) : (
                           "No Barcode"
                         )}
@@ -929,7 +968,7 @@ const BarcodeTestDetails = () => {
         {barcodeData.map((item, index) => (
           <BarcodeItem key={index} className="barcode-item">
             <BarcodeText className="barcode-text">
-              {selectedPatient?.patientname} | {selectedPatient?.age} |
+              {selectedPatient?.patientname} | {selectedPatient?.age} |{" "}
               {selectedPatient?.gender === "Male"
                 ? "M"
                 : selectedPatient?.gender === "Female"
@@ -939,20 +978,22 @@ const BarcodeTestDetails = () => {
             <BarcodeDate className="barcode-date">
               {selectedPatient?.date ? formatDate(selectedPatient.date) : ""}
             </BarcodeDate>
-            <svg
-              ref={(el) => {
-                if (el && item.barcode) {
-                  JsBarcode(el, item.barcode, {
-                    format: "CODE128",
-                    width: 0.8,
-                    height: 18,
-                    displayValue: true,
-                    fontSize: 7,
-                    margin: 0,
-                  });
-                }
-              }}
-            />
+            <BarcodeContainer className="barcode-container">
+              <svg
+                ref={(el) => {
+                  if (el && item.barcode) {
+                    JsBarcode(el, item.barcode, {
+                      format: "CODE128",
+                      width: 0.6,
+                      height: 12,
+                      displayValue: true,
+                      fontSize: 6,
+                      margin: 0,
+                    });
+                  }
+                }}
+              />
+            </BarcodeContainer>
             {item.containerName && !item.isExtra && (
               <ContainerName className="container-name">
                 {item.containerName}

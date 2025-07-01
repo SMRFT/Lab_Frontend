@@ -320,6 +320,69 @@ const PrintBill = () => {
       `
       )
       .join("");
+    // FIXED: Better payment method handling
+    let displayPaymentMode = "NIL";
+
+    // First, check if payment_method is a string (current form state)
+    if (patient.payment_method && typeof patient.payment_method === "string") {
+      displayPaymentMode = patient.payment_method;
+
+      // Add payment details if available and not Cash
+      if (patient.payment_method !== "Cash" && patient.payment_detail) {
+        displayPaymentMode += ` (${patient.payment_detail})`;
+      }
+
+      // Handle PartialPayment special case
+      if (
+        patient.payment_method === "PartialPayment" &&
+        patient.PartialPayment?.method
+      ) {
+        displayPaymentMode = `Partial Payment - ${patient.PartialPayment.method}`;
+        if (patient.PartialPayment.credit) {
+          displayPaymentMode += ` (Paid: ₹${
+            patient.PartialPayment.credit
+          }, Remaining: ₹${patient.PartialPayment.remainingAmount || 0})`;
+        }
+      }
+    } else {
+      // Fallback: Try to parse if it's a JSON string (from database)
+      try {
+        const parsedPaymentMethod =
+          typeof patient.payment_method === "string"
+            ? JSON.parse(patient.payment_method)
+            : patient.payment_method;
+
+        if (parsedPaymentMethod && parsedPaymentMethod.paymentmethod) {
+          displayPaymentMode = parsedPaymentMethod.paymentmethod;
+
+          // Add details based on payment method
+          if (parsedPaymentMethod.paymentmethod === "PartialPayment") {
+            try {
+              const partialDetails = JSON.parse(patient.PartialPayment || "{}");
+              if (partialDetails.method) {
+                displayPaymentMode = `Partial Payment - ${partialDetails.method}`;
+                if (partialDetails.credit) {
+                  displayPaymentMode += ` (Paid: ₹${
+                    partialDetails.credit
+                  }, Remaining: ₹${partialDetails.remainingAmount || 0})`;
+                }
+              }
+            } catch {
+              displayPaymentMode = "Partial Payment";
+            }
+          } else if (parsedPaymentMethod.paymentmethod !== "Cash") {
+            // Add details for other payment methods
+            const detailKey = `${parsedPaymentMethod.paymentmethod.toLowerCase()}details`;
+            if (parsedPaymentMethod[detailKey]) {
+              displayPaymentMode += ` (${parsedPaymentMethod[detailKey]})`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error parsing payment method:", err);
+        displayPaymentMode = "NIL";
+      }
+    }
 
     const amountInWords = patient.totalAmount
       ? numberToWords(patient.totalAmount) + " rupees only"
@@ -481,7 +544,7 @@ const PrintBill = () => {
                 <tbody>
                   <tr>
                     <td>₹${patient.totalAmount || "NIL"}</td>
-                    <td>${patient.payment_method?.paymentmethod || "NIL"}</td>
+                    <td>${displayPaymentMode || "NIL"}</td>
                   </tr>
                 </tbody>
               </table>

@@ -180,6 +180,22 @@ const TestTitleCell = styled.td`
   border-left: 4px solid var(--primary);
 `;
 
+const TestTitleCellMerged = styled.td`
+  font-weight: 700 !important;
+  font-size: 1.1rem;
+  color: var(--primary);
+  padding: 1.5rem 1rem !important;
+  background-color: rgba(67, 97, 238, 0.1);
+  border-left: 4px solid var(--primary);
+`;
+
+const TestRemarksCell = styled.td`
+  font-weight: 500 !important;
+  color: var(--secondary);
+  font-style: italic;
+  padding: 1.5rem 1rem !important;
+`;
+
 const ParameterNameCell = styled.td`
   padding-left: 2rem !important;
   font-weight: 500;
@@ -358,7 +374,17 @@ function DoctorForm() {
         const filteredData = data.filter(
           (item) => item.patient_id === patientId && item.date === date
         );
-        setTestValues(filteredData);
+
+        // Parse testdetails if it's a string
+        const processedData = filteredData.map((item) => ({
+          ...item,
+          testdetails:
+            typeof item.testdetails === "string"
+              ? JSON.parse(item.testdetails)
+              : item.testdetails,
+        }));
+
+        setTestValues(processedData);
         setLoading(false);
       })
       .catch((error) => {
@@ -548,40 +574,39 @@ function DoctorForm() {
 
     testValues.forEach((test, testIndex) => {
       test.testdetails.forEach((detail, detailIndex) => {
-        // Add test title row with approve/rerun buttons
+        // Add test title row with approve/rerun buttons and remarks
         if (detail.parameters && detail.parameters.length > 0) {
           rows.push(
             <TestHeaderRow key={`test-${testIndex}-${detailIndex}`}>
-              <TestTitleCell colSpan="7">
+              <TestTitleCell colSpan="2">
                 <strong>
-                  {testNumber}. {detail.testname || "N/A"}:
+                  {testNumber}. {detail.testname || "N/A"}
                 </strong>
               </TestTitleCell>
-              <td colSpan="2">
-                <ButtonContainer>
-                  <RerunButton
-                    onClick={() =>
-                      handleTestRerun(test.patient_id, detailIndex)
-                    }
-                    disabled={detail.approve || detail.rerun}
-                  >
-                    <RotateCcw size={14} />
-                    {detail.rerun ? "Rerun Initiated" : "Rerun"}
-                  </RerunButton>
-                  <ApproveButton
-                    onClick={() =>
-                      handleTestApprove(
-                        test.patient_id,
-                        detailIndex,
-                        approved_by
-                      )
-                    }
-                    disabled={detail.approve || detail.rerun}
-                  >
-                    <CheckCircle size={14} />
-                    {detail.approve ? "Approved" : "Approve"}
-                  </ApproveButton>
-                </ButtonContainer>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <TestRemarksCell>{detail.remarks || "N/A"}</TestRemarksCell>
+              <td>
+                <RerunButton
+                  onClick={() => handleTestRerun(test.patient_id, detailIndex)}
+                  disabled={detail.approve || detail.rerun}
+                >
+                  <RotateCcw size={14} />
+                  {detail.rerun ? "Rerun Initiated" : "Rerun"}
+                </RerunButton>
+              </td>
+              <td>
+                <ApproveButton
+                  onClick={() =>
+                    handleTestApprove(test.patient_id, detailIndex, approved_by)
+                  }
+                  disabled={detail.approve || detail.rerun}
+                >
+                  <CheckCircle size={14} />
+                  {detail.approve ? "Approved" : "Approve"}
+                </ApproveButton>
               </td>
             </TestHeaderRow>
           );
@@ -615,8 +640,7 @@ function DoctorForm() {
                 </ValueCell>
                 <td>{parameter.unit || "N/A"}</td>
                 <td>{parameter.reference_range || "N/A"}</td>
-                <td>{parameter.remarks || "N/A"}</td>
-                <td colSpan="2"></td>{" "}
+                <td colSpan="3"></td>{" "}
                 {/* Empty cells for approve/rerun columns */}
               </ParameterRow>
             );
@@ -624,13 +648,15 @@ function DoctorForm() {
 
           testNumber++;
         } else {
-          // If no parameters, show test with its actual values and buttons
+          // If no parameters, show test with its actual values and buttons using TestHeaderRow for consistency
+          // Merge the first two columns (Sl. No and Test Name) for tests without parameters
           rows.push(
-            <ParameterRow key={`test-no-params-${testIndex}-${detailIndex}`}>
-              <td>{testNumber}</td>
-              <td>
-                <strong>{detail.testname || "N/A"}</strong>
-              </td>
+            <TestHeaderRow key={`test-no-params-${testIndex}-${detailIndex}`}>
+              <TestTitleCellMerged colSpan="2">
+                <strong>
+                  {testNumber}. {detail.testname || "N/A"}
+                </strong>
+              </TestTitleCellMerged>
               <td>{detail.specimen_type || "N/A"}</td>
               <ValueCell>
                 <ValueContainer>
@@ -647,7 +673,7 @@ function DoctorForm() {
               </ValueCell>
               <td>{detail.unit || "N/A"}</td>
               <td>{detail.reference_range || "N/A"}</td>
-              <td>{detail.remarks || "N/A"}</td>
+              <TestRemarksCell>{detail.remarks || "N/A"}</TestRemarksCell>
               <td>
                 <RerunButton
                   onClick={() => handleTestRerun(test.patient_id, detailIndex)}
@@ -668,7 +694,7 @@ function DoctorForm() {
                   {detail.approve ? "Approved" : "Approve"}
                 </ApproveButton>
               </td>
-            </ParameterRow>
+            </TestHeaderRow>
           );
           testNumber++;
         }

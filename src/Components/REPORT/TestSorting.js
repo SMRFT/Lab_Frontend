@@ -12,7 +12,6 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import headerImage from "../Images/Header.png";
 import FooterImage from "../Images/Footer.png";
-import Savitha from "../Images/Savitha.png";
 import Vijayan from "../Images/Vijayan.png";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import axios from "axios";
@@ -393,6 +392,7 @@ const TestSorting = ({ patient, onClose }) => {
       const contentYStart = headerHeight + 10; // Start content below the header
       const signatureHeight = 45; // Height needed for signatures
       const disclaimerHeight = 15; // Height needed for disclaimer
+      const tableHeaderHeight = 15; // Height needed for table header
 
       // Patient information (left and right sides)
       const leftDetails = [
@@ -444,9 +444,21 @@ const TestSorting = ({ patient, onClose }) => {
         );
       };
 
+      // Column widths adjusted to fit within content margins
+      const colWidths = [
+        contentWidth * 0.28, // Test Description
+        contentWidth * 0.12, // Specimen Type
+        contentWidth * 0.05, // Extra Gap (Added)
+        contentWidth * 0.13, // Value(s)
+        contentWidth * 0.1, // Unit
+        contentWidth * 0.17, // Reference Range
+        contentWidth * 0.13, // Method (Moved to last)
+      ];
+
       // Create the actual document
       const doc = new jsPDF();
       let pageCount = 1;
+      let isTableStarted = false; // Track if we're in the table section
 
       // Function to add header and footer WITHOUT page numbers initially
       const addHeaderFooter = () => {
@@ -474,6 +486,46 @@ const TestSorting = ({ patient, onClose }) => {
         }
       };
 
+      // Function to draw table header
+      const drawTableHeader = (yPos) => {
+        // Draw Top Line - Use leftMargin and rightMargin for consistency
+        doc.line(leftMargin, yPos, rightMargin, yPos);
+        yPos += 5;
+
+        // Table Header
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+
+        // Updated headers array to match colWidths
+        const headers = [
+          "Test Description",
+          "Specimen",
+          "",
+          "Value(s)",
+          "Unit",
+          "Reference Range",
+          "Method",
+        ];
+
+        let xPos = leftMargin;
+
+        headers.forEach((header, index) => {
+          if (header) {
+            // Avoid printing the extra gap column header
+            doc.text(header, xPos, yPos);
+          }
+          xPos += colWidths[index]; // Move to the next column
+        });
+
+        yPos += 5;
+
+        // Draw Bottom Line - Use leftMargin and rightMargin for consistency
+        doc.line(leftMargin, yPos, rightMargin, yPos);
+        yPos += 5;
+
+        return yPos;
+      };
+
       // Function to wrap text and return height
       const wrapText = (doc, text, maxWidth, startX, yPos, lineHeight) => {
         if (!text) return 0;
@@ -495,7 +547,15 @@ const TestSorting = ({ patient, onClose }) => {
           doc.addPage();
           pageCount++;
           addHeaderFooter(); // Add header/footer without page numbers
-          return contentYStart; // Reset Y position for new page
+
+          let newYPos = contentYStart;
+
+          // If we're in the table section, add table header on new page
+          if (isTableStarted) {
+            newYPos = drawTableHeader(newYPos);
+          }
+
+          return newYPos; // Reset Y position for new page
         }
         return yPos;
       };
@@ -685,56 +745,16 @@ const TestSorting = ({ patient, onClose }) => {
 
       // Test rendering logic with better page break handling and consistent alignment
       if (orderedTests.length) {
-        // Column widths adjusted to fit within content margins
-        const colWidths = [
-          contentWidth * 0.28, // Test Description
-          contentWidth * 0.12, // Specimen Type
-          contentWidth * 0.08, // Method (Reduced)
-          contentWidth * 0.1, // Extra Gap (Added)
-          contentWidth * 0.15, // Value(s)
-          contentWidth * 0.1, // Unit
-          contentWidth * 0.15, // Reference Range
-        ];
+        // Mark that we're starting the table section
+        isTableStarted = true;
 
         // Check if we need a new page for the table header
-        currentYPosition = checkForNewPage(currentYPosition, 20);
+        currentYPosition = checkForNewPage(currentYPosition, tableHeaderHeight);
 
         let yPos = currentYPosition + 5;
 
-        // Draw Top Line - Use leftMargin and rightMargin for consistency
-        doc.line(leftMargin, yPos, rightMargin, yPos);
-        yPos += 5;
-
-        // Table Header
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "bold");
-
-        // Updated headers array to match colWidths
-        const headers = [
-          "Test Description",
-          "Specimen",
-          "Method",
-          "",
-          "Value(s)",
-          "Unit",
-          "Reference Range",
-        ];
-
-        let xPos = leftMargin;
-
-        headers.forEach((header, index) => {
-          if (header) {
-            // Avoid printing the extra gap column header
-            doc.text(header, xPos, yPos);
-          }
-          xPos += colWidths[index]; // Move to the next column
-        });
-
-        yPos += 5;
-
-        // Draw Bottom Line - Use leftMargin and rightMargin for consistency
-        doc.line(leftMargin, yPos, rightMargin, yPos);
-        yPos += 5;
+        // Draw initial table header
+        yPos = drawTableHeader(yPos);
 
         // Group Tests by Department
         const testsByDepartment = orderedTests.reduce((acc, test) => {
@@ -814,28 +834,8 @@ const TestSorting = ({ patient, onClose }) => {
               doc.text(currentTest.specimen_type || "", xPos, yPos);
               xPos += colWidths[1];
 
-              // Method
-              doc.setFont("helvetica", "italic");
-              doc.setTextColor(80, 80, 80); // Dark gray
-
-              // Remove "Method" from the method name
-              const methodText = (currentTest.method || "")
-                .replace(/\bMethod\b/i, "")
-                .trim();
-
-              // Wrap the method text
-              const methodLines = doc.splitTextToSize(
-                methodText,
-                colWidths[1] - 2
-              ); // adjust padding
-              doc.text(methodLines, xPos, yPos);
-
-              doc.setTextColor(0, 0, 0); // Reset to black
-              doc.setFont("helvetica", "normal");
-              xPos += colWidths[2];
-
               // Extra Gap
-              xPos += colWidths[3];
+              xPos += colWidths[2];
 
               // Value(s)
               const statusIndicator = currentTest.isHigh
@@ -863,22 +863,42 @@ const TestSorting = ({ patient, onClose }) => {
               } else {
                 doc.text(currentTest.value || "", xPos, yPos);
               }
-              xPos += colWidths[4];
+              xPos += colWidths[3];
 
               // Unit
               doc.setFont("helvetica", "normal");
               doc.text(currentTest.unit || "", xPos, yPos);
-              xPos += colWidths[5];
+              xPos += colWidths[4];
 
               // Reference Range
               const referenceRangeHeight = wrapText(
                 doc,
                 currentTest.reference_range || "",
-                colWidths[6] - 2,
+                colWidths[5] - 2,
                 xPos,
                 yPos,
                 4
               );
+              xPos += colWidths[5];
+
+              // Method (Moved to last column)
+              doc.setFont("helvetica", "italic");
+              doc.setTextColor(80, 80, 80); // Dark gray
+
+              // Remove "Method" from the method name
+              const methodText = (currentTest.method || "")
+                .replace(/\bMethod\b/i, "")
+                .trim();
+
+              // Wrap the method text
+              const methodLines = doc.splitTextToSize(
+                methodText,
+                colWidths[6] - 2
+              ); // adjust padding
+              doc.text(methodLines, xPos, yPos);
+
+              doc.setTextColor(0, 0, 0); // Reset to black
+              doc.setFont("helvetica", "normal");
 
               // Move to next line
               yPos += Math.max(testNameHeight, referenceRangeHeight) + 8;
@@ -896,6 +916,9 @@ const TestSorting = ({ patient, onClose }) => {
 
         currentYPosition = yPos;
       }
+
+      // Mark that we're no longer in the table section
+      isTableStarted = false;
 
       // Ensure space for footer and end of report
       const pageHeight = doc.internal.pageSize.height;

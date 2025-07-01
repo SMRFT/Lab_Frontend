@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import axios from "axios";
 import { format } from "date-fns";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-const HospitalLabForm = ({ show, handleClose }) => {
+
+const HospitalLabForm = ({ show, handleClose, username }) => {
   const initialFormData = {
     date: new Date(),
     hospitalName: "",
@@ -14,16 +15,30 @@ const HospitalLabForm = ({ show, handleClose }) => {
     emailId: "",
     salesMapping: "",
   };
+
   const [formData, setFormData] = useState(initialFormData);
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   const [message, setMessage] = useState({ type: "", text: "" });
+
+  // Update salesMapping when username prop changes or modal opens
+  useEffect(() => {
+    if (username && show) {
+      setFormData((prev) => ({
+        ...prev,
+        salesMapping: username,
+      }));
+    }
+  }, [username, show]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleDateChange = (date) => {
     setFormData((prev) => ({ ...prev, date }));
   };
+
   const handleSubmitHospitalLabForm = async (e) => {
     e.preventDefault();
     try {
@@ -34,7 +49,10 @@ const HospitalLabForm = ({ show, handleClose }) => {
       });
       // console.log("Hospital Lab API Response:", response.data);
       setMessage({ type: "success", text: "Form submitted successfully!" });
-      setFormData(initialFormData);
+      setFormData({
+        ...initialFormData,
+        salesMapping: username, // Keep username when resetting form
+      });
       setTimeout(() => {
         setMessage({ type: "", text: "" });
         handleClose();
@@ -44,9 +62,10 @@ const HospitalLabForm = ({ show, handleClose }) => {
       setMessage({ type: "danger", text: "Error submitting form." });
     }
   };
+
   return (
     <Modal show={show} onHide={handleClose} centered>
-       <Modal.Header closeButton>
+      <Modal.Header closeButton>
         <Row className="w-100">
           <Col>
             <Modal.Title>Hospital/Lab Details</Modal.Title>
@@ -63,11 +82,15 @@ const HospitalLabForm = ({ show, handleClose }) => {
       </Modal.Header>
       <Modal.Body>
         {message.text && (
-          <Alert variant={message.type} onClose={() => setMessage({ type: "", text: "" })} dismissible>
+          <Alert
+            variant={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            dismissible
+          >
             {message.text}
           </Alert>
         )}
-        <Form >
+        <Form>
           <Row className="mb-3">
             <Col sm={6}>
               <Form.Group controlId="hospitalName">
@@ -150,11 +173,17 @@ const HospitalLabForm = ({ show, handleClose }) => {
                   onChange={handleChange}
                   placeholder="Enter sales person name"
                   required
+                  readOnly
                 />
               </Form.Group>
             </Col>
           </Row>
-          <Button variant="primary" type="submit" onClick={handleSubmitHospitalLabForm} className="mt-3">
+          <Button
+            variant="primary"
+            type="submit"
+            onClick={handleSubmitHospitalLabForm}
+            className="mt-3"
+          >
             Submit
           </Button>
         </Form>
@@ -162,4 +191,5 @@ const HospitalLabForm = ({ show, handleClose }) => {
     </Modal>
   );
 };
+
 export default HospitalLabForm;
