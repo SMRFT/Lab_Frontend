@@ -683,7 +683,7 @@ const BarcodeTestDetails = () => {
  box-sizing: border-box;
  }
  .barcode-text {
- font-size: 5px;
+ font-size: 10px;
  margin: 0 0 1px 0;
  white-space: nowrap;
  text-align: left;
@@ -696,7 +696,7 @@ const BarcodeTestDetails = () => {
  width: 100%;
  }
  .container-name {
- font-size: 6px;
+ font-size: 8px;
  font-weight: bold;
  margin: 1px 0 0 0;
  text-align: left;
