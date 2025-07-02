@@ -1952,9 +1952,9 @@ const PatientBilling = () => {
                 <Button primary onClick={handleSave} disabled={loading}>
                   {loading ? "Processing..." : "Update Billing"}
                 </Button>
-                <Button primary onClick={handlePrint}>
+                {/* <Button primary onClick={handlePrint}>
                   Print
-                </Button>
+                </Button> */}
               </ButtonGroup>
             </Fieldset>
           </BillingForm>
