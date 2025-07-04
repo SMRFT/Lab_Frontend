@@ -30,6 +30,7 @@ import SalesReport from './Components/SALES/SalesReport';
 import TestEdit from './Components/FORMS/TestEdit';
 import LogisticManagementAdmin from './Components/LOGISTICS/LogisticManagementAdmin';
 import LogisticManagementApproval from './Components/LOGISTICS/LogisticManagementApproval';
+import LogisticsMap from './Components/LOGISTICS/LogisticsMap';
 import PatientEditForm from './Components/PATIENT/PatientEditForm';
 import MIS from './Components/MIS/MIS';
 import SalesVisitDashboard from './Components/SALES/SalesVisitDashboard';
@@ -144,7 +145,7 @@ function App() {
             <Route path="/RegisterDashboard" element={<RegisterDashboard/>} />
             <Route path="/SalesDetailsEdit" element={<SalesDetailsEdit/>} />
             <Route path="/B2BReport" element={<B2BReport/>} />
-
+            <Route path="/LogisticsMap" element={<LogisticsMap/>} />
           </Routes>
         </ContentWrapper>
       )} 
@@ -153,8 +154,11 @@ function App() {
 }
 
 export default function AppWrapper() {
+  const BASE_PATH = process.env.PUBLIC_URL;
+  
   return (
-    <Router basename={process.env.PUBLIC_URL} >
+    
+    <Router basename={BASE_PATH}>
       <App />
     </Router>
   );
