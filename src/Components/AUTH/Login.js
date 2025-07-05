@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
-import '@fontsource/poppins';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import logo from '../Images/logo.png';
-import logo1 from '../Images/smrft_logo.png';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import styled, { keyframes } from "styled-components";
+import "@fontsource/poppins";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import logo from "../Images/logo.png";
+import logo1 from "../Images/smrft_logo.png";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 // Keyframes for background animation
-import { Baseline as Helix } from 'lucide-react';
+import { Baseline as Helix } from "lucide-react";
 
 // Animations
 const gradientAnimation = keyframes`
@@ -52,13 +52,14 @@ const LoginPage = styled.div`
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('https://img.freepik.com/free-photo/examining-sample-with-microscope_1098-18424.jpg?t=st=1740405378~exp=1740408978~hmac=e2f08718838e2afc800c0a00958a27dd4981b4cd3a5610a13cfb1a86c04ec64c&w=2000') center/cover;
+    background: url("https://img.freepik.com/free-photo/examining-sample-with-microscope_1098-18424.jpg?t=st=1740405378~exp=1740408978~hmac=e2f08718838e2afc800c0a00958a27dd4981b4cd3a5610a13cfb1a86c04ec64c&w=2000")
+      center/cover;
     opacity: 0.1;
     z-index: 1;
   }
@@ -83,11 +84,11 @@ const DNAButton = styled.button`
   transition: all 0.3s ease;
   position: relative;
   z-index: 2;
-  opacity: ${props => props.show ? 0 : 1};
-  transform: ${props => props.show ? 'scale(0)' : 'scale(1)'};
+  opacity: ${(props) => (props.show ? 0 : 1)};
+  transform: ${(props) => (props.show ? "scale(0)" : "scale(1)")};
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: -10px;
     background: rgba(255, 255, 255, 0.2);
@@ -97,8 +98,8 @@ const DNAButton = styled.button`
   }
 
   &:hover {
-    transform: ${props => props.show ? 'scale(0)' : 'scale(1.05)'};
-    
+    transform: ${(props) => (props.show ? "scale(0)" : "scale(1.05)")};
+
     &::before {
       filter: blur(25px);
     }
@@ -124,11 +125,11 @@ const LoginContainer = styled.div`
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  opacity: ${props => props.show ? 1 : 0};
-  transform: ${props => props.show ? 'scale(1)' : 'scale(0.8)'};
+  opacity: ${(props) => (props.show ? 1 : 0)};
+  transform: ${(props) => (props.show ? "scale(1)" : "scale(0.8)")};
   transition: all 0.5s ease;
-  z-index: ${props => props.show ? 3 : -1};
-  animation: ${props => props.show ? fadeIn : 'none'} 0.5s ease;
+  z-index: ${(props) => (props.show ? 3 : -1)};
+  animation: ${(props) => (props.show ? fadeIn : "none")} 0.5s ease;
 `;
 
 const Title = styled.h1`
@@ -215,10 +216,10 @@ const TogglePassword = styled.span`
 // Main Component
 const Login = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    password: ''
+    name: "",
+    password: "",
   });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -227,57 +228,59 @@ const Login = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
   const navigateRole = (role) => {
- 
-
     switch (role) {
-        case 'Admin':
-        navigate('/Dashboard');
+      case "Admin":
+        navigate("/Dashboard");
         break;
-      case 'Receptionist':
-        navigate('/PatientForm');
+      case "HR":
+        navigate("/LogisticsMap");
         break;
-      case 'General Manager':
-          navigate('/Dashboard');
-          break;
-      case 'Technician':
-        navigate('/SampleStatusUpdate');
+      case "Receptionist":
+        navigate("/PatientForm");
         break;
-      case 'Doctor':
-        navigate('/PatientList');
+      case "General Manager":
+        navigate("/Dashboard");
         break;
-      case 'Sales Person':
-          navigate('/SalesVisitLog');
-          break;
-      case 'Sample Collector':
-          navigate('/LogisticManagementApproval');
-          break;
-      case 'Accounts':
-          navigate('/Invoice');
-          break;
-      case 'Front Office':
-            navigate('/PatientBilling');
-            break;
+      case "Technician":
+        navigate("/SampleStatusUpdate");
+        break;
+      case "Doctor":
+        navigate("/PatientList");
+        break;
+      case "Sales Person":
+        navigate("/SalesVisitLog");
+        break;
+      case "Sample Collector":
+        navigate("/LogisticManagementApproval");
+        break;
+      case "Accounts":
+        navigate("/Invoice");
+        break;
+      case "Front Office":
+        navigate("/PatientBilling");
+        break;
       default:
-        navigate('/');
+        navigate("/");
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post(`${Labbaseurl}login/`, formData)
+    axios
+      .post(`${Labbaseurl}login/`, formData)
       .then((response) => {
         setMessage(response.data.message);
         toast.success("Login Successfully!", { autoClose: 3000 });
-  
+
         const userRole = response.data.role;
         const userName = response.data.name;
-        localStorage.setItem('role', userRole);
-        localStorage.setItem('name', userName);
-  
+        localStorage.setItem("role", userRole);
+        localStorage.setItem("name", userName);
+
         // Delay navigation to allow the toast to be visible
         setTimeout(() => {
           navigateRole(userRole);
@@ -288,56 +291,59 @@ const Login = () => {
           setMessage(error.response.data.error);
           toast.error(error.response.data.error, { autoClose: 3000 });
         } else {
-          toast.error("An unexpected error occurred. Please try again.", { autoClose: 3000 });
+          toast.error("An unexpected error occurred. Please try again.", {
+            autoClose: 3000,
+          });
         }
       });
   };
-  
-  
+
   return (
-<LoginPage>
-<ToastContainer position="top-right" autoClose={3000} />
-  <DNAButton show={showLogin} onClick={() => setShowLogin(true)}>
-    <img src={logo1} alt="Logo" style={{ width: "50px", height: "50px" }} />
-  </DNAButton>
+    <LoginPage>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <DNAButton show={showLogin} onClick={() => setShowLogin(true)}>
+        <img src={logo1} alt="Logo" style={{ width: "50px", height: "50px" }} />
+      </DNAButton>
 
-  <LoginContainer show={showLogin}>
+      <LoginContainer show={showLogin}>
+        <IconContainer>
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ width: "250px", height: "90px" }}
+          />
+        </IconContainer>
 
-    <IconContainer>
-      <img src={logo} alt="Logo" style={{ width: "250px", height: "90px" }} />
-    </IconContainer>
+        <form onSubmit={handleSubmit}>
+          <FormGroup>
+            <Input
+              type="text"
+              name="name"
+              placeholder="Enter your name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
 
-    <form onSubmit={handleSubmit}>
-      <FormGroup>
-        <Input
-          type="text"
-          name="name"
-          placeholder="Enter your name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-      </FormGroup>
+          <FormGroup>
+            <Input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <TogglePassword onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? "🙈" : "👁️"}
+            </TogglePassword>
+          </FormGroup>
 
-      <FormGroup>
-        <Input
-          type={showPassword ? "text" : "password"}
-          name="password"
-          placeholder="Enter your password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <TogglePassword onClick={() => setShowPassword(!showPassword)}>
-          {showPassword ? "🙈" : "👁️"}
-        </TogglePassword>
-      </FormGroup>
-
-      <SubmitButton type="submit">Log In</SubmitButton>
-    </form>
-  </LoginContainer>
-</LoginPage>
-
+          <SubmitButton type="submit">Log In</SubmitButton>
+        </form>
+      </LoginContainer>
+    </LoginPage>
   );
 };
 export default Login;

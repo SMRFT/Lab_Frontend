@@ -26,12 +26,6 @@ const Header = styled.div`
   }
 `;
 
-const Title = styled.h1`
-  font-size: 24px;
-  color: #1a1a1a;
-  margin: 0;
-`;
-
 const TitleContainer = styled.div`
   text-align: center;
   font-size: 22px;
@@ -315,7 +309,7 @@ const PrintBill = () => {
         <tr>
           <td>${index + 1}</td>
           <td>${test.testname}</td>
-          <td>₹${test.amount}</td>
+          <td style="text-align: right;">${test.amount || ""}</td>
         </tr>
       `
       )
@@ -392,84 +386,99 @@ const PrintBill = () => {
       if (!isoString) return "NIL";
 
       const dateObj = new Date(isoString);
-      return dateObj.toLocaleString("en-US", {
+      const formatted = dateObj.toLocaleString("en-IN", {
         year: "numeric",
         month: "long",
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        timeZone: "UTC",
+        timeZone: "Asia/Kolkata",
         hour12: true,
       });
+      // Convert am/pm to AM/PM
+      return formatted.replace(/am|pm/gi, (match) => match.toUpperCase());
     };
 
     // Dynamically populate the receipt with patient values
     const printableContent = `
       <html>
-        <head>
-          <title>Shanmuga Diagnostics</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-              color: #000;
-            }
-            .container {
-              width: 90%;
-              margin: 20px auto;
-              padding: 10px;
-              border: 1px solid #000;
-              font-size: 14px;
-            }
-            .header {
-              text-align: center;
-              border-bottom: 1px solid #000;
-              padding-bottom: 10px;
-              margin-bottom: 10px;
-            }
-            .header h1 {
-              margin: 0;
-              font-size: 18px;
-            }
-            .header p {
-              margin: 5px 0;
-            }
-            .header img {
-              width: 100%;
-              max-width: 100%;
-              height: auto;
-            }
-            .details,
-            .test-info,
-            .payment-info {
-              width: 100%;
-              margin-bottom: 20px;
-            }
-            .details td,
-            .test-info td,
-            .payment-info td {
-              padding: 5px;
-              border-bottom: 1px solid #ddd;
-            }
-            .details th,
-            .test-info th,
-            .payment-info th {
-              text-align: left;
-            }
-            .details table,
-            .test-info table,
-            .payment-info table {
-              width: 100%;
-              border-collapse: collapse;
-            }
-            .signature {
-              text-align: right;
-              font-size: 16px;
-            }
-          </style>
-        </head>
+       <head>
+      <title>Shanmuga Diagnostics</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          color: #000;
+          font-size: 12px;
+        }
+        .container {
+          width: 90%;
+          margin: 10px auto;
+          padding: 5px;
+          border: 1px solid #000;
+          font-size: 12px;
+        }
+        .header {
+          text-align: center;
+          border-bottom: 1px solid #000;
+          padding-bottom: 5px;
+          margin-bottom: 5px;
+        }
+        .header h1 {
+          margin: 0;
+          font-size: 14px;
+        }
+        .header p {
+          margin: 2px 0;
+          font-size: 10px;
+        }
+        .header div {
+          font-size: 10px;
+        }
+        .header img {
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+        }
+        .details,
+        .test-info,
+        .payment-info {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+        .details td,
+        .test-info td,
+        .payment-info td {
+          padding: 2px;
+          border-bottom: 1px solid #ddd;
+          font-size: 12px;
+        }
+        .details th,
+        .test-info th,
+        .payment-info th {
+          text-align: left;
+          font-size: 12px;
+        }
+        .details table,
+        .test-info table,
+        .payment-info table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        
+        .payment-info th:first-child,
+        .payment-info td:first-child {
+          text-align: left;
+          padding-left: 8px;
+        }
+        .signature {
+          text-align: right;
+          font-size: 12px;
+        }
+      </style>
+    </head>
         <body>
           <div class="container">
             <div class="header">
@@ -481,10 +490,10 @@ const PrintBill = () => {
             <div class="details">
               <table id="invoiceTable">
                 <tr>
-                  <td><strong>Invoice Date:</strong> ${
+                  <td><strong>Bill Date:</strong> ${
                     formatDateTimeUTC(patient.date) || "NIL"
                   }</td>
-                  <td><strong>Invoice No / Lab ID:</strong> ${
+                  <td><strong>Bill No / Lab ID:</strong> ${
                     patient.lab_id || "NIL"
                   }</td>
                 </tr>
@@ -524,8 +533,8 @@ const PrintBill = () => {
                 <thead>
                   <tr>
                     <th>S.No</th>
-                    <th>Test Name</th>
-                    <th>Amount</th>
+                   <th style="text-align:center";>Test Name</th>
+                <th style="text-align:right";>Amount(₹)</th>
                   </tr>
                 </thead>
                 <tbody>

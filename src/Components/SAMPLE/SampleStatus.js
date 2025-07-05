@@ -605,11 +605,19 @@ const SampleStatus = () => {
 
   const toggleSelectTest = (patientId, testIndex) => {
     const testKey = `${patientId}-${testIndex}`;
-    setSelectedTests((prevSelected) =>
-      prevSelected.includes(testKey)
-        ? prevSelected.filter((key) => key !== testKey)
-        : [...prevSelected, testKey]
-    );
+    const isCurrentlySelected = selectedTests.includes(testKey);
+
+    if (isCurrentlySelected) {
+      // Unselect and set status to Pending
+      setSelectedTests((prevSelected) =>
+        prevSelected.filter((key) => key !== testKey)
+      );
+      handleStatusChange(patientId, testIndex, "Pending");
+    } else {
+      // Select and set status to Sample Collected
+      setSelectedTests((prevSelected) => [...prevSelected, testKey]);
+      handleStatusChange(patientId, testIndex, "Sample Collected");
+    }
   };
 
   const saveAllTestsForPatient = async (patient) => {
@@ -723,11 +731,15 @@ const SampleStatus = () => {
   };
 
   const selectAllTests = (patient) => {
-    const allSelected =
-      selectedTests.filter((key) => key.startsWith(patient.patient_id))
-        .length === patient.tests.length;
+    const patientTestKeys = patient.tests.map(
+      (_, index) => `${patient.patient_id}-${index}`
+    );
+    const allSelected = patientTestKeys.every((key) =>
+      selectedTests.includes(key)
+    );
 
     if (allSelected) {
+      // Unselect all tests for this patient and set status to Pending
       setSelectedTests(
         selectedTests.filter((key) => !key.startsWith(patient.patient_id))
       );
@@ -735,11 +747,12 @@ const SampleStatus = () => {
         handleStatusChange(patient.patient_id, index, "Pending");
       });
     } else {
+      // Select all tests for this patient and set status to Sample Collected
       const newSelectedTests = patient.tests.map(
         (_, index) => `${patient.patient_id}-${index}`
       );
       setSelectedTests((prevSelected) => [
-        ...prevSelected,
+        ...prevSelected.filter((key) => !key.startsWith(patient.patient_id)),
         ...newSelectedTests,
       ]);
       patient.tests.forEach((test, index) => {
@@ -911,9 +924,12 @@ const SampleStatus = () => {
                             <Th>
                               <Checkbox
                                 checked={
-                                  selectedTests.filter((key) =>
-                                    key.startsWith(patient.patient_id)
-                                  ).length === patient.tests.length
+                                  patient.tests.length > 0 &&
+                                  patient.tests.every((_, index) =>
+                                    selectedTests.includes(
+                                      `${patient.patient_id}-${index}`
+                                    )
+                                  )
                                 }
                                 onChange={() => selectAllTests(patient)}
                               />

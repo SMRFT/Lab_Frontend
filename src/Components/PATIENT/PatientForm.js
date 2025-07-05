@@ -82,7 +82,7 @@ const PatientForm = () => {
     branch: "",
     B2B: "",
     segment: "",
-    Title: "Mr", // Default Title
+    Title: "Mr.", // Default Title
     patientname: "",
     gender: "Male", // Default Gender
     age: "",
@@ -109,6 +109,7 @@ const PatientForm = () => {
   const [showRefByForm, setShowRefByFormForm] = useState(false);
   const [showAddOrganisationForm, setShowAddOrganisationForm] = useState(false);
   const [isB2BEnabled, setIsB2BEnabled] = useState(false); // State to track toggle status
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Add a new state to track form validity
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -119,16 +120,16 @@ const PatientForm = () => {
     let updatedGender = formData.gender; // Default to the current gender
     if (name === "Title") {
       // Automatically set gender based on title
-      if (value === "Mr" || value === "Master" || value === "Dr") {
+      if (value === "Mr." || value === "Master." || value === "Dr.") {
         updatedGender = "Male";
       } else if (
-        value === "Mrs" ||
-        value === "Ms" ||
-        value === "Miss" ||
-        value === "Baby"
+        value === "Mrs." ||
+        value === "Ms." ||
+        value === "Miss." ||
+        value === "Baby."
       ) {
         updatedGender = "Female";
-      } else if (value === "Baby of") {
+      } else if (value === "Baby of.") {
         updatedGender = "Other"; // Assume 'other' for BABY OF
       }
     }
@@ -153,13 +154,17 @@ const PatientForm = () => {
   const handleClinicalNameSelect = (
     clinicalName,
     referrerCode,
-    salesMapping
+    salesMapping,
+    phone,
+    email
   ) => {
     setFormData((prevState) => ({
       ...prevState,
       B2B: clinicalName || "", // Update B2B field
       lab_id: referrerCode || "", // Update Lab ID with referrerCode
       salesMapping: salesMapping || "", // Update Sales Mapping
+      phone: phone || "", // ✅ CORRECT: phone gets phone value
+      email: email || "", // ✅ CORRECT: email gets email value
     }));
   };
 
@@ -270,75 +275,137 @@ const PatientForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetchPatientId();
-    // Determine the segment value based on toggle states
-    let segmentValue = "Walk-in"; // Default to "Walk-in"
-    if (isB2BEnabled) {
-      segmentValue = "B2B";
-    } else if (isHomeCollectionEnabled) {
-      segmentValue = "Home Collection";
-    }
-    // Enhanced Validation Logic with specific field error messages
-    const validateField = (fieldValue, fieldName) => {
-      if (
-        !fieldValue ||
-        (typeof fieldValue === "string" && fieldValue.trim() === "")
-      ) {
-        toast.error(`${fieldName} is required`);
-        return false;
-      }
-      return true;
-    };
-    // 1. If B2B is enabled, validate required fields individually
-    if (isB2BEnabled) {
-      if (!validateField(formData.B2B, "Clinical Name")) return;
-      if (!validateField(formData.refby, "Referred By")) return;
-      if (!validateField(formData.branch, "Branch")) return;
-      if (!validateField(formData.sample_collector, "Sample Collector")) return;
-    }
-    // 2. If both B2B and Home Collection are not enabled (Walk-in), validate required fields
-    if (!isB2BEnabled && !isHomeCollectionEnabled) {
-      if (!validateField(formData.refby, "Referred By")) return;
-      if (!validateField(formData.branch, "Branch")) return;
-      if (!validateField(formData.sample_collector, "Sample Collector")) return;
-    }
-    // 3. If Home Collection is enabled, validate all required fields including contact details
-    if (isHomeCollectionEnabled) {
-      if (!validateField(formData.refby, "Referred By")) return;
-      if (!validateField(formData.branch, "Branch")) return;
-      if (!validateField(formData.sample_collector, "Sample Collector")) return;
-      if (!validateField(formData.phone, "Phone Number")) return;
-      if (!validateField(formData.email, "Email ID")) return;
-    }
-    // Common validations for all scenarios
-    if (!validateField(formData.patientname, "Patient Name")) return;
-    if (!validateField(formData.gender, "Gender")) return;
-    if (!validateField(formData.age, "Age")) return;
-    // Additional email format validation if email is provided
-    if (formData.email && formData.email.trim() !== "") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        toast.error("Please enter a valid email address");
-        return;
-      }
-    }
-    // Additional phone number validation if phone is provided
-    if (formData.phone && formData.phone.trim() !== "") {
-      const phoneRegex = /^\d{10}$/; // Assuming 10-digit phone number
-      if (!phoneRegex.test(formData.phone)) {
-        toast.error("Please enter a valid 10-digit phone number");
-        return;
-      }
-    }
-    const fullPatientName = `${formData.Title} ${formData.patientname}`;
-    // Prepare the address as a JSON object
-    const addressData = {
-      area: formData.address.area,
-      pincode: formData.address.pincode,
-    };
-    // Set B2B to null if the toggle is not enabled
-    const B2BValue = isB2BEnabled ? formData.B2B : null;
+
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+
+    setIsSubmitting(true); // Set loading state
+
     try {
+      await fetchPatientId();
+      // Determine the segment value based on toggle states
+      let segmentValue = "Walk-in"; // Default to "Walk-in"
+      if (isB2BEnabled) {
+        segmentValue = "B2B";
+      } else if (isHomeCollectionEnabled) {
+        segmentValue = "Home Collection";
+      }
+
+      // Enhanced Validation Logic with specific field error messages
+      const validateField = (fieldValue, fieldName) => {
+        if (
+          !fieldValue ||
+          (typeof fieldValue === "string" && fieldValue.trim() === "")
+        ) {
+          toast.error(`${fieldName} is required`);
+          return false;
+        }
+        return true;
+      };
+
+      // 1. If B2B is enabled, validate required fields individually
+      if (isB2BEnabled) {
+        if (!validateField(formData.B2B, "Clinical Name")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.refby, "Referred By")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.branch, "Branch")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.sample_collector, "Sample Collector")) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // 2. If both B2B and Home Collection are not enabled (Walk-in), validate required fields
+      if (!isB2BEnabled && !isHomeCollectionEnabled) {
+        if (!validateField(formData.refby, "Referred By")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.branch, "Branch")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.sample_collector, "Sample Collector")) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // 3. If Home Collection is enabled, validate all required fields including contact details
+      if (isHomeCollectionEnabled) {
+        if (!validateField(formData.refby, "Referred By")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.branch, "Branch")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.sample_collector, "Sample Collector")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.phone, "Phone Number")) {
+          setIsSubmitting(false);
+          return;
+        }
+        if (!validateField(formData.email, "Email ID")) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Common validations for all scenarios
+      if (!validateField(formData.patientname, "Patient Name")) {
+        setIsSubmitting(false);
+        return;
+      }
+      if (!validateField(formData.gender, "Gender")) {
+        setIsSubmitting(false);
+        return;
+      }
+      if (!validateField(formData.age, "Age")) {
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Additional email format validation if email is provided
+      if (formData.email && formData.email.trim() !== "") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+          toast.error("Please enter a valid email address");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Additional phone number validation if phone is provided
+      if (formData.phone && formData.phone.trim() !== "") {
+        const phoneRegex = /^\d{10}$/; // Assuming 10-digit phone number
+        if (!phoneRegex.test(formData.phone)) {
+          toast.error("Please enter a valid 10-digit phone number");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const fullPatientName = `${formData.Title} ${formData.patientname}`;
+      // Prepare the address as a JSON object
+      const addressData = {
+        area: formData.address.area,
+        pincode: formData.address.pincode,
+      };
+      // Set B2B to null if the toggle is not enabled
+      const B2BValue = isB2BEnabled ? formData.B2B : null;
+
       const response = await axios.post(`${Labbaseurl}patient/create/`, {
         ...formData,
         patientname: fullPatientName,
@@ -347,8 +414,10 @@ const PatientForm = () => {
         address: addressData,
         B2B: B2BValue,
       });
+
       // Show success toast
       toast.success("Patient data saved successfully!");
+
       // Reset form fields
       setFormData({
         patient_id: response.data.patient_id,
@@ -377,6 +446,7 @@ const PatientForm = () => {
         PartialPayment: "",
         clinicalName: "",
       });
+
       // Refresh the page after 3 seconds
       setTimeout(() => {
         window.location.reload();
@@ -391,8 +461,11 @@ const PatientForm = () => {
       } else {
         toast.error("Error saving data. Please try again.");
       }
+    } finally {
+      setIsSubmitting(false); // Reset loading state
     }
   };
+
   const [selectedTests, setSelectedTests] = useState([]);
   const [searchValue, setSearchValue] = useState(""); // Input value for search
   const [typingTimeout, setTypingTimeout] = useState(null); // Timeout reference
@@ -681,14 +754,14 @@ const PatientForm = () => {
                 value={formData.Title}
                 onChange={handleChange}
               >
-                <option value="Mr">Mr</option>
-                <option value="Mrs">Mrs</option>
-                <option value="Ms">Ms</option>
-                <option value="Master">Master</option>
-                <option value="Miss">Miss</option>
-                <option value="Dr">Dr</option>
-                <option value="Baby">Baby</option>
-                <option value="Baby of">Baby of</option>
+                <option value="Mr.">Mr</option>
+                <option value="Mrs.">Mrs</option>
+                <option value="Ms.">Ms</option>
+                <option value="Master.">Master</option>
+                <option value="Miss.">Miss</option>
+                <option value="Dr.">Dr</option>
+                <option value="Baby.">Baby</option>
+                <option value="Baby of.">Baby of</option>
               </select>
             </div>
 
@@ -784,7 +857,6 @@ const PatientForm = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                disabled={isB2BEnabled} // Disable when B2B is on
               />
             </div>
 
@@ -797,7 +869,6 @@ const PatientForm = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                disabled={isB2BEnabled}
               />
             </div>
 
@@ -831,9 +902,34 @@ const PatientForm = () => {
           <button
             className="button mt-3 me-2"
             onClick={handleSubmit}
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
+            style={{
+              backgroundColor: isSubmitting
+                ? "#a777e3"
+                : !isFormValid
+                ? "#6c757d"
+                : "",
+              cursor: isSubmitting
+                ? "not-allowed"
+                : !isFormValid
+                ? "not-allowed"
+                : "pointer",
+              opacity: isSubmitting ? 0.8 : !isFormValid ? 0.6 : 1,
+              border: isSubmitting ? "2px solid #a777e3" : "",
+            }}
           >
-            Generate
+            {isSubmitting ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Processing...
+              </>
+            ) : (
+              "Generate"
+            )}
           </button>
         </div>
       </form>

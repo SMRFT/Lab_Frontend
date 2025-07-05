@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import {
   FaSearch,
@@ -7,6 +7,7 @@ import {
   FaSave,
   FaTimes,
   FaPlus,
+  FaTrash,
 } from "react-icons/fa";
 import TestForm from "./TestForm";
 import { ToastContainer, toast } from "react-toastify";
@@ -144,6 +145,12 @@ const ModernTable = styled.table`
     background-color: #f1f5f9;
   }
 
+  // Highlight the focused row
+  tr.focused-row {
+    background-color: #e6f3ff !important;
+    border: 2px solid #3182ce;
+  }
+
   @media (max-width: 1024px) {
     th,
     td {
@@ -180,6 +187,26 @@ const IconButton = styled.button`
     color: #3182ce;
     background-color: rgba(49, 130, 206, 0.1);
   }
+
+  &.add-icon {
+    color: #10b981;
+    font-size: 16px;
+
+    &:hover {
+      color: #059669;
+      background-color: rgba(16, 185, 129, 0.1);
+    }
+  }
+
+  &.delete-icon {
+    color: #ef4444;
+    font-size: 16px;
+
+    &:hover {
+      color: #dc2626;
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+  }
 `;
 
 const Input = styled.input`
@@ -215,7 +242,7 @@ const ModalOverlay = styled.div`
 const ModalContent = styled.div`
   background-color: white;
   border-radius: 12px;
-  width: calc(100% - 300px); /* respects margin-left */
+  width: calc(100% - 300px);
   margin-left: 300px;
   max-width: 1000px;
   max-height: 90vh;
@@ -226,7 +253,7 @@ const ModalContent = styled.div`
 
   @media (max-width: 992px) {
     width: 90%;
-    margin-left: 0; /* fallback to centered modal on smaller screens */
+    margin-left: 0;
   }
 
   @media (max-width: 576px) {
@@ -325,13 +352,21 @@ const TestEdit = () => {
   const [testDetails, setTestDetails] = useState([]);
   const [filteredTestDetails, setFilteredTestDetails] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedParameters, setSelectedParameters] = useState(null);
+  const [selectedParameters, setSelectedParameters] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTestName, setSelectedTestName] = useState("");
   const [showTestForm, setShowTestForm] = useState(false);
+  const [focusedRow, setFocusedRow] = useState(null);
+  const [lastEditedTest, setLastEditedTest] = useState(null);
+
+  // Refs for managing focus and scroll position
+  const tableRef = useRef(null);
+  const rowRefs = useRef({});
+
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
+
   // Fetch test details from the backend
   useEffect(() => {
     const fetchTestDetails = async () => {
@@ -349,6 +384,43 @@ const TestEdit = () => {
     fetchTestDetails();
   }, []);
 
+  // Focus on the last edited test when data changes
+  useEffect(() => {
+    if (lastEditedTest && filteredTestDetails.length > 0) {
+      const testIndex = filteredTestDetails.findIndex(
+        (test) => test.test_name === lastEditedTest
+      );
+      if (testIndex !== -1) {
+        setFocusedRow(testIndex);
+        setTimeout(() => {
+          scrollToRow(testIndex);
+        }, 1000);
+      }
+    }
+  }, [filteredTestDetails, lastEditedTest]);
+
+  // Clear focus highlight after a delay
+  useEffect(() => {
+    if (focusedRow !== null) {
+      const timer = setTimeout(() => {
+        setFocusedRow(null);
+      }, 3000); // Remove highlight after 3 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [focusedRow]);
+
+  const scrollToRow = (index) => {
+    const rowElement = rowRefs.current[index];
+    if (rowElement) {
+      rowElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    }
+  };
+
   // Search handling - Updated to search both test name and shortcut
   const handleSearchChange = (e) => {
     const query = e.target.value;
@@ -364,36 +436,70 @@ const TestEdit = () => {
 
     setFilteredTestDetails(filteredData);
     setEditingRow(null);
+    setFocusedRow(null);
   };
 
   const handleParameterClick = (testName, parameters) => {
+    let parsedParameters = [];
+
     if (parameters && parameters.trim() !== "") {
       try {
-        const parsedParameters = JSON.parse(parameters);
-        setSelectedParameters(parsedParameters);
+        parsedParameters = JSON.parse(parameters);
       } catch (error) {
-        setSelectedParameters([]);
+        parsedParameters = [];
       }
-    } else {
-      setSelectedParameters([]);
     }
+
+    // If no parameters exist, create a default empty parameter
+    if (parsedParameters.length === 0) {
+      parsedParameters = [
+        {
+          test_name: "",
+          unit: "",
+          reference_range: "",
+          method: "",
+        },
+      ];
+    }
+
+    setSelectedParameters(parsedParameters);
     setShowModal(true);
     setSelectedTestName(testName);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedParameters(null);
+    setSelectedParameters([]);
   };
 
   const handleEditClick = (index) => {
     setEditingRow(index);
+    setFocusedRow(null);
   };
 
   const handleParameterChange = (index, field, value) => {
     const updatedParameters = [...selectedParameters];
     updatedParameters[index][field] = value;
     setSelectedParameters(updatedParameters);
+  };
+
+  const handleAddParameter = () => {
+    const newParameter = {
+      test_name: "",
+      unit: "",
+      reference_range: "",
+      method: "",
+    };
+    setSelectedParameters([...selectedParameters, newParameter]);
+  };
+
+  const handleDeleteParameter = (index) => {
+    if (selectedParameters.length > 1) {
+      const updatedParameters = selectedParameters.filter(
+        (_, i) => i !== index
+      );
+      setSelectedParameters(updatedParameters);
+    }
   };
 
   const handleSaveParameters = async () => {
@@ -411,8 +517,36 @@ const TestEdit = () => {
 
       if (response.ok) {
         toast.success("Parameters updated successfully!");
+
+        // Update the local state to reflect the changes
+        const updatedTestDetails = testDetails.map((test) => {
+          if (test.test_name === selectedTestName) {
+            return {
+              ...test,
+              parameters: JSON.stringify(selectedParameters),
+            };
+          }
+          return test;
+        });
+
+        setTestDetails(updatedTestDetails);
+        setFilteredTestDetails(
+          updatedTestDetails.filter(
+            (test) =>
+              (test.test_name &&
+                test.test_name
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase())) ||
+              (test.shortcut &&
+                test.shortcut.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+        );
+
+        // Set the last edited test for focusing
+        setLastEditedTest(selectedTestName);
+
         setShowModal(false);
-        setSelectedParameters(null);
+        setSelectedParameters([]);
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || "Failed to update parameters");
@@ -456,6 +590,8 @@ const TestEdit = () => {
           setTestDetails(updatedTestDetails);
         }
 
+        // Set the last edited test for focusing
+        setLastEditedTest(updatedTest.test_name);
         setEditingRow(null);
       } else {
         const errorData = await response.json();
@@ -481,6 +617,23 @@ const TestEdit = () => {
       updatedTestDetails[originalIndex][field] = e.target.value;
       setTestDetails(updatedTestDetails);
     }
+  };
+
+  // Handle new test addition
+  const handleTestAdded = (newTestName) => {
+    // Refetch the data to include the new test
+    const fetchTestDetails = async () => {
+      try {
+        const response = await fetch(`${Labbaseurl}test_details/`);
+        const data = await response.json();
+        setTestDetails(data);
+        setFilteredTestDetails(data);
+        setLastEditedTest(newTestName);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchTestDetails();
   };
 
   if (loading) {
@@ -510,7 +663,7 @@ const TestEdit = () => {
         </AddButton>
       </Header>
 
-      <TableWrapper>
+      <TableWrapper ref={tableRef}>
         <ModernTable>
           <thead>
             <tr>
@@ -528,7 +681,11 @@ const TestEdit = () => {
           <tbody>
             {filteredTestDetails.length > 0 ? (
               filteredTestDetails.map((test, index) => (
-                <tr key={index}>
+                <tr
+                  key={index}
+                  ref={(el) => (rowRefs.current[index] = el)}
+                  className={focusedRow === index ? "focused-row" : ""}
+                >
                   <td>
                     {editingRow === index ? (
                       <Input
@@ -684,80 +841,97 @@ const TestEdit = () => {
             <TestName>Test Name: {selectedTestName}</TestName>
 
             <ModalBody>
-              {selectedParameters && selectedParameters.length > 0 ? (
-                <TableWrapper>
-                  <ModernTable>
-                    <thead>
-                      <tr>
-                        <th>Test Name</th>
-                        <th>Unit</th>
-                        <th>Reference Range</th>
-                        <th>Method</th>
+              <TableWrapper>
+                <ModernTable>
+                  <thead>
+                    <tr>
+                      <th>Test Name</th>
+                      <th>Unit</th>
+                      <th>Reference Range</th>
+                      <th>Method</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedParameters.map((param, index) => (
+                      <tr key={index}>
+                        <td>
+                          <Input
+                            type="text"
+                            value={param.test_name || ""}
+                            onChange={(e) =>
+                              handleParameterChange(
+                                index,
+                                "test_name",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="text"
+                            value={param.unit || ""}
+                            onChange={(e) =>
+                              handleParameterChange(
+                                index,
+                                "unit",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="text"
+                            value={param.reference_range || ""}
+                            onChange={(e) =>
+                              handleParameterChange(
+                                index,
+                                "reference_range",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <Input
+                            type="text"
+                            value={param.method || ""}
+                            onChange={(e) =>
+                              handleParameterChange(
+                                index,
+                                "method",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <ActionIcons>
+                            <IconButton
+                              className="add-icon"
+                              onClick={handleAddParameter}
+                              title="Add Parameter"
+                            >
+                              <FaPlus />
+                            </IconButton>
+                            {selectedParameters.length > 1 && (
+                              <IconButton
+                                className="delete-icon"
+                                onClick={() => handleDeleteParameter(index)}
+                                title="Delete Parameter"
+                              >
+                                <FaTrash />
+                              </IconButton>
+                            )}
+                          </ActionIcons>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {selectedParameters.map((param, index) => (
-                        <tr key={index}>
-                          <td>
-                            <Input
-                              type="text"
-                              value={param.test_name}
-                              onChange={(e) =>
-                                handleParameterChange(
-                                  index,
-                                  "test_name",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <Input
-                              type="text"
-                              value={param.unit}
-                              onChange={(e) =>
-                                handleParameterChange(
-                                  index,
-                                  "unit",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <Input
-                              type="text"
-                              value={param.reference_range}
-                              onChange={(e) =>
-                                handleParameterChange(
-                                  index,
-                                  "reference_range",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <Input
-                              type="text"
-                              value={param.method}
-                              onChange={(e) =>
-                                handleParameterChange(
-                                  index,
-                                  "method",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </ModernTable>
-                </TableWrapper>
-              ) : (
-                <p>No parameters available</p>
-              )}
+                    ))}
+                  </tbody>
+                </ModernTable>
+              </TableWrapper>
             </ModalBody>
 
             <ModalFooter>
@@ -771,8 +945,13 @@ const TestEdit = () => {
           </ModalContent>
         </ModalOverlay>
       )}
+
       {/* Test Form Modal */}
-      <TestForm show={showTestForm} setShow={setShowTestForm} />
+      <TestForm
+        show={showTestForm}
+        setShow={setShowTestForm}
+        onTestAdded={handleTestAdded}
+      />
 
       <ToastContainer
         position="top-right"

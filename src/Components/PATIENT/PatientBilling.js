@@ -612,6 +612,8 @@ const PatientBilling = () => {
   });
 
   const [filteredPatients, setFilteredPatients] = useState([]);
+  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
+
   useEffect(() => {
     // Filter patients based on search criteria
     let filtered = patients;
@@ -788,10 +790,11 @@ const PatientBilling = () => {
     );
   };
 
-  // Modify the handleBillingClick function to fetch patient's existing test data
+  // Updated handleBillingClick function to reset print state
   const handleBillingClick = (patient) => {
     setSelectedPatient(patient);
     setIsBillingView(true);
+    setIsPrintEnabled(false); // Reset print state when opening billing view
 
     // Reset form data when selecting a new patient
     setFormData({
@@ -1116,6 +1119,7 @@ const PatientBilling = () => {
 
     handleUpdateBilling();
   };
+  // Updated handleUpdateBilling function to enable print and auto-trigger print
   const handleUpdateBilling = async () => {
     if (!selectedPatient) return;
 
@@ -1168,8 +1172,15 @@ const PatientBilling = () => {
         billingData
       );
       toast.success("Billing updated successfully!");
+      setIsPrintEnabled(true); // Enable print button after successful update
+
+      // Auto-trigger print after a short delay
+      setTimeout(() => {
+        handlePrint();
+      }, 1000);
+
       fetchPatients(selectedDate);
-      setIsBillingView(false);
+      // Don't reset the billing view immediately to allow printing
     } catch (error) {
       console.error("Error updating billing:", error);
       toast.error("Failed to update billing. Please try again.");
@@ -1180,20 +1191,23 @@ const PatientBilling = () => {
 
   const printRef = useRef();
   const handlePrint = () => {
+    // Updated formatDateTimeUTC function to display in Indian time
     const formatDateTimeUTC = (isoString) => {
       if (!isoString) return "NIL";
 
       const dateObj = new Date(isoString);
-      return dateObj.toLocaleString("en-US", {
+      const formatted = dateObj.toLocaleString("en-IN", {
         year: "numeric",
         month: "long",
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-        timeZone: "UTC",
+        timeZone: "Asia/Kolkata",
         hour12: true,
       });
+      // Convert am/pm to AM/PM
+      return formatted.replace(/am|pm/gi, (match) => match.toUpperCase());
     };
 
     const numberToWords = (num) => {
@@ -1257,7 +1271,7 @@ const PatientBilling = () => {
         <tr>
           <td>${index + 1}</td>
           <td>${test.testname || ""}</td>
-          <td>₹ ${test.amount || ""}</td>
+          <td style="text-align: right;">${test.amount || ""}</td>
         </tr>
         `
         )
@@ -1347,26 +1361,31 @@ const PatientBilling = () => {
           margin: 0;
           padding: 0;
           color: #000;
+          font-size: 12px;
         }
         .container {
           width: 90%;
-          margin: 20px auto;
-          padding: 10px;
+          margin: 10px auto;
+          padding: 5px;
           border: 1px solid #000;
-          font-size: 14px;
+          font-size: 12px;
         }
         .header {
           text-align: center;
           border-bottom: 1px solid #000;
-          padding-bottom: 10px;
-          margin-bottom: 10px;
+          padding-bottom: 5px;
+          margin-bottom: 5px;
         }
         .header h1 {
           margin: 0;
-          font-size: 18px;
+          font-size: 14px;
         }
         .header p {
-          margin: 5px 0;
+          margin: 2px 0;
+          font-size: 10px;
+        }
+        .header div {
+          font-size: 10px;
         }
         .header img {
           width: 100%;
@@ -1377,18 +1396,20 @@ const PatientBilling = () => {
         .test-info,
         .payment-info {
           width: 100%;
-          margin-bottom: 20px;
+          margin-bottom: 10px;
         }
         .details td,
         .test-info td,
         .payment-info td {
-          padding: 5px;
+          padding: 2px;
           border-bottom: 1px solid #ddd;
+          font-size: 12px;
         }
         .details th,
         .test-info th,
         .payment-info th {
           text-align: left;
+          font-size: 12px;
         }
         .details table,
         .test-info table,
@@ -1396,9 +1417,15 @@ const PatientBilling = () => {
           width: 100%;
           border-collapse: collapse;
         }
+        
+        .payment-info th:first-child,
+        .payment-info td:first-child {
+          text-align: left;
+          padding-left: 8px;
+        }
         .signature {
           text-align: right;
-          font-size: 16px;
+          font-size: 12px;
         }
       </style>
     </head>
@@ -1413,10 +1440,10 @@ const PatientBilling = () => {
         <div class="details">
           <table id="invoiceTable">
             <tr>
-              <td><strong>Invoice Date:</strong> ${
+              <td><strong>Bill Date:</strong> ${
                 formatDateTimeUTC(selectedPatient.date) || "NIL"
               }</td>
-              <td><strong>Invoice No / Lab ID:</strong> ${
+              <td><strong>Bill No / Lab ID:</strong> ${
                 selectedPatient.lab_id || "NIL"
               }</td>
             </tr>
@@ -1459,8 +1486,8 @@ const PatientBilling = () => {
             <thead>
               <tr>
                 <th>S.No</th>
-                <th>Test Name</th>
-                <th>Amount</th>
+                <th style="text-align:center";>Test Name</th>
+                <th style="text-align:right";>Amount(₹)</th>
               </tr>
             </thead>
             <tbody>
@@ -1472,13 +1499,13 @@ const PatientBilling = () => {
           <table>
             <thead>
               <tr>
-                <th>Total Amount</th>
+                <th>Total Amount (₹)</th>
                 <th>Payment Mode</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>₹ ${formData.totalAmount || "NIL"}</td>
+                <td>${formData.totalAmount || "NIL"}</td>
                 <td>${displayPaymentMode || "NIL"}</td>
               </tr>
             </tbody>
@@ -1500,9 +1527,9 @@ const PatientBilling = () => {
       printWindow.document.close();
       printWindow.print();
       printWindow.close();
+      window.location.reload(); // Reload the page after printing
     }, 1000);
   };
-
   return (
     <Container ref={printRef}>
       <ToastContainer position="top-right" autoClose={3000} />
@@ -1952,7 +1979,15 @@ const PatientBilling = () => {
                 <Button primary onClick={handleSave} disabled={loading}>
                   {loading ? "Processing..." : "Update Billing"}
                 </Button>
+
+                <Button
+                  primary
+                  onClick={handlePrint}
+                  disabled={!isPrintEnabled}
+                >
+
                 {/* <Button primary onClick={handlePrint}>
+
                   Print
                 </Button> */}
               </ButtonGroup>
