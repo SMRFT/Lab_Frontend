@@ -118,6 +118,17 @@ const Button = styled.button`
     outline: none;
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
   }
+
+  &:disabled {
+    background-color: var(--gray-light);
+    color: var(--gray);
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    &:hover {
+      background-color: var(--gray-light);
+    }
+  }
 `;
 
 const BackButton = styled(Button)`
@@ -134,6 +145,17 @@ const SaveButton = styled(Button)`
 
   &:hover {
     background-color: var(--info);
+  }
+
+  &:disabled {
+    background-color: var(--gray-light);
+    color: var(--gray);
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    &:hover {
+      background-color: var(--gray-light);
+    }
   }
 `;
 
@@ -219,6 +241,22 @@ const Input = styled.input`
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
   }
+
+  &:disabled {
+    background-color: var(--gray-light);
+    cursor: not-allowed;
+  }
+`;
+
+// New styled component for wrapped text input (parameter names)
+const WrappedInput = styled(Input)`
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  min-height: 2rem;
+  height: auto;
+  resize: none;
+  line-height: 1.2;
 
   &:disabled {
     background-color: var(--gray-light);
@@ -319,22 +357,36 @@ function TestDetails() {
 
       let tempValues = {};
       let tempEditMode = {};
+      let tempInitialEmptyFields = new Set();
 
       filteredTests.forEach((test) => {
-        tempValues[test.testname] = test.value || "";
+        const testValue = test.value || "";
+        tempValues[test.testname] = testValue;
         tempEditMode[test.testname] = false;
+
+        // Track if this field was initially empty
+        if (!testValue || testValue.trim() === "") {
+          tempInitialEmptyFields.add(test.testname);
+        }
 
         if (test.parameters && Array.isArray(test.parameters)) {
           test.parameters.forEach((param) => {
             const paramName = param.name || param.test_name;
             const uniqueKey = `${test.testname}_${paramName}`;
-            tempValues[uniqueKey] = param.value || "";
+            const paramValue = param.value || "";
+            tempValues[uniqueKey] = paramValue;
+
+            // Track if this parameter field was initially empty
+            if (!paramValue || paramValue.trim() === "") {
+              tempInitialEmptyFields.add(uniqueKey);
+            }
           });
         }
       });
 
       setValues(tempValues);
       setEditMode(tempEditMode);
+      setInitialEmptyFields(tempInitialEmptyFields);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching test details:", error);
@@ -382,6 +434,40 @@ function TestDetails() {
   // Toggle common parameter edit mode
   const toggleParameterEditMode = () => {
     setParameterEditMode(!parameterEditMode);
+  };
+
+  // Track initial empty state to determine if fields were originally empty
+  const [initialEmptyFields, setInitialEmptyFields] = useState(new Set());
+
+  // Function to determine if save button should be enabled
+  const isSaveButtonEnabled = () => {
+    // Check if any edit mode is active
+    const hasActiveEditMode =
+      Object.values(editMode).some((mode) => mode) || parameterEditMode;
+
+    // Check if any field was initially empty or currently being edited
+    const hasFieldsToSave = testDetails.some((test) => {
+      if (
+        test.parameters &&
+        Array.isArray(test.parameters) &&
+        test.parameters.length > 0
+      ) {
+        // For tests with parameters, check if any parameter was initially empty or is being edited
+        return test.parameters.some((param) => {
+          const paramName = param.name || param.test_name;
+          const uniqueKey = `${test.testname}_${paramName}`;
+          return initialEmptyFields.has(uniqueKey) || parameterEditMode;
+        });
+      } else {
+        // For tests without parameters, check if test was initially empty or is being edited
+        return initialEmptyFields.has(test.testname) || editMode[test.testname];
+      }
+    });
+
+    // Enable save button if:
+    // 1. There are fields that were initially empty (can always save these)
+    // 2. OR if edit mode is active for fields with existing values
+    return hasFieldsToSave || hasActiveEditMode;
   };
 
   const handleSubmit = async (event) => {
@@ -448,6 +534,7 @@ function TestDetails() {
             dispatch_time: "null",
             department: test.department || "N/A",
             remarks: parameterRemarks || "", // Store common parameter remarks at test level
+            verified_by: verified_by, // Add verified_by for each test
             parameters: test.parameters.map((param) => {
               const paramName = param.name || param.test_name;
               const uniqueKey = `${test.testname}_${paramName}`;
@@ -459,7 +546,6 @@ function TestDetails() {
                 specimen_type: test.specimen_type || "N/A",
                 reference_range: param.reference_range || "N/A",
                 method: param.method || "",
-                // Don't store remarks in individual parameters - use common remarks from test level
               };
             }),
           };
@@ -478,6 +564,7 @@ function TestDetails() {
             approve_time: "null",
             dispatch: false,
             dispatch_time: "null",
+            verified_by: verified_by,
           };
         }
       });
@@ -487,7 +574,6 @@ function TestDetails() {
         date: date,
         barcode: barcode,
         testdetails: testDetailsData,
-        verified_by: verified_by,
       };
 
       console.log("Submitting payload:", payload);
@@ -502,6 +588,11 @@ function TestDetails() {
         // Reset edit modes after successful save
         setEditMode({});
         setParameterEditMode(false);
+
+        // Auto-trigger back navigation after successful save
+        setTimeout(() => {
+          handleBack();
+        }, 1000); // Wait 1 second before navigating back
       } catch (patchError) {
         console.error("Patch error:", patchError);
 
@@ -519,6 +610,11 @@ function TestDetails() {
             // Reset edit modes after successful save
             setEditMode({});
             setParameterEditMode(false);
+
+            // Auto-trigger back navigation after successful save
+            setTimeout(() => {
+              handleBack();
+            }, 1000); // Wait 1 second before navigating back
           } catch (postError) {
             console.error("Error saving test details:", postError);
             alert("Failed to save test details.");
@@ -543,10 +639,18 @@ function TestDetails() {
       const testData = response.data;
 
       if (testData.value) {
+        const existingValue = testData.value;
         setValues((prevValues) => ({
           ...prevValues,
-          [testData.testname]: testData.value,
+          [testData.testname]: existingValue,
         }));
+
+        // Remove from initial empty fields if it now has a value
+        setInitialEmptyFields((prevEmpty) => {
+          const newEmpty = new Set(prevEmpty);
+          newEmpty.delete(testData.testname);
+          return newEmpty;
+        });
       }
 
       if (testData.remarks) {
@@ -573,11 +677,21 @@ function TestDetails() {
         testData.parameters.forEach((param) => {
           const paramName = param.name || param.test_name;
           const uniqueKey = `${testData.testname}_${paramName}`;
+          const paramValue = param.value || "";
 
           setValues((prevValues) => ({
             ...prevValues,
-            [uniqueKey]: param.value || "",
+            [uniqueKey]: paramValue,
           }));
+
+          // Remove from initial empty fields if it now has a value
+          if (paramValue && paramValue.trim() !== "") {
+            setInitialEmptyFields((prevEmpty) => {
+              const newEmpty = new Set(prevEmpty);
+              newEmpty.delete(uniqueKey);
+              return newEmpty;
+            });
+          }
         });
       }
     } catch (error) {
@@ -706,9 +820,7 @@ function TestDetails() {
                           onClick={() => toggleEditMode(test.testname)}
                         >
                           <Edit size={16} />
-                          {editMode[test.testname]
-                            ? "Cancel Edit"
-                            : "Edit Remarks"}
+                          {editMode[test.testname] ? "Cancel Edit" : "Edit"}
                         </EditButton>
                       </FormGroup>
                     </FormRow>
@@ -755,7 +867,15 @@ function TestDetails() {
                             <FormRow>
                               <FormGroup>
                                 <Label>Parameter Name</Label>
-                                <Input type="text" value={paramName} disabled />
+                                {/* Using WrappedInput for parameter names to handle long text */}
+                                <WrappedInput
+                                  as="textarea"
+                                  value={paramName}
+                                  disabled
+                                  style={{
+                                    resize: "none",
+                                  }}
+                                />
                               </FormGroup>
                               <FormGroup>
                                 <Label>Specimen Type</Label>
@@ -833,7 +953,7 @@ function TestDetails() {
           ))}
 
           <ButtonContainer>
-            <SaveButton type="submit">
+            <SaveButton type="submit" disabled={!isSaveButtonEnabled()}>
               <Save size={18} />
               Save Test Details
             </SaveButton>

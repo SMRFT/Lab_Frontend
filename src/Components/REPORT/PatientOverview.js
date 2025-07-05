@@ -650,40 +650,37 @@ const PatientOverview = () => {
     try {
       const pdfBlob = await handlePrint(patient, true); // Generate PDF with letterpad
       if (!pdfBlob) {
-        alert("Failed to generate the PDF.");
+        toast.error(":x: Failed to generate the PDF.");
         return;
       }
-
+      if (!patient.email) {
+        toast.warning(":warning: Patient email is missing.");
+        return;
+      }
       const formData = new FormData();
-      formData.append("subject", `Test Details for ${patient.patientname}`);
+      formData.append("subject", `Test Details for ${patient.patient_name}`);
       formData.append(
         "message",
-        `Dear ${patient.patientname || "Recipient"},
-      
-      We hope this message finds you well. Please find attached the lab test results for ${
-        patient.patientname || "the patient"
-      }. If you have any questions or require further assistance,
-      feel free to contact us.
-      
-      Thank you for choosing our services.`
+        `Dear ${
+          patient.patient_name || "Recipient"
+        },\n\nWe hope this message finds you well. Please find attached the lab test results for ${
+          patient.patient_name || "the patient"
+        }. If you have any questions or require further assistance, feel free to contact us.\n\nThank you for choosing our services.`
       );
-
-      formData.append("recipients", patient.email); // Assuming patient has an `email` field
+      formData.append("recipients", patient.email);
       formData.append(
         "attachments",
-        new File([pdfBlob], `${patient.patientname}_TestDetails.pdf`, {
+        new File([pdfBlob], `${patient.patient_name}_TestDetails.pdf`, {
           type: "application/pdf",
         })
       );
-
       await axios.post(`${Labbaseurl}send-email/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      alert("Email sent successfully!");
+      toast.success(":white_check_mark: Email sent successfully!");
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("Failed to send email.");
+      toast.error(":x: Failed to send email.");
     }
   };
 
@@ -696,6 +693,7 @@ const PatientOverview = () => {
         `${Labbaseurl}get_patient_test_details/?patient_id=${patient.patient_id}`
       );
       const patientDetails = response.data;
+
       if (
         !patientDetails.testdetails ||
         patientDetails.testdetails.length === 0
@@ -745,7 +743,7 @@ const PatientOverview = () => {
       const headerHeight = 30; // Height of the header
       const footerHeight = 20; // Height of the footer
       const contentYStart = headerHeight + 10; // Start content below the header
-      const signatureHeight = 45; // Height needed for signatures
+      const signatureHeight = 40; // Height needed for signatures
       const disclaimerHeight = 15; // Height needed for disclaimer
       const tableHeaderHeight = 15; // Height needed for table header
 
@@ -891,14 +889,69 @@ const PatientOverview = () => {
         return splitText.length * lineHeight;
       };
 
+      // Function to add signatures at the bottom of ANY page
+      const addSignatures = () => {
+        const pageHeight = doc.internal.pageSize.height;
+        const signaturesY =
+          pageHeight -
+          footerHeight -
+          signatureHeight +
+          10 -
+          (withLetterpad ? 0 : disclaimerHeight);
+
+        // REDUCED signature width from 40 to 30
+        const signatureWidth = 30;
+        const availableWidth = contentWidth - (signatureWidth / 2) * 2; // Space between left and right most signatures
+        const signatureSpacing = availableWidth / (consultants.length - 1); // Space between each signature
+
+        consultants.forEach((consultant, index) => {
+          // Calculate position based on leftMargin to ensure consistency
+          const xPosition = leftMargin + index * signatureSpacing;
+
+          // Add Signature (if available) with reduced width
+          if (consultant[2]) {
+            doc.addImage(
+              consultant[2],
+              "PNG",
+              xPosition,
+              signaturesY,
+              signatureWidth, // Reduced from 40 to 30
+              15
+            );
+          }
+
+          // Print name below the signature with REDUCED spacing
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.text(consultant[0], xPosition, signaturesY + 17); // Reduced from 20 to 17
+
+          // Print qualification below the name with REDUCED spacing
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.text(consultant[1], xPosition, signaturesY + 22); // Reduced from 25 to 22
+        });
+
+        // Add disclaimer ONLY after signatures if not using letterpad
+        if (!withLetterpad) {
+          const disclaimerY = pageHeight - footerHeight - disclaimerHeight + 5;
+          addDisclaimer(disclaimerY);
+        }
+      };
+
       // Function to check if we need to add a new page before rendering content
       const checkForNewPage = (yPos, estimatedHeight) => {
         const pageHeight = doc.internal.pageSize.height;
         const footerStart =
-          pageHeight - (footerHeight + (withLetterpad ? 0 : disclaimerHeight));
+          pageHeight -
+          (footerHeight +
+            signatureHeight +
+            (withLetterpad ? 0 : disclaimerHeight));
 
         // If content is approaching footer, move to a new page
         if (yPos + estimatedHeight >= footerStart) {
+          // Add signatures to current page before creating new page
+          addSignatures();
+
           doc.addPage();
           pageCount++;
           addHeaderFooter(); // Add header/footer without page numbers
@@ -943,6 +996,24 @@ const PatientOverview = () => {
         return null;
       };
 
+      // Function to draw arrow symbols using lines (compatible with all PDF fonts)
+      const drawArrowSymbol = (doc, x, y, direction) => {
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+
+        if (direction === "up") {
+          // Draw up arrow using lines
+          doc.line(x, y, x + 1, y - 1); // Left diagonal
+          doc.line(x + 1, y - 1, x + 2, y); // Right diagonal
+          doc.line(x + 1, y - 1, x + 1, y + 2); // Vertical line
+        } else if (direction === "down") {
+          // Draw down arrow using lines
+          doc.line(x, y, x + 1, y + 1); // Left diagonal
+          doc.line(x + 1, y + 1, x + 2, y); // Right diagonal
+          doc.line(x + 1, y + 1, x + 1, y - 2); // Vertical line
+        }
+      };
+
       // Function to add disclaimer at the bottom of the page
       const addDisclaimer = (yPos) => {
         if (!withLetterpad) {
@@ -972,55 +1043,6 @@ const PatientOverview = () => {
           return yPos + 15; // Return the new position after the disclaimer
         }
         return yPos; // If letterpad is used, return the same position
-      };
-
-      // Function to add signatures at the bottom of the last page with consistent alignment
-      const addSignatures = () => {
-        const pageHeight = doc.internal.pageSize.height;
-        const signaturesY =
-          pageHeight -
-          footerHeight -
-          signatureHeight +
-          10 -
-          (withLetterpad ? 0 : disclaimerHeight);
-
-        // Ensure signatures align within the content margins
-        const signatureWidth = 30;
-        const availableWidth = contentWidth - (signatureWidth / 2) * 2; // Space between left and right most signatures
-        const signatureSpacing = availableWidth / (consultants.length - 1); // Space between each signature
-
-        consultants.forEach((consultant, index) => {
-          // Calculate position based on leftMargin to ensure consistency
-          const xPosition = leftMargin + index * signatureSpacing;
-
-          // Add Signature (if available)
-          if (consultant[2]) {
-            doc.addImage(
-              consultant[2],
-              "PNG",
-              xPosition,
-              signaturesY,
-              signatureWidth,
-              15
-            );
-          }
-
-          // Print name below the signature
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.text(consultant[0], xPosition, signaturesY + 20);
-
-          // Print qualification below the name
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(7);
-          doc.text(consultant[1], xPosition, signaturesY + 25);
-        });
-
-        // Add disclaimer ONLY after signatures if not using letterpad
-        if (!withLetterpad) {
-          const disclaimerY = pageHeight - footerHeight - disclaimerHeight + 5;
-          addDisclaimer(disclaimerY);
-        }
       };
 
       // Start generating the actual PDF
@@ -1154,7 +1176,8 @@ const PatientOverview = () => {
               // Check if we need a new page with better height estimation
               yPos = checkForNewPage(yPos, estimatedHeight);
 
-              doc.setFontSize(8);
+              // INCREASED TABLE DATA FONT SIZE
+              doc.setFontSize(10); // Changed from 8 to 10
               doc.setFont("helvetica", "normal");
 
               // Start positions for each column
@@ -1162,7 +1185,7 @@ const PatientOverview = () => {
 
               // Styling for main test vs parameters
               if (index > 0) {
-                doc.setFont("helvetica", "italic");
+                doc.setFont("helvetica", "normal");
                 doc.setTextColor(100, 100, 100); // Lighter gray for parameters
               }
 
@@ -1173,7 +1196,7 @@ const PatientOverview = () => {
                 colWidths[0] - 2,
                 xPos,
                 yPos,
-                4
+                5 // Increased line height for better readability
               );
               xPos += colWidths[0];
 
@@ -1198,14 +1221,15 @@ const PatientOverview = () => {
                 doc.setFont("helvetica", "bold");
                 if (statusIndicator === "H") {
                   doc.setTextColor(255, 0, 0); // Red for high
+                  // Draw up arrow before the value
+                  drawArrowSymbol(doc, xPos, yPos - 1, "up");
+                  doc.text(`${currentTest.value || ""}`, xPos + 6, yPos);
                 } else if (statusIndicator === "L") {
                   doc.setTextColor(0, 0, 255); // Blue for low
+                  // Draw down arrow before the value
+                  drawArrowSymbol(doc, xPos, yPos - 1, "down");
+                  doc.text(`${currentTest.value || ""}`, xPos + 6, yPos);
                 }
-                doc.text(
-                  `${statusIndicator} ${currentTest.value || ""}`,
-                  xPos,
-                  yPos
-                );
                 doc.setTextColor(0, 0, 0); // Reset to black
               } else {
                 doc.text(currentTest.value || "", xPos, yPos);
@@ -1224,12 +1248,12 @@ const PatientOverview = () => {
                 colWidths[5] - 2,
                 xPos,
                 yPos,
-                4
+                5 // Increased line height for better readability
               );
               xPos += colWidths[5];
 
               // Method (Moved to last column)
-              doc.setFont("helvetica", "italic");
+              doc.setFont("helvetica", "normal");
               doc.setTextColor(80, 80, 80); // Dark gray
 
               // Remove "Method" from the method name
@@ -1248,14 +1272,26 @@ const PatientOverview = () => {
               doc.setFont("helvetica", "normal");
 
               // Move to next line
-              yPos += Math.max(testNameHeight, referenceRangeHeight) + 8;
+              yPos += Math.max(testNameHeight, referenceRangeHeight) + 8; // Increased spacing
 
               // Reset styling
               doc.setFont("helvetica", "normal");
               doc.setTextColor(0, 0, 0);
             });
 
-            yPos += 5; // Space between tests
+            // Add "Verified by" under each test
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.text(
+              `Verified by: ${test.verified_by || "N/A"}`,
+              leftMargin,
+              yPos
+            );
+            yPos += 8; // Space after verified by
+
+            // Reset font
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
           });
 
           yPos += 5; // Space between departments
@@ -1267,22 +1303,22 @@ const PatientOverview = () => {
       // Mark that we're no longer in the table section
       isTableStarted = false;
 
-      // Ensure space for footer and end of report
-      const pageHeight = doc.internal.pageSize.height;
-      const footerStart =
-        pageHeight -
-        (footerHeight +
-          signatureHeight +
-          5 +
-          (withLetterpad ? 0 : disclaimerHeight));
-
       // Function to ensure content doesn't overlap with footer
       const ensureSpaceForFooter = (currentYPosition) => {
-        if (currentYPosition + 30 >= footerStart) {
+        const pageHeight = doc.internal.pageSize.height;
+        const footerStart =
+          pageHeight -
+          (footerHeight +
+            signatureHeight +
+            (withLetterpad ? 0 : disclaimerHeight));
+
+        // REDUCED buffer from 50 to 25 - was too aggressive
+        if (currentYPosition + 25 >= footerStart) {
+          addSignatures();
           doc.addPage();
           pageCount++;
           addHeaderFooter();
-          return contentYStart; // Reset Y position for new page
+          return contentYStart;
         }
         return currentYPosition;
       };
@@ -1298,17 +1334,7 @@ const PatientOverview = () => {
         align: "center",
       });
 
-      // Verification - Align with left margin
-      const yPosition = currentYPosition + 10;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text(
-        `Verified by: ${patientDetails.verified_by}`,
-        leftMargin,
-        yPosition
-      );
-
-      // Add signatures at the bottom of the last page only
+      // Add signatures at the bottom of the last page
       addSignatures();
 
       // CRITICAL: Get the final page count AFTER all content is rendered

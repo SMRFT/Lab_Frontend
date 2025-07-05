@@ -731,6 +731,8 @@ const PatientDataTable = () => {
         paymentDetails = patient.payment_method.upidetails;
       } else if (patient.payment_method.netbankingdetails) {
         paymentDetails = patient.payment_method.netbankingdetails;
+      } else if (patient.payment_method.creditdetails) {
+        paymentDetails = patient.payment_method.creditdetails;
       } else if (patient.payment_method.details) {
         paymentDetails = patient.payment_method.details;
       }
@@ -759,6 +761,9 @@ const PatientDataTable = () => {
         Gender: p.gender,
         Date: new Date(p.date).toLocaleDateString("en-GB"),
         "Referred By": p.refby,
+        B2B: p.b2b || "N/A", // Add B2B field
+        "Sales Representative": p.salesMapping || "N/A", // Add Sales Representative field
+        "Sample Collector": p.sample_collector || "N/A", // Add Sample Collector field
         Branch: p.branch,
         Segment: p.segment,
         "No. of Tests": countTests(p), // Add number of tests
@@ -908,6 +913,9 @@ const PatientDataTable = () => {
                         <Th>Name</Th>
                         <Th>Age/Gender</Th>
                         <Th>Referred By</Th>
+                        <Th>B2B</Th>
+                        <Th>Sales Rep</Th>
+                        <Th>Sample Collector</Th>
                         <Th>No. of Tests</Th>
                         <Th>Test Names</Th>
                         <Th>Total Amount</Th>
@@ -939,6 +947,48 @@ const PatientDataTable = () => {
                             </Td>
                             <Td>{`${patient.age} / ${patient.gender}`}</Td>
                             <Td>{patient.refby}</Td>
+
+                            {/* B2B Column */}
+                            <Td>
+                              <Badge
+                                type={
+                                  patient.b2b && patient.b2b !== "N/A"
+                                    ? "info"
+                                    : "secondary"
+                                }
+                              >
+                                {patient.b2b || "N/A"}
+                              </Badge>
+                            </Td>
+
+                            {/* Sales Representative Column */}
+                            <Td>
+                              <Badge
+                                type={
+                                  patient.salesMapping &&
+                                  patient.salesMapping !== "N/A"
+                                    ? "success"
+                                    : "secondary"
+                                }
+                              >
+                                {patient.salesMapping || "N/A"}
+                              </Badge>
+                            </Td>
+
+                            {/* Sample Collector Column */}
+                            <Td>
+                              <Badge
+                                type={
+                                  patient.sample_collector &&
+                                  patient.sample_collector !== "N/A"
+                                    ? "warning"
+                                    : "secondary"
+                                }
+                              >
+                                {patient.sample_collector || "N/A"}
+                              </Badge>
+                            </Td>
+
                             {/* No. of Tests Column */}
                             <Td>
                               <Badge type="secondary">{testCount}</Badge>
