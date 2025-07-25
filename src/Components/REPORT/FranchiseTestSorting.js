@@ -282,7 +282,7 @@ const PrintOption = styled.div`
 `;
 
 // **Main Component**
-const TestSorting = ({ patient, onClose }) => {
+const FranchiseTestSorting = ({ patient, onClose }) => {
   const [tests, setTests] = useState([]);
   const [selectedTests, setSelectedTests] = useState([]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
@@ -338,7 +338,7 @@ const TestSorting = ({ patient, onClose }) => {
 
     try {
       const response = await axios.get(
-        `${Labbaseurl}get_patient_test_details/?patient_id=${patient.patient_id}`
+        `${Labbaseurl}franchise_patient_test_details/?patient_id=${patient.patient_id}`
       );
       const patientDetails = response.data;
 
@@ -412,8 +412,7 @@ const TestSorting = ({ patient, onClose }) => {
         ["Dr. R. VIJAYAN Ph.D.", "Consultant Biochemist", Vijayan],
       ];
 
-      const patientRefNo =
-        patientDetails.barcodes?.[0]?.match(/\d+/)?.[0] || "N/A";
+      const patientRefNo = patientDetails.barcode || "N/A";
       const patientRefNoNumber = extractPatientRefNoNumber(patientRefNo);
 
       // Generate Barcode only if patientRefNoNumber is not "N/A"
@@ -470,7 +469,6 @@ const TestSorting = ({ patient, onClose }) => {
         },
         { label: "Referral", value: patientDetails.refby || "SELF" },
         { label: "Branch", value: patientDetails.branch || "N/A" },
-        { label: "Source", value: patientDetails.B2B || "N/A" },
       ];
 
       const rightDetails = [
@@ -800,7 +798,7 @@ const TestSorting = ({ patient, onClose }) => {
 
         currentYPosition += 5; // Reduced spacing between rows
       }
-
+      currentYPosition += 5; // Extra space after patient details
       // Sort ordered tests to maintain selection order
       orderedTests.sort((a, b) => {
         const indexA = selectedTests.findIndex(
@@ -1189,4 +1187,4 @@ const TestSorting = ({ patient, onClose }) => {
   );
 };
 
-export default TestSorting;
+export default FranchiseTestSorting;

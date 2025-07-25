@@ -7,7 +7,7 @@ import JsBarcode from "jsbarcode";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import "react-datepicker/dist/react-datepicker.css";
-import TestSorting from "./TestSorting";
+import FranchiseTestSorting from "./FranchiseTestSorting";
 import PatientOverallReport from "../FINANCE/PatientOverallReport";
 import {
   Calendar,
@@ -410,17 +410,14 @@ const NavigationTab = styled.button`
   }
 `;
 
-const PatientOverview = () => {
+const FranchiseOverview = () => {
   const [patients, setPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
   const [statuses, setStatuses] = useState({});
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [activeDropdownPatientId, setActiveDropdownPatientId] = useState(null);
-  const [refByOptions, setRefByOptions] = useState([]);
-  const [clinicalNames, setClinicalNames] = useState([]);
   const [branch, setBranch] = useState("");
-  const [B2B, setB2B] = useState("");
   const [refBy, setRefBy] = useState("");
   const [patientId, setPatientId] = useState("");
   const [patientName, setPatientName] = useState("");
@@ -454,31 +451,6 @@ const PatientOverview = () => {
     }
   };
 
-  useEffect(() => {
-    // Fetch Refby
-    axios
-      .get(`${Labbaseurl}refby/`)
-      .then((response) => {
-        setRefByOptions(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching Refby:", error);
-        setError("Failed to load referral options");
-      });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get(`${Labbaseurl}clinical_name/`)
-      .then((response) => {
-        setClinicalNames(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching clinical names:", error);
-        setError("Failed to load clinical names");
-      });
-  }, []);
-
   // Fetch patients when component mounts
   useEffect(() => {
     const fetchCombinedPatientData = async () => {
@@ -487,12 +459,15 @@ const PatientOverview = () => {
       const formattedEndDate = endDate.toISOString().split("T")[0];
 
       try {
-        const response = await axios.get(`${Labbaseurl}overall_report/`, {
-          params: {
-            from_date: formattedStartDate,
-            to_date: formattedEndDate,
-          },
-        });
+        const response = await axios.get(
+          `${Labbaseurl}franchise_overall_report/`,
+          {
+            params: {
+              from_date: formattedStartDate,
+              to_date: formattedEndDate,
+            },
+          }
+        );
 
         const patientData = response.data;
 
@@ -546,7 +521,6 @@ const PatientOverview = () => {
         patientDate >= startOfDay &&
         patientDate <= endOfDay &&
         (!branch || patient.branch === branch) &&
-        (!B2B || patient.b2b === B2B) &&
         (!refBy || patient.refby === refBy) &&
         (!patientId || patient.patient_id.includes(patientId)) &&
         (!patientName ||
@@ -562,7 +536,6 @@ const PatientOverview = () => {
     endDate,
     patients,
     branch,
-    B2B,
     refBy,
     patientId,
     patientName,
@@ -574,7 +547,6 @@ const PatientOverview = () => {
     setStartDate(new Date());
     setEndDate(new Date());
     setBranch("");
-    setB2B("");
     setRefBy("");
     setPatientId("");
     setPatientName("");
@@ -749,7 +721,7 @@ const PatientOverview = () => {
 
       // Simulated patient data for demo
       const response = await axios.get(
-        `${Labbaseurl}get_patient_test_details/?patient_id=${patient.patient_id}`
+        `${Labbaseurl}franchise_patient_test_details/?patient_id=${patient.patient_id}`
       );
       const patientDetails = response.data;
 
@@ -825,8 +797,7 @@ const PatientOverview = () => {
         ["Dr. R. VIJAYAN Ph.D.", "Consultant Biochemist", Vijayan],
       ];
 
-      const patientRefNo =
-        patientDetails.barcodes?.[0]?.match(/\d+/)?.[0] || "N/A";
+      const patientRefNo = patientDetails.barcode || "N/A";
       const patientRefNoNumber = extractPatientRefNoNumber(patientRefNo);
 
       // Generate Barcode only if patientRefNoNumber is not "N/A"
@@ -883,7 +854,6 @@ const PatientOverview = () => {
         },
         { label: "Referral", value: patientDetails.refby || "SELF" },
         { label: "Branch", value: patientDetails.branch || "N/A" },
-        { label: "Source", value: patientDetails.B2B || "N/A" },
       ];
 
       const rightDetails = [
@@ -1057,19 +1027,19 @@ const PatientOverview = () => {
               xPosition,
               signaturesY,
               signatureWidth, // Reduced from 40 to 30
-              15
+              15 //Space between signature and name
             );
           }
 
           // Print name below the signature with REDUCED spacing
           doc.setFont("helvetica", "bold");
           doc.setFontSize(10);
-          doc.text(consultant[0], xPosition, signaturesY + 15); // Reduced from 20 to 17
+          doc.text(consultant[0], xPosition, signaturesY + 15); // Space for name below signature
 
           // Print qualification below the name with REDUCED spacing
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
-          doc.text(consultant[1], xPosition, signaturesY + 20); // Reduced from 25 to 22
+          doc.text(consultant[1], xPosition, signaturesY + 20); // space for qualification below name
         });
 
         // Removed disclaimer - no longer needed
@@ -1213,7 +1183,7 @@ const PatientOverview = () => {
 
         currentYPosition += 5; // Reduced spacing between rows
       }
-
+      currentYPosition += 5; // Extra space after patient details
       // Test rendering logic with better page break handling and consistent alignment
       if (patientDetails.testdetails.length) {
         // Mark that we're starting the table section
@@ -1558,7 +1528,7 @@ const PatientOverview = () => {
               Franchise
             </NavigationTab>
           </NavigationContainer>
-          <Title>Patient Overall Status</Title>
+          <Title>Franchise Patient Status</Title>
         </CardHeader>
 
         <FiltersContainer>
@@ -1570,9 +1540,7 @@ const PatientOverview = () => {
                 onChange={(e) => setBranch(e.target.value)}
               >
                 <option value="">Select a Branch</option>
-                <option value="Shanmuga Referrence Lab">
-                  Shanmuga Referrence Lab
-                </option>
+                <option value="Shanmuga Mother Lab">Shanmuga Mother Lab</option>
               </FilterSelect>
             </FilterGroup>
 
@@ -1592,38 +1560,6 @@ const PatientOverview = () => {
                 value={endDate.toISOString().split("T")[0]}
                 onChange={(e) => setEndDate(new Date(e.target.value))}
               />
-            </FilterGroup>
-
-            <FilterGroup>
-              <FilterLabel>Select B2B</FilterLabel>
-              <FilterSelect
-                value={B2B}
-                onChange={(e) => setB2B(e.target.value)}
-              >
-                <option value="">Select Clinical Name</option>
-                {clinicalNames.map((name, index) => (
-                  <option key={index} value={name.clinicalname}>
-                    {name.clinicalname}
-                  </option>
-                ))}
-              </FilterSelect>
-            </FilterGroup>
-          </FilterRow>
-
-          <FilterRow>
-            <FilterGroup>
-              <FilterLabel>Select Referral</FilterLabel>
-              <FilterSelect
-                value={refBy}
-                onChange={(e) => setRefBy(e.target.value)}
-              >
-                <option value="">Select Refby</option>
-                {refByOptions.map((refby, index) => (
-                  <option key={index} value={refby.name}>
-                    {refby.name}
-                  </option>
-                ))}
-              </FilterSelect>
             </FilterGroup>
 
             <FilterGroup>
@@ -1682,9 +1618,8 @@ const PatientOverview = () => {
                 <th>Patient ID</th>
                 <th>Barcode</th>
                 <th>Patient Name</th>
-                <th>Branch</th>
+                <th>Franchise ID</th>
                 <th>Referral</th>
-                <th>B2B</th>
                 <th>Status</th>
                 <th>Credit</th>
                 <th>Actions</th>
@@ -1746,7 +1681,6 @@ const PatientOverview = () => {
                       </td>
                       <td>{patient.branch || "N/A"}</td>
                       <td>{patient.refby || "N/A"}</td>
-                      <td>{patient.b2b || "N/A"}</td>
                       <td>
                         <Badge color={badgeColor}>{status}</Badge>
                       </td>
@@ -1846,7 +1780,7 @@ const PatientOverview = () => {
 
       {/* Test Sorting Modal */}
       {isTestModalOpen && (
-        <TestSorting
+        <FranchiseTestSorting
           patient={selectedPatient}
           onClose={() => setIsTestModalOpen(false)}
         />
@@ -1916,4 +1850,4 @@ const PatientOverview = () => {
   );
 };
 
-export default PatientOverview;
+export default FranchiseOverview;

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import { FaToggleOff, FaToggleOn, FaSearch } from "react-icons/fa";
+import Select from "react-select"; // Add this import
 import SampleCollectorForm from "../FORMS/SampleCollectorForm";
 import ClinicalName from "../FORMS/ClinicalName";
 import RefBy from "../FORMS/RefBy";
@@ -11,20 +12,22 @@ import styled from "styled-components";
 import "./PatientForm.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const Fieldset = styled.fieldset`
-  border: 2px dashed #e68fae; /* Dotted border for gradient effect */
+  border: 2px dashed #e68fae;
   border-radius: 12px;
   padding: 25px;
   margin: 20px 0;
-  background: none; /* No background color */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  background: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   font-family: "Poppins", sans-serif;
   color: #1b262c;
+  overflow: visible; /* Ensure fieldset allows overflow */
 
   legend {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #e68fae; /* Matching the title color */
+    color: #e68fae;
     padding: 0 10px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   }
@@ -43,7 +46,7 @@ const SearchContainer = styled.div`
     color: #333;
 
     &::placeholder {
-      color: grey; /* Grey color for placeholder */
+      color: grey;
     }
   }
 
@@ -55,22 +58,125 @@ const SearchContainer = styled.div`
     color: #6c757d;
   }
 `;
+
 const RequiredIndicator = styled.span`
   color: #ff6b6b;
   margin-left: 0.25rem;
 `;
 
+// Custom styles for react-select with fixed overflow
+const customSelectStyles = {
+  container: (provided) => ({
+    ...provided,
+    flex: 1,
+    position: "relative",
+    zIndex: 1,
+  }),
+  control: (provided, state) => ({
+    ...provided,
+    border: "1px solid #ced4da",
+    borderRadius: "0.375rem",
+    boxShadow: "none",
+    minHeight: "38px",
+    width: "100%",
+    "&:hover": {
+      borderColor: "#e68fae",
+    },
+  }),
+  menu: (provided) => ({
+    ...provided,
+    maxHeight: "200px",
+    zIndex: 9999,
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
+    backgroundColor: "white",
+    border: "1px solid #e68fae",
+    borderTop: "none",
+    borderRadius: "0 0 0.375rem 0.375rem",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    marginTop: "-1px",
+    overflow: "hidden", // Prevent content overflow
+    width: "100%", // Ensure full width
+  }),
+  menuList: (provided) => ({
+    ...provided,
+    maxHeight: "200px",
+    overflowY: "auto",
+    overflowX: "hidden", // Prevent horizontal overflow
+    padding: 0,
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected
+      ? "#007bff"
+      : state.isFocused
+      ? "#f8f9fa"
+      : "white",
+    color: state.isSelected ? "white" : "#333",
+    padding: "8px 12px",
+    cursor: "pointer",
+    fontSize: "0.875rem",
+    whiteSpace: "nowrap", // Prevent text wrapping
+    overflow: "hidden", // Hide overflow text
+    textOverflow: "ellipsis", // Add ellipsis for long text
+    "&:hover": {
+      backgroundColor: state.isSelected ? "#007bff" : "#f8f9fa",
+    },
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    maxWidth: "calc(100% - 20px)", // Account for indicators
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: "#6c757d",
+    fontSize: "0.875rem",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  }),
+  valueContainer: (provided) => ({
+    ...provided,
+    padding: "2px 8px",
+    overflow: "hidden",
+  }),
+  input: (provided) => ({
+    ...provided,
+    margin: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+  }),
+  indicatorsContainer: (provided) => ({
+    ...provided,
+    flexShrink: 0, // Prevent indicators from shrinking
+  }),
+  dropdownIndicator: (provided) => ({
+    ...provided,
+    padding: "4px",
+  }),
+  clearIndicator: (provided) => ({
+    ...provided,
+    padding: "4px",
+  }),
+};
+
 const PatientForm = () => {
   const getCurrentDateWithTime = () => {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Month is 0-based, so add 1
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
     const day = String(currentDate.getDate()).padStart(2, "0");
     const hours = String(currentDate.getHours()).padStart(2, "0");
     const minutes = String(currentDate.getMinutes()).padStart(2, "0");
     const seconds = String(currentDate.getSeconds()).padStart(2, "0");
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`; // Format as YYYY-MM-DD HH:mm:ss
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
+
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
   const storedName = localStorage.getItem("name");
 
@@ -82,9 +188,9 @@ const PatientForm = () => {
     branch: "",
     B2B: "",
     segment: "",
-    Title: "Mr.", // Default Title
+    Title: "Mr.",
     patientname: "",
-    gender: "Male", // Default Gender
+    gender: "Male",
     age: "",
     age_type: "",
     phone: "",
@@ -108,18 +214,39 @@ const PatientForm = () => {
   const [showSampleCollectorForm, setShowSampleCollectorForm] = useState(false);
   const [showRefByForm, setShowRefByFormForm] = useState(false);
   const [showAddOrganisationForm, setShowAddOrganisationForm] = useState(false);
-  const [isB2BEnabled, setIsB2BEnabled] = useState(false); // State to track toggle status
+  const [isB2BEnabled, setIsB2BEnabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Add a new state to track form validity
   const [isFormValid, setIsFormValid] = useState(false);
+
+  // Selected values for react-select components
+  const [selectedRefBy, setSelectedRefBy] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [selectedSampleCollector, setSelectedSampleCollector] = useState(null);
+
+  // Branch options (you can move this to state and fetch from API if needed)
+  const branchOptions = [
+    { value: "Shanmuga Referrence Lab", label: "Shanmuga Referrence Lab" },
+  ];
+
+  // Convert arrays to react-select format
+  const formatRefByOptions = refByOptions.map((refby) => ({
+    value: refby.name,
+    label: refby.name,
+  }));
+
+  const formatSampleCollectorOptions = sampleCollectorOptions.map(
+    (collector) => ({
+      value: collector.name,
+      label: collector.name,
+    })
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    let updatedGender = formData.gender; // Default to the current gender
+    let updatedGender = formData.gender;
     if (name === "Title") {
-      // Automatically set gender based on title
       if (value === "Mr." || value === "Master." || value === "Dr.") {
         updatedGender = "Male";
       } else if (
@@ -130,7 +257,7 @@ const PatientForm = () => {
       ) {
         updatedGender = "Female";
       } else if (value === "Baby of.") {
-        updatedGender = "Other"; // Assume 'other' for BABY OF
+        updatedGender = "Other";
       }
     }
 
@@ -139,16 +266,41 @@ const PatientForm = () => {
         ...prevData,
         address: {
           ...prevData.address,
-          [name]: value, // Update the specific part of address
+          [name]: value,
         },
       }));
     } else {
       setFormData((prevData) => ({
         ...prevData,
         [name]: value,
-        ...(name === "Title" && { gender: updatedGender }), // Update gender only if 'Title' changes
+        ...(name === "Title" && { gender: updatedGender }),
       }));
     }
+  };
+
+  // Handle react-select changes
+  const handleRefByChange = (selectedOption) => {
+    setSelectedRefBy(selectedOption);
+    setFormData((prevData) => ({
+      ...prevData,
+      refby: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleBranchChange = (selectedOption) => {
+    setSelectedBranch(selectedOption);
+    setFormData((prevData) => ({
+      ...prevData,
+      branch: selectedOption ? selectedOption.value : "",
+    }));
+  };
+
+  const handleSampleCollectorChange = (selectedOption) => {
+    setSelectedSampleCollector(selectedOption);
+    setFormData((prevData) => ({
+      ...prevData,
+      sample_collector: selectedOption ? selectedOption.value : "",
+    }));
   };
 
   const handleClinicalNameSelect = (
@@ -160,31 +312,26 @@ const PatientForm = () => {
   ) => {
     setFormData((prevState) => ({
       ...prevState,
-      B2B: clinicalName || "", // Update B2B field
-      lab_id: referrerCode || "", // Update Lab ID with referrerCode
-      salesMapping: salesMapping || "", // Update Sales Mapping
-      phone: phone || "", // ✅ CORRECT: phone gets phone value
-      email: email || "", // ✅ CORRECT: email gets email value
+      B2B: clinicalName || "",
+      lab_id: referrerCode || "",
+      salesMapping: salesMapping || "",
+      phone: phone || "",
+      email: email || "",
     }));
   };
 
   const handleToggle = () => {
     setIsB2BEnabled(!isB2BEnabled);
-
-    // Automatically disable home collection when B2B is enabled
     setFormData((prevData) => ({
       ...prevData,
       home_collection: isB2BEnabled ? "" : prevData.home_collection,
     }));
-
-    // If B2B is enabled, disable home collection toggle
     if (!isB2BEnabled) {
-      setIsHomeCollectionEnabled(false); // Disable the home collection toggle
+      setIsHomeCollectionEnabled(false);
     }
   };
 
   const handleToggleHomeCollection = () => {
-    // Only allow toggling if B2B is not enabled
     if (!isB2BEnabled) {
       setIsHomeCollectionEnabled((prev) => !prev);
     } else {
@@ -192,106 +339,91 @@ const PatientForm = () => {
     }
   };
 
-  // Fetch the latest patient ID when the component is mounted
   const fetchSampleCollector = async () => {
     try {
       const response = await axios.get(`${Labbaseurl}sample-collector/`);
       setSampleCollectorOptions(response.data);
     } catch (error) {
-      console.error("Error fetching patient ID:", error);
-      // Optionally, show an alert or message
+      console.error("Error fetching sample collectors:", error);
     }
   };
+
   useEffect(() => {
-    // Call the fetchPatientId function when the component mounts
     fetchSampleCollector();
   }, []);
 
   const handleSampleCollectorAdded = () => {
-    fetchSampleCollector(); // Refresh RefBy data after adding a new entry
+    fetchSampleCollector();
   };
 
-  // Fetch the latest patient ID when the component is mounted
   const fetchPatientId = async () => {
     try {
       const response = await axios.get(`${Labbaseurl}latest-patient-id/`);
       setFormData((prevData) => ({
         ...prevData,
-        patient_id: response.data.patient_id, // Set the new patient ID
+        patient_id: response.data.patient_id,
       }));
     } catch (error) {
       console.error("Error fetching patient ID:", error);
-      // Optionally, show an alert or message
     }
   };
+
   useEffect(() => {
-    // Call the fetchPatientId function when the component mounts
     fetchPatientId();
   }, []);
 
-  // Fetch the latest patient ID when the component is mounted
   const fetchRefBy = async () => {
     try {
       const response = await axios.get(`${Labbaseurl}refby/`);
       setRefByOptions(response.data);
     } catch (error) {
-      console.error("Error fetching patient ID:", error);
-      // Optionally, show an alert or message
+      console.error("Error fetching refby:", error);
     }
   };
+
   useEffect(() => {
-    // Call the fetchPatientId function when the component mounts
     fetchRefBy();
   }, []);
 
   const handleRefByAdded = () => {
-    fetchRefBy(); // Refresh RefBy data after adding a new entry
+    fetchRefBy();
   };
 
-  // Fetch the latest patient ID when the component is mounted
   const fetchBillNo = async () => {
     try {
       const response = await axios.get(`${Labbaseurl}latest-bill-no/`);
       setFormData((prevData) => ({
         ...prevData,
-        bill_no: response.data.bill_no, // Set the fetched bill_no
+        bill_no: response.data.bill_no,
       }));
     } catch (error) {
-      console.error("Error fetching patient ID:", error);
-      // Optionally, show an alert or message
+      console.error("Error fetching bill number:", error);
     }
   };
+
   useEffect(() => {
-    // Call the fetchPatientId function when the component mounts
     fetchBillNo();
   }, []);
 
-  // Add this useEffect to check form validity whenever patientname or age changes
   useEffect(() => {
-    // Check if both patientname and age are filled
     const isValid = formData.patientname.trim() !== "" && formData.age !== "";
     setIsFormValid(isValid);
   }, [formData.patientname, formData.age]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Prevent multiple submissions
     if (isSubmitting) return;
-
-    setIsSubmitting(true); // Set loading state
+    setIsSubmitting(true);
 
     try {
       await fetchPatientId();
-      // Determine the segment value based on toggle states
-      let segmentValue = "Walk-in"; // Default to "Walk-in"
+      let segmentValue = "Walk-in";
       if (isB2BEnabled) {
         segmentValue = "B2B";
       } else if (isHomeCollectionEnabled) {
         segmentValue = "Home Collection";
       }
 
-      // Enhanced Validation Logic with specific field error messages
       const validateField = (fieldValue, fieldName) => {
         if (
           !fieldValue ||
@@ -303,7 +435,6 @@ const PatientForm = () => {
         return true;
       };
 
-      // 1. If B2B is enabled, validate required fields individually
       if (isB2BEnabled) {
         if (!validateField(formData.B2B, "Clinical Name")) {
           setIsSubmitting(false);
@@ -323,7 +454,6 @@ const PatientForm = () => {
         }
       }
 
-      // 2. If both B2B and Home Collection are not enabled (Walk-in), validate required fields
       if (!isB2BEnabled && !isHomeCollectionEnabled) {
         if (!validateField(formData.refby, "Referred By")) {
           setIsSubmitting(false);
@@ -339,7 +469,6 @@ const PatientForm = () => {
         }
       }
 
-      // 3. If Home Collection is enabled, validate all required fields including contact details
       if (isHomeCollectionEnabled) {
         if (!validateField(formData.refby, "Referred By")) {
           setIsSubmitting(false);
@@ -363,7 +492,6 @@ const PatientForm = () => {
         }
       }
 
-      // Common validations for all scenarios
       if (!validateField(formData.patientname, "Patient Name")) {
         setIsSubmitting(false);
         return;
@@ -377,7 +505,6 @@ const PatientForm = () => {
         return;
       }
 
-      // Additional email format validation if email is provided
       if (formData.email && formData.email.trim() !== "") {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
@@ -387,9 +514,8 @@ const PatientForm = () => {
         }
       }
 
-      // Additional phone number validation if phone is provided
       if (formData.phone && formData.phone.trim() !== "") {
-        const phoneRegex = /^\d{10}$/; // Assuming 10-digit phone number
+        const phoneRegex = /^\d{10}$/;
         if (!phoneRegex.test(formData.phone)) {
           toast.error("Please enter a valid 10-digit phone number");
           setIsSubmitting(false);
@@ -398,12 +524,10 @@ const PatientForm = () => {
       }
 
       const fullPatientName = `${formData.Title} ${formData.patientname}`;
-      // Prepare the address as a JSON object
       const addressData = {
         area: formData.address.area,
         pincode: formData.address.pincode,
       };
-      // Set B2B to null if the toggle is not enabled
       const B2BValue = isB2BEnabled ? formData.B2B : null;
 
       const response = await axios.post(`${Labbaseurl}patient/create/`, {
@@ -415,10 +539,9 @@ const PatientForm = () => {
         B2B: B2BValue,
       });
 
-      // Show success toast
       toast.success("Patient data saved successfully!");
 
-      // Reset form fields
+      // Reset form and selected values
       setFormData({
         patient_id: response.data.patient_id,
         date: getCurrentDateWithTime(),
@@ -447,13 +570,16 @@ const PatientForm = () => {
         clinicalName: "",
       });
 
-      // Refresh the page after 3 seconds
+      // Reset select components
+      setSelectedRefBy(null);
+      setSelectedBranch(null);
+      setSelectedSampleCollector(null);
+
       setTimeout(() => {
         window.location.reload();
       }, 3000);
     } catch (error) {
       console.error("Error saving data:", error);
-      // Handle specific API errors
       if (error.response && error.response.data) {
         const errorMessage =
           error.response.data.message || "Error saving data. Please try again.";
@@ -462,13 +588,13 @@ const PatientForm = () => {
         toast.error("Error saving data. Please try again.");
       }
     } finally {
-      setIsSubmitting(false); // Reset loading state
+      setIsSubmitting(false);
     }
   };
 
   const [selectedTests, setSelectedTests] = useState([]);
-  const [searchValue, setSearchValue] = useState(""); // Input value for search
-  const [typingTimeout, setTypingTimeout] = useState(null); // Timeout reference
+  const [searchValue, setSearchValue] = useState("");
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
   const handleSearchChange = (e) => {
     const input = e.target.value;
@@ -482,7 +608,6 @@ const PatientForm = () => {
       if (input.length >= 3) {
         handleSearch(input);
       } else {
-        // toast.error("Please type at least 3 characters.");
         setFormData({
           patient_id: "",
           patientname: "",
@@ -503,18 +628,16 @@ const PatientForm = () => {
   const handleSearch = async (value) => {
     try {
       let queryParam;
-      const currentDate = getCurrentDateWithTime(); // Get the current date
+      const currentDate = getCurrentDateWithTime();
 
-      // Determine the query parameter based on input value
       if (/^SD\d+$/.test(value)) {
-        queryParam = `patient_id=${value}`; // Patient ID
+        queryParam = `patient_id=${value}`;
       } else if (/^\d{10}$/.test(value)) {
-        queryParam = `phone=${value}`; // Phone number (10 digits)
+        queryParam = `phone=${value}`;
       } else {
-        queryParam = `patientname=${value}`; // Patient name
+        queryParam = `patientname=${value}`;
       }
 
-      // Add the current date as a query parameter
       const response = await axios.get(
         `${Labbaseurl}patient-get/?${queryParam}&date=${currentDate}`
       );
@@ -540,13 +663,12 @@ const PatientForm = () => {
       }
     } catch (error) {
       console.error("Error fetching patient details:", error);
-      // toast.error(error.response?.data?.error || "Error fetching patient details.");
     }
   };
 
   return (
-    <div>
-      <form className="container mt-3">
+    <div style={{ overflow: "visible" }}>
+      <form className="container mt-3" style={{ overflow: "visible" }}>
         <h2 className="text-center">Patient Registration Form</h2>
 
         <div className="row justify-content-center mb-3">
@@ -564,8 +686,6 @@ const PatientForm = () => {
           </div>
         </div>
 
-        {/* Lab Details */}
-        {/* First Row: Date, Lab ID, Ref By, Branch */}
         <Fieldset>
           <h4 style={{ textAlign: "center" }}>Lab Details</h4>
           <div className="row mb-3">
@@ -593,20 +713,22 @@ const PatientForm = () => {
             </div>
             <div className="col-md-3">
               <label className="form-label">Ref By</label>
-              <div className="d-flex align-items-center">
-                <select
-                  className="form-select me-2"
-                  name="refby"
-                  value={formData.refby}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Refby</option>
-                  {refByOptions.map((refby, index) => (
-                    <option key={index} value={refby.name}>
-                      {refby.name}
-                    </option>
-                  ))}
-                </select>
+              <div
+                className="d-flex align-items-center"
+                style={{ position: "relative" }}
+              >
+                <div style={{ flex: 1, marginRight: "8px" }}>
+                  <Select
+                    options={formatRefByOptions}
+                    value={selectedRefBy}
+                    onChange={handleRefByChange}
+                    isSearchable
+                    placeholder="Search Ref By..."
+                    styles={customSelectStyles}
+                    isClearable
+                    menuPortalTarget={document.body}
+                  />
+                </div>
                 <button
                   type="button"
                   className="button"
@@ -623,24 +745,22 @@ const PatientForm = () => {
             </div>
             <div className="col-md-3">
               <label className="form-label">Branch</label>
-              <select
-                className="form-select"
-                name="branch"
-                value={formData.branch}
-                onChange={handleChange}
-              >
-                <option value="">Select a Branch</option>{" "}
-                {/* Placeholder option */}
-                <option value="Shanmuga Mother Lab">
-                  Shanmuga Mother Lab
-                </option>{" "}
-                {/* Adding Mother Lab option */}
-              </select>
+              <div style={{ position: "relative" }}>
+                <Select
+                  options={branchOptions}
+                  value={selectedBranch}
+                  onChange={handleBranchChange}
+                  isSearchable
+                  placeholder="Search Branch..."
+                  styles={customSelectStyles}
+                  isClearable
+                  menuPortalTarget={document.body}
+                />
+              </div>
             </div>
           </div>
-          {/* Second Row: B2B, Home Collection */}
+
           <div className="row mb-3 align-items-center">
-            {/* B2B Toggle */}
             <div className="col-md-2 d-flex flex-column align-items-center">
               <label className="form-label mt-2">B2B</label>
               <div onClick={handleToggle} style={{ cursor: "pointer" }}>
@@ -657,14 +777,12 @@ const PatientForm = () => {
                 )}
               </div>
             </div>
-            {/* Clinical Name */}
             <div className="col-md-3">
               <ClinicalName
                 isB2BEnabled={isB2BEnabled}
-                onClinicalNameSelect={handleClinicalNameSelect} // Pass function
+                onClinicalNameSelect={handleClinicalNameSelect}
               />
             </div>
-            {/* Sales Representative */}
             <div className="col-md-2">
               <label className="form-label">Sales Representative</label>
               <input
@@ -676,7 +794,6 @@ const PatientForm = () => {
                 readOnly
               />
             </div>
-            {/* Home Collection */}
             <div className="col-md-2 d-flex flex-column align-items-center">
               <label className="form-label">Home Collection</label>
               <div
@@ -696,23 +813,24 @@ const PatientForm = () => {
                 )}
               </div>
             </div>
-            {/* Sample Collector */}
             <div className="col-md-3">
               <label className="form-label">Sample Collector</label>
-              <div className="d-flex align-items-center">
-                <select
-                  className="form-select me-2"
-                  name="sample_collector"
-                  value={formData.sample_collector}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Sample Collector</option>
-                  {sampleCollectorOptions.map((collector, index) => (
-                    <option key={index} value={collector.name}>
-                      {collector.name}
-                    </option>
-                  ))}
-                </select>
+              <div
+                className="d-flex align-items-center"
+                style={{ position: "relative" }}
+              >
+                <div style={{ flex: 1, marginRight: "8px" }}>
+                  <Select
+                    options={formatSampleCollectorOptions}
+                    value={selectedSampleCollector}
+                    onChange={handleSampleCollectorChange}
+                    isSearchable
+                    placeholder="Sample Collector..."
+                    styles={customSelectStyles}
+                    isClearable
+                    menuPortalTarget={document.body}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowSampleCollectorForm(true)}
@@ -729,11 +847,9 @@ const PatientForm = () => {
           </div>
         </Fieldset>
 
-        {/* Third Row: Patient ID, Title, Patient Name, Age, Age Type,gender */}
         <Fieldset>
           <h4 style={{ textAlign: "center" }}>Personal Details</h4>
           <div className="row mb-3">
-            {/* Patient ID */}
             <div className="col-md-3">
               <label className="form-label">Patient ID</label>
               <input
@@ -741,11 +857,10 @@ const PatientForm = () => {
                 className="form-control"
                 name="patient_id"
                 value={formData.patient_id}
-                readOnly // Make it non-editable
+                readOnly
               />
             </div>
 
-            {/* Title */}
             <div className="col-md-2">
               <label className="form-label">Title</label>
               <select
@@ -765,7 +880,6 @@ const PatientForm = () => {
               </select>
             </div>
 
-            {/* Patient Name */}
             <div className="col-md-3">
               <label className="form-label">
                 Patient Name<RequiredIndicator>*</RequiredIndicator>
@@ -793,12 +907,11 @@ const PatientForm = () => {
                 required
               />
             </div>
-            {/* Age Type */}
             <div className="col-md-2 mb-4">
               <label className="form-label">Age Type</label>
               <select
                 className="form-select"
-                name="age_type" // Ensure the name matches formData
+                name="age_type"
                 value={formData.age_type}
                 onChange={handleChange}
               >
@@ -808,7 +921,6 @@ const PatientForm = () => {
               </select>
             </div>
 
-            {/* Gender radio buttons */}
             <div className="col-md-4">
               <label className="form-label">Gender</label>
               <div>
@@ -843,11 +955,9 @@ const PatientForm = () => {
           </div>
         </Fieldset>
 
-        {/* Fourth Row: , Phone Number, Email ID, Address */}
         <Fieldset>
           <h4 style={{ textAlign: "center" }}>Contact Details</h4>
           <div className="row mb-3">
-            {/* Phone Number */}
             <div className="col-md-3">
               <label className="form-label">Phone Number</label>
               <input
@@ -860,7 +970,6 @@ const PatientForm = () => {
               />
             </div>
 
-            {/* Email ID */}
             <div className="col-md-3">
               <label className="form-label">Email ID</label>
               <input
@@ -878,26 +987,26 @@ const PatientForm = () => {
                 type="text"
                 className="form-control"
                 name="area"
-                value={formData.address.area} // Access address.area
+                value={formData.address.area}
                 onChange={handleChange}
                 disabled={isB2BEnabled}
               />
             </div>
 
-            {/* Pin Code Row */}
             <div className="col-md-3">
               <label className="form-label">Pin Code</label>
               <input
                 type="text"
                 className="form-control"
                 name="pincode"
-                value={formData.address.pincode} // Access address.pincode
+                value={formData.address.pincode}
                 onChange={handleChange}
                 disabled={isB2BEnabled}
               />
             </div>
           </div>
         </Fieldset>
+
         <div className="d-flex justify-content-center mt-4">
           <button
             className="button mt-3 me-2"

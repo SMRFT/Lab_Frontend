@@ -412,6 +412,9 @@ const Sidebar = () => {
                 >
                   Registration
                 </SubLink>
+                <SubLink to="/Estimate" onClick={() => setIsSidebarOpen(false)}>
+                  Bill Estimate
+                </SubLink>
                 <SubLink
                   to="/PatientBilling"
                   onClick={() => setIsSidebarOpen(false)}
@@ -677,6 +680,9 @@ const Sidebar = () => {
                 >
                   Registration
                 </SubLink>
+                <SubLink to="/Estimate" onClick={() => setIsSidebarOpen(false)}>
+                  Bill Estimate
+                </SubLink>
                 <SubLink
                   to="/PrintBill"
                   onClick={() => setIsSidebarOpen(false)}
@@ -746,6 +752,9 @@ const Sidebar = () => {
                   onClick={() => setIsSidebarOpen(false)}
                 >
                   Registration
+                </SubLink>
+                <SubLink to="/Estimate" onClick={() => setIsSidebarOpen(false)}>
+                  Bill Estimate
                 </SubLink>
                 <SubLink
                   to="/PatientBilling"
@@ -1124,6 +1133,9 @@ const Sidebar = () => {
                   onClick={() => setIsSidebarOpen(false)}
                 >
                   Registration
+                </SubLink>
+                <SubLink to="/Estimate" onClick={() => setIsSidebarOpen(false)}>
+                  Bill Estimate
                 </SubLink>
                 <SubLink
                   to="/PrintBill"

@@ -321,13 +321,15 @@ function TestDetails() {
   const [parameterEditMode, setParameterEditMode] = useState(false); // Common edit mode for all parameters
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [patientName, setPatientName] = useState("");
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const patientId = queryParams.get("patient_id");
+  const patientname = queryParams.get("patientname");
+  const age = queryParams.get("age");
   const date = queryParams.get("date");
   const barcode = queryParams.get("barcode");
+  const locationId = queryParams.get("locationId");
   const testName = queryParams.get("test_name");
   const navigate = useNavigate();
   const verified_by = localStorage.getItem("name") || "";
@@ -571,8 +573,11 @@ function TestDetails() {
 
       const payload = {
         patient_id: patientId,
+        patientname: patientname,
+        age: age,
         date: date,
         barcode: barcode,
+        locationId: locationId,
         testdetails: testDetailsData,
       };
 
@@ -745,11 +750,6 @@ function TestDetails() {
           <InfoItem>
             <span>Patient ID:</span> {patientId}
           </InfoItem>
-          {patientName && (
-            <InfoItem>
-              <span>Patient Name:</span> {patientName}
-            </InfoItem>
-          )}
           {date && (
             <InfoItem>
               <span>Date:</span> {date}
@@ -758,6 +758,11 @@ function TestDetails() {
           {barcode && (
             <InfoItem>
               <span>Barcode:</span> {barcode}
+            </InfoItem>
+          )}
+          {locationId && (
+            <InfoItem>
+              <span>From:</span> {locationId}
             </InfoItem>
           )}
         </PatientInfo>

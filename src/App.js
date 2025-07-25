@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 import styled from "styled-components";
 import "./App.css";
-
 import Register from "./Components/AUTH/Register";
 import Login from "./Components/AUTH/Login";
 import Sidebar from "./Components/Navbar/Sidebar";
@@ -57,6 +56,11 @@ import B2BReport from "./Components/B2B/B2BReport";
 import LiveTrackingDashboard from "./Components/LOGISTICS/LogisticsMap";
 import B2BPackage from "./Components/B2B/B2BPackage";
 import B2BPackageApproval from "./Components/B2B/B2BPackageApproval";
+import Estimate from "./Components/PATIENT/Estimate";
+import FranchiseSampleUpdate from "./Components/SAMPLE/FranchiseSampleUpdate";
+import FranchiseBatchApproval from "./Components/SAMPLE/FranchiseBatchApproval";
+import FranchiseOverview from "./Components/REPORT/FranchiseOverview";
+import FranchiseTestSorting from "./Components/REPORT/FranchiseTestSorting";
 
 // Wrapper for the main content to shift it to the right of the sidebar
 const ContentWrapper = styled.div`
@@ -189,6 +193,21 @@ function App() {
             <Route
               path="/LiveTrackingDashboard"
               element={<LiveTrackingDashboard />}
+            />
+            <Route path="/Estimate" element={<Estimate />} />
+
+            <Route
+              path="/FranchiseSampleUpdate"
+              element={<FranchiseSampleUpdate />}
+            />
+            <Route
+              path="/FranchiseBatchApproval"
+              element={<FranchiseBatchApproval />}
+            />
+            <Route path="/FranchiseOverview" element={<FranchiseOverview />} />
+            <Route
+              path="/FranchiseTestSorting"
+              element={<FranchiseTestSorting />}
             />
           </Routes>
         </ContentWrapper>

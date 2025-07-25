@@ -1,49 +1,57 @@
-import React from "react"
-import { useEffect, useState } from "react"
-import { CSVLink } from "react-csv"
-import axios from "axios"
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
-import styled, { keyframes } from "styled-components"
-import { Calendar, Download, FileText, Filter, Loader2, User } from "lucide-react"
+import React from "react";
+import { useEffect, useState } from "react";
+import { CSVLink } from "react-csv";
+import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import styled, { keyframes } from "styled-components";
+import {
+  Calendar,
+  Download,
+  FileText,
+  Filter,
+  Loader2,
+  User,
+} from "lucide-react";
 
 const SalesReport = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [salesData, setSalesData] = useState([])
-  const [salesMapping, setSalesMapping] = useState("")
-  const [filterByMonth, setFilterByMonth] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [salesData, setSalesData] = useState([]);
+  const [salesMapping, setSalesMapping] = useState("");
+  const [filterByMonth, setFilterByMonth] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
+
   useEffect(() => {
-    const storedName = localStorage.getItem("name")
-    if (storedName) setSalesMapping(storedName)
-  }, [])
+    const storedName = localStorage.getItem("name");
+    if (storedName) setSalesMapping(storedName);
+  }, []);
 
   useEffect(() => {
     if (selectedDate && salesMapping) {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       const formattedDate = filterByMonth
         ? selectedDate.toISOString().slice(0, 7)
-        : selectedDate.toISOString().split("T")[0]
+        : selectedDate.toISOString().split("T")[0];
 
       axios
         .get(`${Labbaseurl}SalesVisitLogReport/`, {
           params: { date: formattedDate, salesMapping: salesMapping },
         })
         .then((response) => {
-          setSalesData(response.data)
-          setIsLoading(false)
+          setSalesData(response.data);
+          setIsLoading(false);
         })
         .catch((error) => {
-          console.error("Error fetching data:", error)
-          setError("Failed to fetch data. Please try again.")
-          setIsLoading(false)
-        })
+          console.error("Error fetching data:", error);
+          setError("Failed to fetch data. Please try again.");
+          setIsLoading(false);
+        });
     }
-  }, [selectedDate, salesMapping, filterByMonth])
+  }, [selectedDate, salesMapping, filterByMonth]);
 
   const csvHeaders = [
     { label: "Date", key: "date" },
@@ -57,7 +65,7 @@ const SalesReport = () => {
     { label: "No. of Visits", key: "noOfVisits" },
     { label: "Comments", key: "comments" },
     { label: "Type", key: "type" },
-  ]
+  ];
 
   return (
     <Container>
@@ -107,74 +115,157 @@ const SalesReport = () => {
                 dateFormat={filterByMonth ? "MMMM yyyy" : "dd MMMM yyyy"}
                 showMonthYearPicker={filterByMonth}
                 customInput={<DatePickerButton />}
+                popperClassName="date-picker-popper"
+                popperPlacement="bottom-start"
+                popperModifiers={{
+                  preventOverflow: {
+                    enabled: true,
+                    escapeWithReference: false,
+                    boundariesElement: "scrollParent",
+                  },
+                  flip: {
+                    enabled: true,
+                    behavior: ["bottom", "top", "bottom-start", "top-start"],
+                  },
+                }}
               />
             </DatePickerWrapper>
           </FilterContent>
         </FilterCard>
 
-        {isLoading ? (
-          <LoadingContainer>
-            <Spinner>
-              <Loader2 size={30} />
-            </Spinner>
-            <LoadingText>Loading data...</LoadingText>
-          </LoadingContainer>
-        ) : error ? (
-          <ErrorMessage>{error}</ErrorMessage>
-        ) : salesData.length === 0 ? (
-          <EmptyState>
-            <EmptyStateIcon>
-              <FileText size={48} strokeWidth={1} />
-            </EmptyStateIcon>
-            <EmptyStateText>No data available for the selected date.</EmptyStateText>
-            <EmptyStateSubtext>Try selecting a different date or filter option.</EmptyStateSubtext>
-          </EmptyState>
-        ) : (
-          <>
-            <ActionBar>
-              <ResultCount>{salesData.length} records found</ResultCount>
-              <StyledCSVLink data={salesData} headers={csvHeaders} filename="SalesReport.csv">
-                <DownloadIcon>
-                  <Download size={16} />
-                </DownloadIcon>
-                Export CSV
-              </StyledCSVLink>
-            </ActionBar>
+        <ContentWrapper>
+          {isLoading ? (
+            <LoadingContainer>
+              <Spinner>
+                <Loader2 size={30} />
+              </Spinner>
+              <LoadingText>Loading data...</LoadingText>
+            </LoadingContainer>
+          ) : error ? (
+            <ErrorMessage>{error}</ErrorMessage>
+          ) : salesData.length === 0 ? (
+            <EmptyState>
+              <EmptyStateIcon>
+                <FileText size={48} strokeWidth={1} />
+              </EmptyStateIcon>
+              <EmptyStateText>
+                No data available for the selected date.
+              </EmptyStateText>
+              <EmptyStateSubtext>
+                Try selecting a different date or filter option.
+              </EmptyStateSubtext>
+            </EmptyState>
+          ) : (
+            <>
+              <ActionBar>
+                <ResultCount>{salesData.length} records found</ResultCount>
+                <StyledCSVLink
+                  data={salesData}
+                  headers={csvHeaders}
+                  filename="SalesReport.csv"
+                >
+                  <DownloadIcon>
+                    <Download size={16} />
+                  </DownloadIcon>
+                  Export CSV
+                </StyledCSVLink>
+              </ActionBar>
 
-            <TableContainer>
-              <Table>
-                <thead>
-                  <tr>
-                    {csvHeaders.map((header) => (
-                      <Th key={header.key}>{header.label}</Th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {salesData.map((row, index) => (
-                    <TableRow key={index} delay={index * 0.03}>
+              <TableContainer>
+                <Table>
+                  <thead>
+                    <tr>
                       {csvHeaders.map((header) => (
-                        <Td key={header.key}>{row[header.key]}</Td>
+                        <Th key={header.key}>{header.label}</Th>
                       ))}
-                    </TableRow>
-                  ))}
-                </tbody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesData.map((row, index) => (
+                      <TableRow key={index} delay={index * 0.03}>
+                        {csvHeaders.map((header) => (
+                          <Td key={header.key}>{row[header.key]}</Td>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </tbody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
+        </ContentWrapper>
       </Card>
+
+      {/* Global styles for date picker */}
+      <GlobalDatePickerStyles />
     </Container>
-  )
-}
+  );
+};
 
 // Custom DatePicker Button
 const DatePickerButton = React.forwardRef(({ value, onClick }, ref) => (
   <DatePickerCustomButton onClick={onClick} ref={ref}>
     {value}
   </DatePickerCustomButton>
-))
-DatePickerButton.displayName = "DatePickerButton"
+));
+DatePickerButton.displayName = "DatePickerButton";
+
+// Global styles component for date picker
+const GlobalDatePickerStyles = styled.div`
+  .date-picker-popper {
+    z-index: 99999 !important;
+    position: fixed !important;
+  }
+
+  .react-datepicker {
+    z-index: 99999 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif !important;
+    position: relative !important;
+  }
+
+  .react-datepicker__header {
+    background-color: #4a6cf7 !important;
+    border-bottom: 1px solid #3b5de7 !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+  }
+
+  .react-datepicker__current-month,
+  .react-datepicker__day-name {
+    color: white !important;
+  }
+
+  .react-datepicker__day--selected {
+    background-color: #4a6cf7 !important;
+    color: white !important;
+  }
+
+  .react-datepicker__day:hover {
+    background-color: #eef2ff !important;
+  }
+
+  .react-datepicker__navigation {
+    top: 10px !important;
+  }
+
+  .react-datepicker__navigation--previous {
+    border-right-color: white !important;
+  }
+
+  .react-datepicker__navigation--next {
+    border-left-color: white !important;
+  }
+
+  /* Ensure date picker is always visible */
+  .react-datepicker-popper {
+    z-index: 99999 !important;
+    position: fixed !important;
+  }
+`;
 
 // Animations
 const fadeIn = keyframes`
@@ -186,7 +277,7 @@ const fadeIn = keyframes`
     opacity: 1;
     transform: translateY(0);
   }
-`
+`;
 
 const pulse = keyframes`
   0% {
@@ -198,7 +289,7 @@ const pulse = keyframes`
   100% {
     opacity: 0.6;
   }
-`
+`;
 
 const rotate = keyframes`
   from {
@@ -207,7 +298,7 @@ const rotate = keyframes`
   to {
     transform: rotate(360deg);
   }
-`
+`;
 
 const shimmer = keyframes`
   0% {
@@ -216,30 +307,34 @@ const shimmer = keyframes`
   100% {
     background-position: 200% 0;
   }
-`
+`;
 
 // Styled Components
 const Container = styled.div`
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   color: #333;
   background-color: #f5f7fa;
   min-height: 100vh;
+  position: relative;
 
   @media (max-width: 768px) {
     padding: 12px;
   }
-`
+`;
 
 const Card = styled.div`
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  overflow: visible;
   animation: ${fadeIn} 0.5s ease-out;
-`
+  position: relative;
+  z-index: 1;
+`;
 
 const Header = styled.div`
   display: flex;
@@ -248,31 +343,32 @@ const Header = styled.div`
   padding: 20px 24px;
   background: linear-gradient(135deg, #4a6cf7, #2451b7);
   color: white;
+  border-radius: 12px 12px 0 0;
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-`
+`;
 
 const HeaderContent = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-`
+`;
 
 const HeaderIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-`
+`;
 
 const UserInfo = styled.div`
   display: flex;
@@ -287,30 +383,36 @@ const UserInfo = styled.div`
   &:hover {
     background-color: rgba(255, 255, 255, 0.25);
   }
-`
+`;
 
 const UserIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const Username = styled.p`
   font-size: 14px;
   font-weight: 500;
   margin: 0;
-`
+`;
 
 const FilterCard = styled.div`
   margin: 20px 24px;
   background-color: #f8fafc;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
-  overflow: hidden;
+  overflow: visible;
   animation: ${fadeIn} 0.5s ease-out;
   animation-delay: 0.1s;
   animation-fill-mode: both;
-`
+  position: relative;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    margin: 16px 12px;
+  }
+`;
 
 const FilterHeader = styled.div`
   display: flex;
@@ -319,21 +421,22 @@ const FilterHeader = styled.div`
   padding: 12px 16px;
   background-color: #f1f5f9;
   border-bottom: 1px solid #e2e8f0;
-`
+  border-radius: 8px 8px 0 0;
+`;
 
 const FilterIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   color: #4a6cf7;
-`
+`;
 
 const FilterTitle = styled.h3`
   font-size: 15px;
   font-weight: 500;
   margin: 0;
   color: #334155;
-`
+`;
 
 const FilterContent = styled.div`
   padding: 16px;
@@ -341,18 +444,21 @@ const FilterContent = styled.div`
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
+  position: relative;
+  z-index: 1000;
 
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
-`
+`;
 
 const FilterGroup = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-`
+`;
 
 const CheckboxLabel = styled.label`
   display: flex;
@@ -366,7 +472,7 @@ const CheckboxLabel = styled.label`
   &:hover {
     color: #4a6cf7;
   }
-`
+`;
 
 const CheckboxInput = styled.input`
   appearance: none;
@@ -385,7 +491,7 @@ const CheckboxInput = styled.input`
   }
 
   &:checked::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 2px;
     left: 6px;
@@ -399,23 +505,25 @@ const CheckboxInput = styled.input`
   &:hover {
     border-color: #4a6cf7;
   }
-`
+`;
 
 const DatePickerWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-`
+  z-index: 1000;
+`;
 
 const DatePickerIcon = styled.div`
   position: absolute;
   left: 12px;
-  z-index: 1;
+  z-index: 1001;
   color: #4a6cf7;
   display: flex;
   align-items: center;
   justify-content: center;
-`
+  pointer-events: none;
+`;
 
 const StyledDatePicker = styled(DatePicker)`
   padding: 10px 12px 10px 40px;
@@ -427,12 +535,21 @@ const StyledDatePicker = styled(DatePicker)`
   cursor: pointer;
   transition: all 0.2s ease;
   width: 180px;
+  position: relative;
+  z-index: 1000;
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     border-color: #4a6cf7;
     outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
   }
-`
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 200px;
+  }
+`;
 
 const DatePickerCustomButton = styled.button`
   padding: 10px 12px 10px 40px;
@@ -445,12 +562,24 @@ const DatePickerCustomButton = styled.button`
   transition: all 0.2s ease;
   width: 180px;
   text-align: left;
+  position: relative;
+  z-index: 1000;
 
   &:hover {
     border-color: #4a6cf7;
     box-shadow: 0 2px 4px rgba(74, 108, 247, 0.1);
   }
-`
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 200px;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  position: relative;
+  z-index: 1;
+`;
 
 const LoadingContainer = styled.div`
   display: flex;
@@ -459,7 +588,7 @@ const LoadingContainer = styled.div`
   justify-content: center;
   padding: 60px 0;
   animation: ${fadeIn} 0.3s ease-out;
-`
+`;
 
 const Spinner = styled.div`
   display: flex;
@@ -468,14 +597,14 @@ const Spinner = styled.div`
   animation: ${rotate} 1.5s linear infinite;
   color: #4a6cf7;
   margin-bottom: 16px;
-`
+`;
 
 const LoadingText = styled.p`
   font-size: 16px;
   color: #64748b;
   margin: 0;
   animation: ${pulse} 1.5s infinite ease-in-out;
-`
+`;
 
 const ErrorMessage = styled.div`
   margin: 40px 24px;
@@ -486,7 +615,11 @@ const ErrorMessage = styled.div`
   border-radius: 6px;
   font-size: 15px;
   animation: ${fadeIn} 0.3s ease-out;
-`
+
+  @media (max-width: 768px) {
+    margin: 24px 12px;
+  }
+`;
 
 const EmptyState = styled.div`
   display: flex;
@@ -496,24 +629,24 @@ const EmptyState = styled.div`
   padding: 60px 0;
   color: #64748b;
   animation: ${fadeIn} 0.3s ease-out;
-`
+`;
 
 const EmptyStateIcon = styled.div`
   color: #cbd5e1;
   margin-bottom: 16px;
-`
+`;
 
 const EmptyStateText = styled.p`
   font-size: 16px;
   font-weight: 500;
   margin: 0 0 8px 0;
-`
+`;
 
 const EmptyStateSubtext = styled.p`
   font-size: 14px;
   margin: 0;
   color: #94a3b8;
-`
+`;
 
 const ActionBar = styled.div`
   display: flex;
@@ -526,16 +659,17 @@ const ActionBar = styled.div`
   animation-fill-mode: both;
 
   @media (max-width: 768px) {
+    padding: 16px 12px;
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-`
+`;
 
 const ResultCount = styled.div`
   font-size: 14px;
   color: #64748b;
-`
+`;
 
 const StyledCSVLink = styled(CSVLink)`
   display: flex;
@@ -560,13 +694,13 @@ const StyledCSVLink = styled(CSVLink)`
   &:active {
     transform: translateY(0);
   }
-`
+`;
 
 const DownloadIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`
+`;
 
 const TableContainer = styled.div`
   margin: 0 24px 24px;
@@ -576,18 +710,20 @@ const TableContainer = styled.div`
   animation: ${fadeIn} 0.5s ease-out;
   animation-delay: 0.3s;
   animation-fill-mode: both;
+  position: relative;
+  z-index: 1;
 
   @media (max-width: 768px) {
     margin: 0 12px 12px;
   }
-`
+`;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
   white-space: nowrap;
-`
+`;
 
 const Th = styled.th`
   background-color: #f8fafc;
@@ -596,9 +732,10 @@ const Th = styled.th`
   text-align: left;
   padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
+  position: sticky;
   top: 0;
-  z-index: 10;
-`
+  z-index: 5;
+`;
 
 const TableRow = styled.tr`
   opacity: 0;
@@ -614,13 +751,12 @@ const TableRow = styled.tr`
   }
 
   transition: background-color 0.2s ease;
-`
+`;
 
 const Td = styled.td`
   padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
   color: #334155;
-`
+`;
 
-export default SalesReport
-
+export default SalesReport;

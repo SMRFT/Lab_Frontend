@@ -447,12 +447,21 @@ const PatientDetails = () => {
     fetchPatientDetails();
   }, [selectedDate]);
 
-  const handlePatientClick = (patientId, barcode, testName) => {
+  const handlePatientClick = (
+    patientId,
+    patientname,
+    age,
+    barcode,
+    franchise_id,
+    testName
+  ) => {
     const formattedDate = format(selectedDate, "yyyy-MM-dd");
     const encodedTestName = encodeURIComponent(testName);
     const encodedBarcode = encodeURIComponent(barcode);
     navigate(
-      `/TestDetails?patient_id=${patientId}&date=${formattedDate}&barcode=${encodedBarcode}&test_name=${encodedTestName}`
+      `/TestDetails?patient_id=${patientId}&patientname=${patientname}&age=${age}&date=${formattedDate}&barcode=${encodedBarcode}&locationId=${
+        franchise_id || "Shanmuga Referrence Lab"
+      }&test_name=${encodedTestName}`
     );
   };
 
@@ -528,6 +537,7 @@ const PatientDetails = () => {
               <thead>
                 <tr>
                   <Th>Patient Info</Th>
+                  <Th>From</Th>
                   <Th>Tests</Th>
                   <Th>Status</Th>
                 </tr>
@@ -564,6 +574,11 @@ const PatientDetails = () => {
                         </div>
                       </Td>
                       <Td>
+                        <PatientInfo>
+                          {patient.franchise_id || "Shanmuga Hospital"}
+                        </PatientInfo>
+                      </Td>
+                      <Td>
                         <TestList>
                           {patient.testdetails?.map((test, idx) => (
                             <TestButton
@@ -571,7 +586,10 @@ const PatientDetails = () => {
                               onClick={() =>
                                 handlePatientClick(
                                   patient.patient_id,
+                                  patient.patientname,
+                                  patient.age,
                                   patient.barcode,
+                                  patient.franchise_id,
                                   test.testname
                                 )
                               }
