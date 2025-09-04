@@ -57,6 +57,7 @@ import B2BReport from "./Components/B2B/B2BReport";
 import LiveTrackingDashboard from "./Components/LOGISTICS/LogisticsMap";
 import B2BPackage from "./Components/B2B/B2BPackage";
 import B2BPackageApproval from "./Components/B2B/B2BPackageApproval";
+import Estimate from "./Components/PATIENT/Estimate";
 
 // Wrapper for the main content to shift it to the right of the sidebar
 const ContentWrapper = styled.div`
@@ -190,6 +191,8 @@ function App() {
               path="/LiveTrackingDashboard"
               element={<LiveTrackingDashboard />}
             />
+            <Route path="/Estimate" element={<Estimate />} />
+            {/* Add more routes as needed */}
           </Routes>
         </ContentWrapper>
       )}
@@ -199,7 +202,7 @@ function App() {
 
 export default function AppWrapper() {
   return (
-    <Router basename={process.env.PUBLIC_URL}>
+    <Router >
       <App />
     </Router>
   );

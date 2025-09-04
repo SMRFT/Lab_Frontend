@@ -195,13 +195,15 @@ const PrintBill = () => {
     fetchPatients();
   }, [startDate, endDate]);
 
-  const fetchPatients = async () => {
-    try {
-      const response = await axios.get(
-        `${Labbaseurl}patients/?start_date=${
-          startDate.toISOString().split("T")[0]
-        }&end_date=${endDate.toISOString().split("T")[0]}`
-      );
+const fetchPatients = async () => {
+  try {
+    const response = await axios.get(
+      `${Labbaseurl}patients/?start_date=${
+        startDate.toISOString().split("T")[0]
+      }&end_date=${endDate.toISOString().split("T")[0]}`
+    );
+    console.log("API Response:", response.data);  // :point_left: Add this
+
       const data = response.data.data;
       if (Array.isArray(data)) {
         // Process patients data - ensure testname is parsed from JSON if it's a string
@@ -309,7 +311,7 @@ const PrintBill = () => {
         <tr>
           <td>${index + 1}</td>
           <td>${test.testname}</td>
-          <td style="text-align: right;">${test.amount || ""}</td>
+          <td style="text-align: right;">${parseFloat(test.amount || 0).toFixed(2)}</td>
         </tr>
       `
       )
@@ -467,7 +469,7 @@ const PrintBill = () => {
           width: 100%;
           border-collapse: collapse;
         }
-        
+       
         .payment-info th:first-child,
         .payment-info td:first-child {
           text-align: left;
@@ -543,21 +545,30 @@ const PrintBill = () => {
               </table>
             </div>
             <div class="payment-info">
-              <table>
+            <table>
                 <thead>
-                  <tr>
-                    <th>Total Amount</th>
-                    <th>Mode</th>
-                  </tr>
+
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>₹${patient.totalAmount || "NIL"}</td>
-                    <td>${displayPaymentMode || "NIL"}</td>
-                  </tr>
+                <tr>
+                    <td>Total Amount</td>
+                    <td style="text-align:right">₹${patient.totalAmount || "NIL"}</td>
+                </tr>
+                ${
+                    patient.discount && parseFloat(patient.discount) > 0
+                    ? `<tr>
+                        <td>Discount</td>
+                        <td style="text-align:right"> ₹${parseFloat(patient.discount).toFixed(2)}</td>
+                        </tr>`
+                    : ""
+                }
+                <tr>
+                    <td>Mode</td>
+                    <td style="text-align:right">${displayPaymentMode || "NIL"}</td>
+                </tr>
                 </tbody>
-              </table>
-              <p>Amount Paid in Words: ${amountInWords}</p>
+            </table>
+            <p>Amount Paid in Words: ${amountInWords}</p>
               <div class="signature">
                 <div class="signature-label">Signature of Employee</div>
                 <div class="employee-name">${patient.registeredby}</div>

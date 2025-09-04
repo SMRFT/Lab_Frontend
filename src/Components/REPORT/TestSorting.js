@@ -348,6 +348,56 @@ const TestSorting = ({ patient, onClose }) => {
           patientDetails.testdetails.find((t) => t.testname === test.testname)
         )
         .filter((test) => test); // Ensure no undefined values
+      // Enhanced Unicode character mapping for medical units
+      const unicodeMap = {
+        // Greek letters
+        μ: "µ", // Alternative mu symbol that works better in PDF
+        α: "α",
+        β: "β",
+        γ: "γ",
+        δ: "δ",
+        Ω: "Ω",
+        // Superscript numbers
+        "²": "²",
+        "³": "³",
+        "⁴": "⁴",
+        // Medical symbols
+        "°": "°",
+        "±": "±",
+        "×": "x",
+        "÷": "/",
+        // Common Unicode escapes
+        "\\u03bc": "µ", // μ
+        "\\u00b5": "µ", // µ (micro sign)
+        "\\u00b0": "°", // degree
+        "\\u00b1": "±", // plus-minus
+        "\\u00b2": "²", // superscript 2
+        "\\u00b3": "³", // superscript 3
+      };
+
+      // Enhanced function to handle Unicode characters in text
+      const processUnicodeText = (text) => {
+        if (!text) return "";
+
+        let processedText = text;
+
+        // Handle Unicode escape sequences first
+        processedText = processedText.replace(
+          /\\u([0-9a-fA-F]{4})/g,
+          (match, hex) => {
+            const char = String.fromCharCode(parseInt(hex, 16));
+            return unicodeMap[char] || char;
+          }
+        );
+
+        // Handle direct Unicode characters
+        Object.keys(unicodeMap).forEach((unicode) => {
+          const regex = new RegExp(unicode, "g");
+          processedText = processedText.replace(regex, unicodeMap[unicode]);
+        });
+
+        return processedText;
+      };
 
       // Function to extract the number from patient_ref_no
       const extractPatientRefNoNumber = (refNo) => {
@@ -382,17 +432,18 @@ const TestSorting = ({ patient, onClose }) => {
         barcodeImage = barcodeCanvas.toDataURL("image/png");
       }
 
-      // Define consistent margins and dimensions
+      // FIXED: Define consistent margins and dimensions regardless of letterpad
       const leftMargin = 10;
       const rightMargin = leftMargin + 190; // Total document width is 210, content width is 190
       const contentWidth = rightMargin - leftMargin; // Consistent content width (190)
 
-      const headerHeight = 30; // Height of the header
-      const footerHeight = 20; // Height of the footer
-      const contentYStart = headerHeight + 10; // Start content below the header
-      const signatureHeight = 40; // Height needed for signatures (matched to first function)
-      const disclaimerHeight = 15; // Height needed for disclaimer
-      const tableHeaderHeight = 15; // Height needed for table header
+      // FIXED: Consistent header and footer heights regardless of letterpad
+      const headerHeight = 30; // Always reserve space for header
+      const footerHeight = 20; // Always reserve space for footer
+      const contentYStart = headerHeight + 20; // Start content below the header area
+      const signatureHeight = 25; // Height needed for signatures
+      const disclaimerHeight = 0; // No disclaimer needed
+      const tableHeaderHeight = 10; // Height needed for table header
 
       // Column widths adjusted to fit within content margins
       const colWidths = [
@@ -402,14 +453,14 @@ const TestSorting = ({ patient, onClose }) => {
         contentWidth * 0.13, // Value(s)
         contentWidth * 0.1, // Unit
         contentWidth * 0.17, // Reference Range
-        contentWidth * 0.13, // Method (Moved to last)
+        contentWidth * 0.15, // Method (Moved to last)
       ];
 
       // Patient information (left and right sides)
       const leftDetails = [
         { label: "Reg.ID", value: patientDetails.patient_id || "N/A" },
         {
-          label: "Patient Name",
+          label: "Name",
           value: patientDetails.patientname || "No name provided",
         },
         {
@@ -460,7 +511,7 @@ const TestSorting = ({ patient, onClose }) => {
       let pageCount = 1;
       let isTableStarted = false; // Track if we're in the table section
 
-      // Function to add header and footer WITHOUT page numbers initially
+      // FIXED: Function to add header and footer with consistent positioning
       const addHeaderFooter = () => {
         if (withLetterpad) {
           // Position header at the very top of the page with no left margin
@@ -483,6 +534,41 @@ const TestSorting = ({ patient, onClose }) => {
             doc.internal.pageSize.width,
             footerHeight
           );
+        } else {
+          // For non-letterpad version, add a simple header placeholder to maintain consistent spacing
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(255, 255, 255); // White text (invisible)
+          doc.text("Header Space", leftMargin, 10);
+          doc.setTextColor(0, 0, 0); // Reset to black
+        }
+      };
+      // Enhanced text rendering function with Unicode support
+      const renderUnicodeText = (text, x, y, options = {}) => {
+        const processedText = processUnicodeText(text);
+
+        // Handle special cases for common medical units
+        if (processedText.includes("µ")) {
+          // Split text around µ symbol and render parts separately
+          const parts = processedText.split("µ");
+          let currentX = x;
+
+          parts.forEach((part, index) => {
+            if (index > 0) {
+              // Render µ symbol
+              doc.setFont("helvetica", options.fontStyle || "normal");
+              doc.text("µ", currentX, y);
+              currentX += doc.getTextWidth("µ");
+            }
+
+            if (part) {
+              doc.text(part, currentX, y);
+              currentX += doc.getTextWidth(part);
+            }
+          });
+        } else {
+          // Normal text rendering
+          doc.text(processedText, x, y);
         }
       };
 
@@ -493,17 +579,17 @@ const TestSorting = ({ patient, onClose }) => {
         yPos += 5;
 
         // Table Header
-        doc.setFontSize(9);
+        doc.setFontSize(10);
         doc.setFont("helvetica", "bold");
 
         // Updated headers array to match colWidths
         const headers = [
-          "Test Description",
+          "Test",
           "Specimen",
           "",
-          "Value(s)",
-          "Unit",
-          "Reference Range",
+          "Result",
+          "Units",
+          "Reference Value",
           "Method",
         ];
 
@@ -517,7 +603,7 @@ const TestSorting = ({ patient, onClose }) => {
           xPos += colWidths[index]; // Move to the next column
         });
 
-        yPos += 5;
+        yPos += 3;
 
         // Draw Bottom Line - Use leftMargin and rightMargin for consistency
         doc.line(leftMargin, yPos, rightMargin, yPos);
@@ -526,8 +612,8 @@ const TestSorting = ({ patient, onClose }) => {
         return yPos;
       };
 
-      // Function to wrap text and return height
-      const wrapText = (doc, text, maxWidth, startX, yPos, lineHeight) => {
+      // UPDATED: Function to wrap text and return height with improved line height
+      const wrapText = (doc, text, maxWidth, startX, yPos, lineHeight = 4) => {
         if (!text) return 0;
         const splitText = doc.splitTextToSize(text, maxWidth);
         splitText.forEach((line, index) => {
@@ -536,18 +622,14 @@ const TestSorting = ({ patient, onClose }) => {
         return splitText.length * lineHeight;
       };
 
-      // Function to add signatures at the bottom of ANY page
+      // FIXED: Function to add signatures with consistent positioning
       const addSignatures = () => {
         const pageHeight = doc.internal.pageSize.height;
-        const signaturesY =
-          pageHeight -
-          footerHeight -
-          signatureHeight +
-          10 -
-          (withLetterpad ? 0 : disclaimerHeight);
+        // Calculate signature position with more space from footer
+        const signaturesY = pageHeight - footerHeight - signatureHeight - 10; // Added extra 10 units for more space
 
         // REDUCED signature width from 40 to 30
-        const signatureWidth = 30;
+        const signatureWidth = 35;
         const availableWidth = contentWidth - (signatureWidth / 2) * 2; // Space between left and right most signatures
         const signatureSpacing = availableWidth / (consultants.length - 1); // Space between each signature
 
@@ -569,30 +651,24 @@ const TestSorting = ({ patient, onClose }) => {
 
           // Print name below the signature with REDUCED spacing
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
-          doc.text(consultant[0], xPosition, signaturesY + 17); // Reduced from 20 to 17
+          doc.setFontSize(10);
+          doc.text(consultant[0], xPosition, signaturesY + 15); // Reduced from 20 to 17
 
           // Print qualification below the name with REDUCED spacing
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
-          doc.text(consultant[1], xPosition, signaturesY + 22); // Reduced from 25 to 22
+          doc.setFontSize(10);
+          doc.text(consultant[1], xPosition, signaturesY + 20); // Reduced from 25 to 22
         });
 
-        // Add disclaimer ONLY after signatures if not using letterpad
-        if (!withLetterpad) {
-          const disclaimerY = pageHeight - footerHeight - disclaimerHeight + 5;
-          addDisclaimer(disclaimerY);
-        }
+        // Removed disclaimer - no longer needed
       };
 
-      // Function to check if we need to add a new page before rendering content
+      // FIXED: Function to check if we need to add a new page with consistent calculations
       const checkForNewPage = (yPos, estimatedHeight) => {
         const pageHeight = doc.internal.pageSize.height;
+        // Use consistent footer space calculation for both versions
         const footerStart =
-          pageHeight -
-          (footerHeight +
-            signatureHeight +
-            (withLetterpad ? 0 : disclaimerHeight));
+          pageHeight - (footerHeight + signatureHeight + disclaimerHeight + 12); // Added extra space
 
         // If content is approaching footer, move to a new page
         if (yPos + estimatedHeight >= footerStart) {
@@ -601,7 +677,7 @@ const TestSorting = ({ patient, onClose }) => {
 
           doc.addPage();
           pageCount++;
-          addHeaderFooter(); // Add header/footer without page numbers
+          addHeaderFooter(); // Add header/footer
 
           let newYPos = contentYStart;
 
@@ -661,40 +737,10 @@ const TestSorting = ({ patient, onClose }) => {
         }
       };
 
-      // Function to add disclaimer at the bottom of the page
-      const addDisclaimer = (yPos) => {
-        if (!withLetterpad) {
-          // Add a divider line above the disclaimer
-          doc.setDrawColor(150);
-          doc.line(leftMargin, yPos, rightMargin, yPos);
-          yPos += 5;
-
-          // Add the disclaimer text
-          doc.setFont("helvetica", "italic");
-          doc.setFontSize(8);
-          doc.text(
-            "Sample processed at Shanmuga Diagnostics (A unit of Shanmuga Hospital)",
-            leftMargin,
-            yPos
-          );
-          doc.text(
-            "24, Saradha College Road, Salem-636007, Tamilnadu",
-            leftMargin,
-            yPos + 5
-          );
-
-          // Reset styling
-          doc.setFont("helvetica", "normal");
-          doc.setDrawColor(0);
-
-          return yPos + 15; // Return the new position after the disclaimer
-        }
-        return yPos; // If letterpad is used, return the same position
-      };
-
       // Start generating the actual PDF
       addHeaderFooter();
 
+      // FIXED: Use consistent starting position for both versions
       let currentYPosition = contentYStart;
 
       // Better alignment for patient details
@@ -710,12 +756,12 @@ const TestSorting = ({ patient, onClose }) => {
       const leftValueX = leftColonX + 3;
 
       // Right side details positioning
-      const rightLabelX = centerPoint + 30;
+      const rightLabelX = centerPoint + 28;
       const rightColonX = rightLabelX + rightMaxLabelWidth + 2;
       const rightValueX = rightColonX + 1;
 
       // Uniform font size for patient details
-      doc.setFontSize(9);
+      doc.setFontSize(10);
 
       for (let i = 0; i < leftDetails.length; i++) {
         const left = leftDetails[i];
@@ -725,7 +771,7 @@ const TestSorting = ({ patient, onClose }) => {
         doc.setFont("helvetica", "bold");
         doc.text(left.label, leftLabelX, currentYPosition);
         doc.text(":", leftColonX, currentYPosition);
-        doc.setFont("helvetica", "normal");
+        doc.setFont("helvetica", "bold");
         doc.text(left.value, leftValueX, currentYPosition);
 
         if (right) {
@@ -775,7 +821,7 @@ const TestSorting = ({ patient, onClose }) => {
         // Check if we need a new page for the table header
         currentYPosition = checkForNewPage(currentYPosition, tableHeaderHeight);
 
-        let yPos = currentYPosition + 5;
+        let yPos = currentYPosition;
 
         // Draw initial table header
         yPos = drawTableHeader(yPos);
@@ -819,41 +865,38 @@ const TestSorting = ({ patient, onClose }) => {
                 : [test];
 
             testsToRender.forEach((currentTest, index) => {
-              // Calculate estimated height more accurately
-              const estimatedHeight =
-                Math.max(
-                  Math.ceil(
-                    (currentTest.testname || currentTest.name || "").length / 30
-                  ) * 5,
-                  Math.ceil((currentTest.reference_range || "").length / 30) * 5
-                ) + 8;
+              // UPDATED: Increased estimated height for better text wrapping display
+              const estimatedHeight = 18; // Increased from 15 to 18
 
               // Check if we need a new page with better height estimation
               yPos = checkForNewPage(yPos, estimatedHeight);
 
-              // INCREASED TABLE DATA FONT SIZE (matched to first function)
-              doc.setFontSize(10); // Changed from 8 to 10
-              doc.setFont("helvetica", "normal");
+              // Table data font size
+              doc.setFontSize(10);
 
               // Start positions for each column
               let xPos = leftMargin;
 
-              // Styling for main test vs parameters
-              if (index > 0) {
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(100, 100, 100); // Lighter gray for parameters
+              // MODIFIED: Test Name should be in bold, parameter names normal
+              if (index === 0) {
+                doc.setFont("helvetica", "bold"); // Bold for main test
+              } else {
+                doc.setFont("helvetica", "normal"); // Normal for parameters
               }
 
-              // Test Description
+              // UPDATED: Test Description with improved line height
               const testNameHeight = wrapText(
                 doc,
                 index === 0 ? currentTest.testname : `${currentTest.name}`,
                 colWidths[0] - 2,
                 xPos,
                 yPos,
-                5 // Increased line height for better readability
+                4 // Increased line height from 3 to 4
               );
               xPos += colWidths[0];
+
+              // Reset font to normal for other columns
+              doc.setFont("helvetica", "normal");
 
               // Specimen Type
               doc.text(currentTest.specimen_type || "", xPos, yPos);
@@ -862,7 +905,7 @@ const TestSorting = ({ patient, onClose }) => {
               // Extra Gap
               xPos += colWidths[2];
 
-              // Value(s)
+              // Value(s) - MODIFIED: Show indicator after the value
               const statusIndicator = currentTest.isHigh
                 ? "H"
                 : currentTest.isLow
@@ -872,69 +915,84 @@ const TestSorting = ({ patient, onClose }) => {
                     currentTest.reference_range
                   );
 
+              const valueText = currentTest.value || "";
+
+              // FIXED: Keep value bold when there's an indicator
               if (statusIndicator) {
                 doc.setFont("helvetica", "bold");
                 if (statusIndicator === "H") {
                   doc.setTextColor(255, 0, 0); // Red for high
-                  // Draw up arrow before the value
-                  drawArrowSymbol(doc, xPos, yPos - 1, "up");
-                  doc.text(`${currentTest.value || ""}`, xPos + 6, yPos);
                 } else if (statusIndicator === "L") {
                   doc.setTextColor(0, 0, 255); // Blue for low
-                  // Draw down arrow before the value
-                  drawArrowSymbol(doc, xPos, yPos - 1, "down");
-                  doc.text(`${currentTest.value || ""}`, xPos + 6, yPos);
+                }
+                doc.text(valueText, xPos, yPos);
+
+                // Display indicator AFTER the value
+                const valueWidth = doc.getTextWidth(valueText);
+                if (statusIndicator === "H") {
+                  drawArrowSymbol(doc, xPos + valueWidth + 2, yPos - 1, "up");
+                } else if (statusIndicator === "L") {
+                  drawArrowSymbol(doc, xPos + valueWidth + 2, yPos - 1, "down");
                 }
                 doc.setTextColor(0, 0, 0); // Reset to black
+                doc.setFont("helvetica", "normal");
               } else {
-                doc.text(currentTest.value || "", xPos, yPos);
+                doc.text(valueText, xPos, yPos);
               }
               xPos += colWidths[3];
 
               // Unit
               doc.setFont("helvetica", "normal");
-              doc.text(currentTest.unit || "", xPos, yPos);
+              renderUnicodeText(currentTest.unit || "", xPos, yPos);
               xPos += colWidths[4];
 
-              // Reference Range
+              // UPDATED: Reference Range with improved line height
               const referenceRangeHeight = wrapText(
                 doc,
                 currentTest.reference_range || "",
                 colWidths[5] - 2,
                 xPos,
                 yPos,
-                5 // Increased line height for better readability
+                4 // Increased line height from 3 to 4
               );
               xPos += colWidths[5];
 
-              // Method (Moved to last column)
-              doc.setFont("helvetica", "normal");
-              doc.setTextColor(80, 80, 80); // Dark gray
+              // UPDATED: Method with improved line height
+              doc.setTextColor(0, 0, 0);
 
               // Remove "Method" from the method name
               const methodText = (currentTest.method || "")
                 .replace(/\bMethod\b/i, "")
                 .trim();
 
-              // Wrap the method text
-              const methodLines = doc.splitTextToSize(
+              // Wrap the method text with improved line height
+              const methodHeight = wrapText(
+                doc,
                 methodText,
-                colWidths[6] - 2
-              ); // adjust padding
-              doc.text(methodLines, xPos, yPos);
+                colWidths[6] - 2,
+                xPos,
+                yPos,
+                4 // Increased line height from 3 to 4
+              );
 
               doc.setTextColor(0, 0, 0); // Reset to black
-              doc.setFont("helvetica", "normal");
 
-              // Move to next line
-              yPos += Math.max(testNameHeight, referenceRangeHeight) + 8; // Increased spacing
+              // UPDATED: Calculate row height based on maximum content height
+              const maxContentHeight = Math.max(
+                testNameHeight,
+                referenceRangeHeight,
+                methodHeight
+              );
+
+              // UPDATED: Increased minimum row spacing
+              yPos += Math.max(maxContentHeight, 6) + 2; // Increased base height and spacing
 
               // Reset styling
               doc.setFont("helvetica", "normal");
               doc.setTextColor(0, 0, 0);
             });
 
-            // Add "Verified by" under each test (matched to first function)
+            // Add "Verified by" under each test
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
             doc.text(
@@ -942,14 +1000,14 @@ const TestSorting = ({ patient, onClose }) => {
               leftMargin,
               yPos
             );
-            yPos += 8; // Space after verified by
+            yPos += 8; // Reduced space after verified by from 6 to 5
 
             // Reset font
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
           });
 
-          yPos += 5; // Space between departments
+          yPos += 4; // Reduced space between departments from 5 to 4
         });
 
         currentYPosition = yPos;
@@ -958,17 +1016,14 @@ const TestSorting = ({ patient, onClose }) => {
       // Mark that we're no longer in the table section
       isTableStarted = false;
 
-      // Function to ensure content doesn't overlap with footer
+      // FIXED: Consistent space checking for both versions
       const ensureSpaceForFooter = (currentYPosition) => {
         const pageHeight = doc.internal.pageSize.height;
         const footerStart =
-          pageHeight -
-          (footerHeight +
-            signatureHeight +
-            (withLetterpad ? 0 : disclaimerHeight));
+          pageHeight - (footerHeight + signatureHeight + disclaimerHeight + 12); // Added extra space
 
-        // REDUCED buffer from 50 to 25 - was too aggressive
-        if (currentYPosition + 25 >= footerStart) {
+        if (currentYPosition + 5 >= footerStart) {
+          // Reduced from 10 to 5
           addSignatures();
           doc.addPage();
           pageCount++;
@@ -995,15 +1050,20 @@ const TestSorting = ({ patient, onClose }) => {
       // CRITICAL: Get the final page count AFTER all content is rendered
       const finalPageCount = pageCount;
 
-      // Add correct page numbers to all pages
+      // FIXED: Add page numbers with consistent positioning for both versions
       for (let i = 1; i <= finalPageCount; i++) {
         doc.setPage(i);
 
-        // Add the correct page number aligned with right margin
+        // Calculate position below signatures consistently
+        const pageHeight = doc.internal.pageSize.height;
+        const pageNumberY = pageHeight - footerHeight - 5;
+
+        // Add the page number centered below signatures
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text(`Page ${i} of ${finalPageCount}`, rightMargin - 5, 5, {
-          align: "right",
+        const centerX = leftMargin + contentWidth / 2;
+        doc.text(`Page ${i} of ${finalPageCount}`, centerX, pageNumberY, {
+          align: "center",
         });
       }
 
