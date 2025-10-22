@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 import styled, { css, createGlobalStyle } from "styled-components"
-import { AlertCircle, CheckCircle, Save, Truck, Clock, FileText, Navigation, MapPin, Play, Square } from "lucide-react"
+import { AlertCircle, CheckCircle, Save, Truck, Clock, FileText, Navigation, MapPin, Play, Square } from 'lucide-react'
 import axios from "axios"
 
 // Enhanced Global Styles
@@ -228,15 +228,39 @@ const LogisticManagementApproval = () => {
     const savedCurrentPos = localStorage.getItem("currentPosition")
     return savedCurrentPos ? JSON.parse(savedCurrentPos) : null
   })
-  const [trackingStats, setTrackingStats] = useState({
-    startTime: null,
-    endTime: null,
-    totalDistance: 0,
-    duration: null,
+  const [routePoints, setRoutePoints] = useState(() => {
+    const savedRoutePoints = localStorage.getItem("routePoints")
+    return savedRoutePoints ? JSON.parse(savedRoutePoints) : []
+  })
+  const [trackingStats, setTrackingStats] = useState(() => {
+    const savedStartTime = localStorage.getItem("startTime")
+    const savedTotalDistance = localStorage.getItem("totalDistance")
+    return {
+      startTime: savedStartTime ? new Date(savedStartTime) : null,
+      endTime: null, // endTime is not persisted across refreshes for active tracking
+      totalDistance: savedTotalDistance ? parseFloat(savedTotalDistance) : 0,
+      duration: null,
+    }
   })
 
   const watchIdRef = useRef(null)
   const locationUpdateIntervalRef = useRef(null)
+
+  // Helper to calculate distance between two points (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3 // metres
+    const φ1 = (lat1 * Math.PI) / 180 // φ, λ in radians
+    const φ2 = (lat2 * Math.PI) / 180
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+    return R * c // in metres
+  }
 
   // Fetch today's tasks
   useEffect(() => {
@@ -254,50 +278,115 @@ const LogisticManagementApproval = () => {
           setLoading(false)
         })
     }
-  }, [userName])
+  }, [userName, Labbaseurl])
 
-  // Enhanced tracking initialization
+  // Effect to rehydrate state from localStorage on mount and restart tracking if active
   useEffect(() => {
-    const storedUserName = localStorage.getItem("userName") || userName
+    const storedTrackingActive = localStorage.getItem("trackingActive") === "true"
+    const savedStartPosition = localStorage.getItem("startPosition")
+    const savedCurrentPosition = localStorage.getItem("currentPosition")
+    const savedStartTime = localStorage.getItem("startTime")
+    const savedRoutePoints = localStorage.getItem("routePoints")
+    const savedTotalDistance = localStorage.getItem("totalDistance")
 
-    if (isTracking && startPosition) {
-      // Restart position watching
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          const newPosition = { lat: latitude, lng: longitude }
-          setCurrentPosition(newPosition)
-          localStorage.setItem("currentPosition", JSON.stringify(newPosition))
-
-          // Send location update to server
-          updateCurrentLocation(newPosition)
-        },
-        (error) => {
-          setError(`Error tracking location: ${error.message}`)
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
-      )
-
-      // Set up periodic location updates
-      locationUpdateIntervalRef.current = setInterval(() => {
-        if (currentPosition) {
-          updateCurrentLocation(currentPosition)
+    if (storedTrackingActive) {
+      setIsTracking(true)
+      if (savedStartPosition) setStartPosition(JSON.parse(savedStartPosition))
+      if (savedCurrentPosition) setCurrentPosition(JSON.parse(savedCurrentPosition))
+      if (savedRoutePoints) {
+        try {
+          setRoutePoints(JSON.parse(savedRoutePoints))
+        } catch (e) {
+          console.error("Failed to parse saved route points", e)
+          setRoutePoints([])
         }
-      }, 30000) // Update every 30 seconds
+      }
+      setTrackingStats((prev) => ({
+        ...prev,
+        startTime: savedStartTime ? new Date(savedStartTime) : null,
+        totalDistance: savedTotalDistance ? parseFloat(savedTotalDistance) : 0,
+      }))
+
+      // If tracking was active, restart the geolocation watch and periodic updates
+      startGeolocationWatch()
+      startPeriodicLocationUpdates()
     }
 
     return () => {
+      // Cleanup function for the entire component unmount
       if (watchIdRef.current) {
         navigator.geolocation.clearWatch(watchIdRef.current)
+        watchIdRef.current = null
       }
       if (locationUpdateIntervalRef.current) {
         clearInterval(locationUpdateIntervalRef.current)
+        locationUpdateIntervalRef.current = null
       }
     }
-  }, [isTracking, startPosition])
+  }, []) // Empty dependency array means it runs once on mount
 
-  // Enhanced function to update current location on server
-  const updateCurrentLocation = async (position) => {
+  // Function to start geolocation watch
+  const startGeolocationWatch = () => {
+    if (watchIdRef.current) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+    }
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const newPosition = { lat: latitude, lng: longitude }
+        setCurrentPosition(newPosition)
+        localStorage.setItem("currentPosition", JSON.stringify(newPosition))
+
+        // Update route points and send to backend
+        updateLocationAndSend(newPosition, true) // Pass true for immediate update
+      },
+      (error) => {
+        setError(`Error tracking location: ${error.message}`)
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
+    )
+  }
+
+  // Function to start periodic location updates
+  const startPeriodicLocationUpdates = () => {
+    if (locationUpdateIntervalRef.current) {
+      clearInterval(locationUpdateIntervalRef.current)
+    }
+    locationUpdateIntervalRef.current = setInterval(() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+            setCurrentPosition(newPos)
+            updateLocationAndSend(newPos, false) // Pass false for periodic update
+          },
+          (err) => console.error("Periodic location update error:", err),
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
+        )
+      }
+    }, 30000) // Update every 30 seconds
+  }
+
+  // New helper function to update route points, calculate distance, and send to backend
+  const updateLocationAndSend = async (newPosition, isImmediate) => {
+    const timestamp = new Date().toISOString()
+    let currentTotalDistance = trackingStats.totalDistance
+
+    setRoutePoints((prevPoints) => {
+      const updatedRoutePoints = [...prevPoints, { lat: newPosition.lat, lng: newPosition.lng, timestamp }]
+      localStorage.setItem("routePoints", JSON.stringify(updatedRoutePoints))
+
+      // Calculate distance if there's a previous point
+      if (prevPoints.length > 0) {
+        const lastPoint = prevPoints[prevPoints.length - 1]
+        const distance = calculateDistance(lastPoint.lat, lastPoint.lng, newPosition.lat, newPosition.lng)
+        currentTotalDistance = trackingStats.totalDistance + distance
+        setTrackingStats((prev) => ({ ...prev, totalDistance: currentTotalDistance }))
+        localStorage.setItem("totalDistance", currentTotalDistance.toString())
+      }
+      return updatedRoutePoints
+    })
+
     try {
       const currentDate = new Date().toISOString().split("T")[0]
       const collectorName = localStorage.getItem("userName") || userName
@@ -305,8 +394,12 @@ const LogisticManagementApproval = () => {
       const payload = {
         sampleCollector: collectorName,
         date: currentDate,
-        currentLatitude: position.lat,
-        currentLongitude: position.lng,
+        currentLatitude: newPosition.lat,
+        currentLongitude: newPosition.lng,
+        lastUpdated: timestamp,
+        routePoints: JSON.stringify([...routePoints, { lat: newPosition.lat, lng: newPosition.lng, timestamp }]), // Send the updated array
+        isImmediateUpdate: isImmediate,
+        distance_travelled: currentTotalDistance, // Send current total distance
       }
 
       await axios.put(`${Labbaseurl}sample_collector_location/`, payload)
@@ -331,59 +424,37 @@ const LogisticManagementApproval = () => {
       (position) => {
         const { latitude, longitude } = position.coords
         const currentPos = { lat: latitude, lng: longitude }
+        const startTime = new Date()
+        const initialRoutePoints = [{ lat: latitude, lng: longitude, timestamp: startTime.toISOString() }]
 
         // Update state
         setStartPosition(currentPos)
         setCurrentPosition(currentPos)
         setIsTracking(true)
+        setRoutePoints(initialRoutePoints)
+        setTrackingStats((prev) => ({
+          ...prev,
+          startTime: startTime,
+          endTime: null,
+          totalDistance: 0, // Reset distance on start
+        }))
 
         // Update localStorage
         localStorage.setItem("startPosition", JSON.stringify(currentPos))
         localStorage.setItem("currentPosition", JSON.stringify(currentPos))
         localStorage.setItem("trackingActive", "true")
         localStorage.setItem("trackingDate", new Date().toISOString().split("T")[0])
-
-        // Update tracking stats
-        const startTime = new Date()
-        setTrackingStats((prev) => ({
-          ...prev,
-          startTime: startTime,
-          endTime: null,
-          totalDistance: 0,
-        }))
+        localStorage.setItem("userName", collectorName)
+        localStorage.setItem("startTime", startTime.toISOString())
+        localStorage.setItem("routePoints", JSON.stringify(initialRoutePoints))
+        localStorage.setItem("totalDistance", "0")
 
         // Save start location to backend
-        saveStartLocation(currentPos)
+        saveStartLocation(currentPos, startTime.toISOString(), initialRoutePoints)
 
-        // Start watching position
-        watchIdRef.current = navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords
-            const newPosition = { lat: latitude, lng: longitude }
-            setCurrentPosition(newPosition)
-            localStorage.setItem("currentPosition", JSON.stringify(newPosition))
-            updateCurrentLocation(newPosition)
-          },
-          (error) => {
-            setError(`Error tracking location: ${error.message}`)
-          },
-          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
-        )
-
-        // Set up periodic updates
-        locationUpdateIntervalRef.current = setInterval(() => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-                setCurrentPosition(newPos)
-                updateCurrentLocation(newPos)
-              },
-              (err) => console.error("Periodic location update error:", err),
-              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
-            )
-          }
-        }, 30000)
+        // Start watching and periodic updates
+        startGeolocationWatch()
+        startPeriodicLocationUpdates()
       },
       (error) => {
         setError(`Error getting location: ${error.message}`)
@@ -409,12 +480,19 @@ const LogisticManagementApproval = () => {
       }))
 
       // Update end location using PUT
-      updateEndLocation(positionToSend)
+      updateEndLocation(positionToSend, endTime.toISOString(), routePoints, trackingStats.totalDistance)
     }
 
     // Update state and localStorage
     setIsTracking(false)
     localStorage.setItem("trackingActive", "false")
+    localStorage.removeItem("startPosition")
+    localStorage.removeItem("currentPosition")
+    localStorage.removeItem("trackingDate")
+    localStorage.removeItem("userName")
+    localStorage.removeItem("startTime")
+    localStorage.removeItem("routePoints")
+    localStorage.removeItem("totalDistance")
 
     // Clear intervals and watches
     if (watchIdRef.current) {
@@ -425,19 +503,27 @@ const LogisticManagementApproval = () => {
       clearInterval(locationUpdateIntervalRef.current)
       locationUpdateIntervalRef.current = null
     }
+    setRoutePoints([]) // Clear route points on stop
+    setTrackingStats({ startTime: null, endTime: null, totalDistance: 0, duration: null }) // Reset stats
   }
 
   // Enhanced save start location function
-  const saveStartLocation = (position) => {
+  const saveStartLocation = (position, startTime, initialRoutePoints) => {
     const currentDate = new Date().toISOString().split("T")[0]
-    const collectorName = userName
-    localStorage.setItem("userName", collectorName)
+    const collectorName = localStorage.getItem("userName") || userName
 
     const payload = {
       sampleCollector: collectorName,
       date: currentDate,
       latitudeStart: position.lat,
       longitudeStart: position.lng,
+      startTime: startTime,
+      isActive: true,
+      routePoints: JSON.stringify(initialRoutePoints), // Send initial route points
+      currentLatitude: position.lat, // Set current to start initially
+      currentLongitude: position.lng,
+      lastUpdated: startTime,
+      distance_travelled: 0,
     }
 
     axios
@@ -462,7 +548,7 @@ const LogisticManagementApproval = () => {
   }
 
   // Enhanced update end location function
-  const updateEndLocation = (position) => {
+  const updateEndLocation = (position, endTime, finalRoutePoints, finalTotalDistance) => {
     const currentDate = new Date().toISOString().split("T")[0]
     const collectorName = localStorage.getItem("userName") || userName
 
@@ -471,6 +557,13 @@ const LogisticManagementApproval = () => {
       date: currentDate,
       latitudeEnd: position.lat,
       longitudeEnd: position.lng,
+      endTime: endTime,
+      isActive: false,
+      routePoints: JSON.stringify(finalRoutePoints), // Send final route points
+      currentLatitude: position.lat, // Set current to end
+      currentLongitude: position.lng,
+      lastUpdated: endTime,
+      distance_travelled: finalTotalDistance,
     }
 
     axios
@@ -479,11 +572,11 @@ const LogisticManagementApproval = () => {
         if (response.data.success) {
           console.log("End location updated successfully:", response.data)
 
-          // Update tracking stats with server response
+          // Update tracking stats with server response (if provided)
           if (response.data.data) {
             setTrackingStats((prev) => ({
               ...prev,
-              totalDistance: response.data.data.distance_travelled || 0,
+              totalDistance: response.data.data.distance_travelled || finalTotalDistance,
             }))
           }
 

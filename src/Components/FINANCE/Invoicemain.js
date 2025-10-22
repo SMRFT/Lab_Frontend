@@ -1921,14 +1921,26 @@ const B2BPatients = () => {
     );
   };
 
-  const getFilteredPatients = () => {
-    return patients.filter((p) => {
-      const isDateMatch =
-        (!fromDate || new Date(p.date) >= new Date(fromDate)) &&
-        (!toDate || new Date(p.date) <= new Date(toDate));
-      return isDateMatch;
-    });
-  };
+const getFilteredPatients = () => {
+  return patients.filter((p) => {
+    const recordDate = new Date(p.date);
+
+    const startDate = fromDate ? new Date(fromDate) : null;
+    const endDate = toDate ? new Date(toDate) : null;
+
+    // Fix: make endDate include the entire day
+    if (endDate) {
+      endDate.setHours(23, 59, 59, 999);
+    }
+
+    const isDateMatch =
+      (!startDate || recordDate >= startDate) &&
+      (!endDate || recordDate <= endDate);
+
+    return isDateMatch;
+  });
+};
+
 
   const calculateProportionalCredits = (patients, totalPaid, totalCredit) => {
     const proportionalCredits = [];
@@ -3190,12 +3202,12 @@ const B2BPatients = () => {
                           >
                             <Download size={18} />
                           </IconButton>
-                          <IconButton
+                          {/* <IconButton
                             onClick={() => handlePrintInvoice(invoice)}
                             style={{ color: "purple" }}
                           >
                             <Printer size={18} />
-                          </IconButton>
+                          </IconButton> */}
                           <IconButton
                             onClick={() => handleViewPaymentHistory(invoice)}
                             style={{ color: "#8b5cf6" }}

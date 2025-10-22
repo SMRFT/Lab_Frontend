@@ -430,7 +430,7 @@ const LoadingSpinner = styled.div`
   font-size: 0.875rem;
 `
 
-// Custom Map Component using vanilla Leaflet (no React Leaflet)
+// Custom Map Component for single collector view (used in modal)
 const LeafletMap = ({ locationData, routePoints, collectorName, onMapReady }) => {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
@@ -471,6 +471,8 @@ const LeafletMap = ({ locationData, routePoints, collectorName, onMapReady }) =>
 
     clearMapElements()
 
+    const bounds = []
+
     // Add start marker
     if (locationData.latitudeStart && locationData.longitudeStart) {
       const startIcon = L.icon({
@@ -482,16 +484,17 @@ const LeafletMap = ({ locationData, routePoints, collectorName, onMapReady }) =>
         shadowSize: [41, 41],
       })
 
-      const startMarker = L.marker(
-        [Number.parseFloat(locationData.latitudeStart), Number.parseFloat(locationData.longitudeStart)],
-        {
-          icon: startIcon,
-        },
-      )
+      const startLat = Number.parseFloat(locationData.latitudeStart)
+      const startLng = Number.parseFloat(locationData.longitudeStart)
+
+      const startMarker = L.marker([startLat, startLng], {
+        icon: startIcon,
+      })
         .bindPopup(`<strong>Start Point</strong><br/>${formatDateTime(locationData.startTime)}`)
         .addTo(mapInstanceRef.current)
 
       markersRef.current.push(startMarker)
+      bounds.push([startLat, startLng])
     }
 
     // Add current/end marker
@@ -507,16 +510,17 @@ const LeafletMap = ({ locationData, routePoints, collectorName, onMapReady }) =>
         shadowSize: [41, 41],
       })
 
-      const currentMarker = L.marker(
-        [Number.parseFloat(locationData.currentLatitude), Number.parseFloat(locationData.currentLongitude)],
-        { icon: currentIcon },
-      )
+      const currentLat = Number.parseFloat(locationData.currentLatitude)
+      const currentLng = Number.parseFloat(locationData.currentLongitude)
+
+      const currentMarker = L.marker([currentLat, currentLng], { icon: currentIcon })
         .bindPopup(
           `<strong>${locationData.isActive ? "Current Location" : "End Point"}</strong><br/>${collectorName}<br/>Last updated: ${formatDateTime(locationData.lastUpdated)}`,
         )
         .addTo(mapInstanceRef.current)
 
       markersRef.current.push(currentMarker)
+      bounds.push([currentLat, currentLng])
     }
 
     // Add route polyline
@@ -527,13 +531,24 @@ const LeafletMap = ({ locationData, routePoints, collectorName, onMapReady }) =>
         weight: 4,
         opacity: 0.7,
       }).addTo(mapInstanceRef.current)
+      latlngs.forEach((p) => bounds.push(p))
     }
 
-    // Center map on current or start location
-    const centerLat = Number.parseFloat(locationData.currentLatitude || locationData.latitudeStart)
-    const centerLng = Number.parseFloat(locationData.currentLongitude || locationData.latitudeStart)
-    if (centerLat && centerLng) {
-      mapInstanceRef.current.setView([centerLat, centerLng], 15)
+    // Center map on current or start location and adjust zoom
+    if (bounds.length > 0) {
+      if (locationData.isActive && locationData.currentLatitude && locationData.currentLongitude) {
+        // If tracking is active, pan to the current location
+        mapInstanceRef.current.panTo([
+          Number.parseFloat(locationData.currentLatitude),
+          Number.parseFloat(locationData.currentLongitude),
+        ])
+        mapInstanceRef.current.setZoom(15) // Keep a consistent zoom for live tracking
+      } else {
+        // If tracking is stopped or no current location, fit bounds to the entire route or available points
+        mapInstanceRef.current.fitBounds(L.latLngBounds(bounds), { padding: [50, 50] })
+      }
+    } else {
+      mapInstanceRef.current.setView([51.505, -0.09], 13) // Default center if no valid points
     }
   }
 
@@ -576,6 +591,144 @@ const LeafletMap = ({ locationData, routePoints, collectorName, onMapReady }) =>
   return <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
 }
 
+// New MultiCollectorMap Component for Admin Dashboard
+const MultiCollectorMap = ({ activeCollectors, onMapReady }) => {
+  const mapRef = useRef(null)
+  const mapInstanceRef = useRef(null)
+  const markersRef = useRef({}) // Store markers by collector name
+  const polylinesRef = useRef({}) // Store polylines by collector name
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return "N/A"
+    const date = new Date(dateString)
+    return date.toLocaleString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  }
+
+  const clearMapElements = () => {
+    // Clear existing markers
+    Object.values(markersRef.current).forEach((marker) => {
+      if (mapInstanceRef.current && marker) {
+        mapInstanceRef.current.removeLayer(marker)
+      }
+    })
+    markersRef.current = {}
+
+    // Clear existing polylines
+    Object.values(polylinesRef.current).forEach((polyline) => {
+      if (mapInstanceRef.current && polyline) {
+        mapInstanceRef.current.removeLayer(polyline)
+      }
+    })
+    polylinesRef.current = {}
+  }
+
+  const addMapElements = () => {
+    if (!mapInstanceRef.current || !activeCollectors) return
+
+    clearMapElements() // Clear all previous elements
+
+    const bounds = []
+
+    activeCollectors.forEach((collector) => {
+      // Add current/end marker for each collector
+      if (collector.currentLatitude && collector.currentLongitude) {
+        const currentIcon = L.icon({
+          iconUrl: collector.isActive
+            ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png" // Active
+            : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png", // Inactive/End
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        })
+
+        const lat = Number.parseFloat(collector.currentLatitude)
+        const lng = Number.parseFloat(collector.currentLongitude)
+
+        const marker = L.marker([lat, lng], { icon: currentIcon })
+          .bindPopup(
+            `<strong>${collector.sampleCollector}</strong><br/>Status: ${collector.isActive ? "Active" : "Inactive"}<br/>Last updated: ${formatDateTime(collector.lastUpdated)}`,
+          )
+          .addTo(mapInstanceRef.current)
+
+        markersRef.current[collector.sampleCollector] = marker
+        bounds.push([lat, lng])
+      }
+
+      // Add route polyline if available
+      if (collector.routePoints) {
+        try {
+          const parsedRoutePoints = JSON.parse(collector.routePoints)
+          if (parsedRoutePoints && parsedRoutePoints.length > 1) {
+            const latlngs = parsedRoutePoints.map((point) => [point.lat, point.lng])
+            const polyline = L.polyline(latlngs, {
+              color: "#3b82f6",
+              weight: 3,
+              opacity: 0.6,
+            }).addTo(mapInstanceRef.current)
+            polylinesRef.current[collector.sampleCollector] = polyline
+            latlngs.forEach((p) => bounds.push(p))
+          }
+        } catch (e) {
+          console.error("Error parsing routePoints for collector", collector.sampleCollector, e)
+        }
+      }
+    })
+
+    // Fit map to bounds of all markers/polylines
+    if (bounds.length > 0) {
+      mapInstanceRef.current.fitBounds(L.latLngBounds(bounds), { padding: [50, 50] })
+    } else {
+      mapInstanceRef.current.setView([51.505, -0.09], 13) // Default center if no active collectors
+    }
+  }
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return
+
+    // Initialize map
+    mapInstanceRef.current = L.map(mapRef.current, {
+      center: [51.505, -0.09], // Default center
+      zoom: 13,
+      zoomControl: true,
+    })
+
+    // Add tile layer
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(mapInstanceRef.current)
+
+    if (onMapReady) {
+      onMapReady(mapInstanceRef.current)
+    }
+
+    return () => {
+      // Cleanup function
+      if (mapInstanceRef.current) {
+        clearMapElements()
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
+  }, []) // Empty dependency array for map initialization
+
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      addMapElements()
+    }
+  }, [activeCollectors]) // Re-render markers/polylines when activeCollectors change
+
+  return <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+}
+
 // Enhanced Location Modal Component with Vanilla Leaflet
 const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }) => {
   const [locationData, setLocationData] = useState(null)
@@ -583,7 +736,7 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
   const [error, setError] = useState(null)
   const [routePoints, setRoutePoints] = useState([])
   const intervalRef = useRef(null)
-  const mapRef = useRef(null)
+  const mapInstanceRef = useRef(null) // Use this to store the Leaflet map instance
   const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL
 
   const fetchCollectorLocation = async () => {
@@ -595,20 +748,31 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
       })
 
       if (response.data.success) {
-        const locationData = response.data.data && response.data.data.length > 0 ? response.data.data[0] : null
+        const fetchedLocationData = response.data.data && response.data.data.length > 0 ? response.data.data[0] : null
+        setLocationData(fetchedLocationData)
 
-        setLocationData(locationData)
-
-        if (locationData && locationData.routePoints) {
-          setRoutePoints(locationData.routePoints)
+        if (fetchedLocationData && fetchedLocationData.routePoints) {
+          try {
+            setRoutePoints(JSON.parse(fetchedLocationData.routePoints))
+          } catch (parseError) {
+            console.error("Error parsing routePoints:", parseError)
+            setRoutePoints([])
+          }
+        } else {
+          setRoutePoints([]) // Clear route points if not provided
         }
 
-        // Pan map to current location if available
-        if (locationData && locationData.currentLatitude && locationData.currentLongitude && mapRef.current) {
-          mapRef.current.setView(
-            [Number.parseFloat(locationData.currentLatitude), Number.parseFloat(locationData.currentLongitude)],
-            15,
-          )
+        // Pan map to current location if available and map is ready
+        if (
+          fetchedLocationData &&
+          fetchedLocationData.currentLatitude &&
+          fetchedLocationData.currentLongitude &&
+          mapInstanceRef.current
+        ) {
+          mapInstanceRef.current.panTo([
+            Number.parseFloat(fetchedLocationData.currentLatitude),
+            Number.parseFloat(fetchedLocationData.currentLongitude),
+          ])
         }
       } else {
         setError(response.data.message || "Failed to fetch location data")
@@ -629,7 +793,7 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
       setRoutePoints([])
 
       fetchCollectorLocation()
-      intervalRef.current = setInterval(fetchCollectorLocation, 5000)
+      intervalRef.current = setInterval(fetchCollectorLocation, 5000) // Fetch every 5 seconds for live updates
     }
 
     return () => {
@@ -638,7 +802,7 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
         intervalRef.current = null
       }
     }
-  }, [isOpen, collectorName])
+  }, [isOpen, collectorName, Labbaseurl])
 
   const calculateTotalDistance = (points) => {
     if (!points || points.length < 2) return 0
@@ -648,7 +812,7 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
       const [lat1, lng1] = [points[i - 1].lat, points[i - 1].lng]
       const [lat2, lng2] = [points[i].lat, points[i].lng]
 
-      const R = 6371 // Earth's radius in km
+      const R = 6371e3 // Earth's radius in meters
       const dLat = ((lat2 - lat1) * Math.PI) / 180
       const dLon = ((lng2 - lng1) * Math.PI) / 180
       const a =
@@ -745,7 +909,7 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
                   {locationData.distance_travelled
                     ? `${Number.parseFloat(locationData.distance_travelled).toFixed(2)} meters`
                     : routePoints.length > 1
-                      ? `${calculateTotalDistance(routePoints)} km`
+                      ? `${calculateTotalDistance(routePoints)} meters` // Changed to meters for consistency
                       : "N/A"}
                 </InfoValue>
               </InfoItem>
@@ -770,7 +934,7 @@ const EnhancedLocationModal = ({ isOpen, onClose, collectorName, collectorData }
                   routePoints={routePoints}
                   collectorName={collectorName}
                   onMapReady={(mapInstance) => {
-                    mapRef.current = mapInstance
+                    mapInstanceRef.current = mapInstance // Store the map instance
                   }}
                 />
               ) : (
@@ -869,7 +1033,7 @@ const LogisticManagementAdmin = () => {
   const getfetchLogistic = async () => {
     if (Labbaseurl) {
       try {
-        const response = await axios.get(`${Labbaseurl}get_logistic_data/`)
+        const response = await axios.get(`${Labbaseurl}sample_collector_location/`)
         setGetLogisticData(response.data)
       } catch (error) {
         console.error("Error fetching logistic data:", error)
@@ -877,10 +1041,31 @@ const LogisticManagementAdmin = () => {
     }
   }
 
+  // Fetch all logistic data and active collectors periodically
   useEffect(() => {
-    fetchLogisticData()
-    getfetchLogistic()
-  }, [])
+    const fetchAllData = async () => {
+      await fetchLogisticData()
+      await getfetchLogistic()
+    }
+
+    fetchAllData() // Initial fetch
+
+    const intervalId = setInterval(fetchAllData, 10000) // Refresh every 10 seconds
+    return () => clearInterval(intervalId)
+  }, [Labbaseurl])
+
+  // Update active collectors based on getlogisticData
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0]
+    const active = getlogisticData.filter(
+      (data) =>
+        data.date === today &&
+        data.isActive && // Assuming backend provides an isActive flag
+        data.currentLatitude &&
+        data.currentLongitude,
+    )
+    setActiveCollectors(active)
+  }, [getlogisticData])
 
   const handleLabNameChange = (e) => {
     const selectedName = e.target.value
@@ -1030,7 +1215,7 @@ const LogisticManagementAdmin = () => {
                 <CollectorStats>
                   <span>
                     <Timer size={12} style={{ marginRight: "0.25rem" }} />
-                    Started: {new Date(collector.startTime).toLocaleTimeString()}
+                    Started: {collector.startTime ? new Date(collector.startTime).toLocaleTimeString() : "N/A"}
                   </span>
                   <span>
                     <Route size={12} style={{ marginRight: "0.25rem" }} />
@@ -1044,11 +1229,26 @@ const LogisticManagementAdmin = () => {
                   style={{ marginTop: "0.5rem", width: "100%", justifyContent: "center" }}
                 >
                   <Map size={14} />
-                  View Live Location
+                  View Detailed Map
                 </ViewLocationButton>
               </CollectorCard>
             ))}
           </ActiveCollectorGrid>
+          {/* Main Map for all active collectors */}
+          <MapWrapper style={{ height: "600px", marginTop: "2rem" }}>
+            <MultiCollectorMap
+              activeCollectors={activeCollectors}
+              onMapReady={(map) => {
+                /* mapInstanceRef.current = map; */
+              }} // No need to store map instance here for MultiCollectorMap
+            />
+          </MapWrapper>
+          <div
+            style={{ textAlign: "center", color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", marginTop: "0.5rem" }}
+          >
+            Markers: <span style={{ color: "#93c5fd" }}>Blue (Active)</span>,{" "}
+            <span style={{ color: "#fca5a5" }}>Red (Inactive/End)</span>. Route lines show travel path.
+          </div>
         </LiveTrackingCard>
       )}
 

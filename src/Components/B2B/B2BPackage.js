@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from "react";
-import styled, { createGlobalStyle } from "styled-components";
-import {
-  Search,
-  Package,
-  User,
-  DollarSign,
-  TestTube,
-  X,
-  Check,
-  AlertCircle,
-} from "lucide-react";
+"use client"
+
+import { useState, useEffect } from "react"
+import styled, { createGlobalStyle } from "styled-components"
+import { Search, Package, User, TestTube, X, Check, AlertCircle } from 'lucide-react'
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -44,18 +37,18 @@ const GlobalStyle = createGlobalStyle`
     color: var(--dark);
     line-height: 1.5;
   }
-`;
+`
 
 // Container for the main content
 const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-
+  
   @media (max-width: 768px) {
     padding: 1rem;
   }
-`;
+`
 
 const Card = styled.div`
   background-color: white;
@@ -63,7 +56,7 @@ const Card = styled.div`
   box-shadow: var(--box-shadow);
   overflow: hidden;
   margin-bottom: 2rem;
-`;
+`
 
 const CardHeader = styled.div`
   padding: 1.5rem;
@@ -71,37 +64,37 @@ const CardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-
+  
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-`;
+`
 
 const Title = styled.h1`
   font-size: 1.5rem;
   color: var(--primary-dark);
   font-weight: 600;
   margin: 0;
-`;
+`
 
 const CardBody = styled.div`
   padding: 1.5rem;
-`;
+`
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-`;
+`
 
 const FormSection = styled.div`
   padding: 1.5rem;
   background-color: var(--light);
   border-radius: var(--border-radius);
   border: 1px solid var(--gray-light);
-`;
+`
 
 const SectionTitle = styled.h3`
   font-size: 1rem;
@@ -111,24 +104,24 @@ const SectionTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-`;
+`
 
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
-
+  
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
-`;
+`
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
-`;
+`
 
 const Label = styled.label`
   font-size: 0.875rem;
@@ -137,7 +130,7 @@ const Label = styled.label`
   display: flex;
   align-items: center;
   gap: 0.25rem;
-
+  
   ${(props) =>
     props.required &&
     `
@@ -146,7 +139,7 @@ const Label = styled.label`
       color: var(--danger);
     }
   `}
-`;
+`
 
 const Input = styled.input`
   padding: 0.75rem;
@@ -154,23 +147,23 @@ const Input = styled.input`
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   transition: var(--transition);
-
+  
   &:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
   }
-
+  
   ${(props) =>
     props.hasIcon &&
     `
     padding-left: 2.5rem;
   `}
-`;
+`
 
 const InputWrapper = styled.div`
   position: relative;
-`;
+`
 
 const InputIcon = styled.div`
   position: absolute;
@@ -181,15 +174,15 @@ const InputIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
+`
 
 const SearchContainer = styled.div`
   position: relative;
-`;
+`
 
 const SearchInput = styled(Input)`
   padding-left: 2.5rem;
-`;
+`
 
 const SearchResults = styled.div`
   position: absolute;
@@ -204,26 +197,26 @@ const SearchResults = styled.div`
   overflow-y: auto;
   z-index: 1000;
   box-shadow: var(--box-shadow);
-`;
+`
 
 const SearchItem = styled.div`
   padding: 0.75rem;
   cursor: pointer;
   border-bottom: 1px solid var(--gray-light);
   transition: var(--transition);
-
+  
   &:hover {
     background-color: var(--light);
   }
-
+  
   &:last-child {
     border-bottom: none;
   }
-`;
+`
 
 const MultiSelectContainer = styled.div`
   position: relative;
-`;
+`
 
 const MultiSelectHeader = styled.div`
   padding: 0.75rem;
@@ -236,20 +229,20 @@ const MultiSelectHeader = styled.div`
   align-items: center;
   transition: var(--transition);
   min-height: 48px;
-
+  
   &:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
   }
-`;
+`
 
 const SelectedItems = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   flex: 1;
-`;
+`
 
 const SelectedItem = styled.span`
   background-color: var(--primary-light);
@@ -260,7 +253,7 @@ const SelectedItem = styled.span`
   display: flex;
   align-items: center;
   gap: 0.25rem;
-`;
+`
 
 const RemoveButton = styled.button`
   background: none;
@@ -271,18 +264,18 @@ const RemoveButton = styled.button`
   padding: 0;
   display: flex;
   align-items: center;
-
+  
   &:hover {
     color: var(--danger);
   }
-`;
+`
 
 const DropdownArrow = styled.div`
   color: var(--gray);
   font-size: 0.75rem;
   transition: transform 0.2s;
   transform: ${(props) => (props.isOpen ? "rotate(180deg)" : "rotate(0deg)")};
-`;
+`
 
 const MultiSelectDropdown = styled.div`
   position: absolute;
@@ -297,12 +290,12 @@ const MultiSelectDropdown = styled.div`
   overflow-y: auto;
   z-index: 1000;
   box-shadow: var(--box-shadow);
-`;
+`
 
 const MultiSelectSearch = styled(Input)`
   margin: 0.5rem;
   width: calc(100% - 1rem);
-`;
+`
 
 const MultiSelectOption = styled.div`
   padding: 0.75rem;
@@ -311,22 +304,39 @@ const MultiSelectOption = styled.div`
   align-items: center;
   gap: 0.5rem;
   transition: var(--transition);
-
+  
   &:hover {
     background-color: var(--light);
   }
-`;
+`
+
+const TestNameContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`
+
+const TestName = styled.span`
+  font-weight: 500;
+  color: var(--dark);
+`
+
+const TestShortcut = styled.span`
+  font-size: 0.75rem;
+  color: var(--gray);
+  font-style: italic;
+`
 
 const Checkbox = styled.input`
   margin: 0;
   cursor: pointer;
-`;
+`
 
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
-`;
+`
 
 const Button = styled.button`
   display: inline-flex;
@@ -336,20 +346,18 @@ const Button = styled.button`
   padding: 0.75rem 1.5rem;
   background-color: ${(props) => (props.primary ? "var(--primary)" : "white")};
   color: ${(props) => (props.primary ? "white" : "var(--gray)")};
-  border: 1px solid
-    ${(props) => (props.primary ? "var(--primary)" : "var(--gray-light)")};
+  border: 1px solid ${(props) => (props.primary ? "var(--primary)" : "var(--gray-light)")};
   border-radius: var(--border-radius);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   transition: var(--transition);
   opacity: ${(props) => (props.disabled ? "0.7" : "1")};
-
+  
   &:hover {
-    background-color: ${(props) =>
-      props.primary ? "var(--primary-dark)" : "var(--gray-light)"};
+    background-color: ${(props) => (props.primary ? "var(--primary-dark)" : "var(--gray-light)")};
   }
-`;
+`
 
 const LoadingSpinner = styled.div`
   border: 2px solid var(--gray-light);
@@ -358,16 +366,12 @@ const LoadingSpinner = styled.div`
   width: 16px;
   height: 16px;
   animation: spin 1s linear infinite;
-
+  
   @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
-`;
+`
 
 // Toast Component
 const Toast = styled.div`
@@ -384,35 +388,28 @@ const Toast = styled.div`
   gap: 0.5rem;
   z-index: 1000;
   animation: slideIn 0.3s ease, fadeOut 0.5s ease 3.5s forwards;
-
+  
   @keyframes slideIn {
-    from {
-      transform: translateX(100%);
-    }
-    to {
-      transform: translateX(0);
-    }
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
   }
-
+  
   @keyframes fadeOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
-`;
+`
+
 const DisplayContainer = styled(Card)`
   margin-top: 2rem;
-`;
+`
 
 const DisplayTitle = styled.h2`
   color: var(--primary-dark);
   margin-bottom: 1rem;
   font-size: 1.25rem;
   font-weight: 600;
-`;
+`
 
 const DisplayItem = styled.div`
   margin-bottom: 1rem;
@@ -420,17 +417,79 @@ const DisplayItem = styled.div`
   background-color: var(--light);
   border-radius: var(--border-radius);
   border-left: 4px solid var(--primary);
-`;
+`
 
 const DisplayLabel = styled.span`
   font-weight: 600;
   color: var(--primary-dark);
   margin-right: 0.5rem;
-`;
+`
 
 const DisplayValue = styled.span`
   color: var(--dark);
-`;
+`
+
+const SearchHelp = styled.div`
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+  font-style: italic;
+`
+
+// New styled components for test table with rates
+const TestTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+`
+
+const TestTableHeader = styled.thead`
+  background-color: var(--primary);
+  color: white;
+  
+  th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+`
+
+const TestTableBody = styled.tbody`
+  tr {
+    border-bottom: 1px solid var(--gray-light);
+    transition: var(--transition);
+    
+    &:hover {
+      background-color: var(--light);
+    }
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  td {
+    padding: 1rem;
+    font-size: 0.875rem;
+    color: var(--dark);
+  }
+`
+
+const TotalRow = styled.tr`
+  background-color: var(--primary-light);
+  color: white;
+  font-weight: 600;
+  
+  td {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+`
 
 const B2BPackage = () => {
   // State management
@@ -441,90 +500,91 @@ const B2BPackage = () => {
     rate: "",
     testNames: [],
     status: "pending",
-  });
+  })
 
-  const [clinicalnames, setclinicalnames] = useState([]);
-  const [testDetails, setTestDetails] = useState([]);
-  const [showDisplay, setShowDisplay] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [clinicalnames, setclinicalnames] = useState([])
+  const [testDetails, setTestDetails] = useState([])
+  const [selectedTestsWithRates, setSelectedTestsWithRates] = useState([])
+  const [showDisplay, setShowDisplay] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState(null)
 
   // Search states
-  const [clinicalSearch, setClinicalSearch] = useState("");
-  const [showClinicalResults, setShowClinicalResults] = useState(false);
-  const [testDropdownOpen, setTestDropdownOpen] = useState(false);
-  const [testSearch, setTestSearch] = useState("");
+  const [clinicalSearch, setClinicalSearch] = useState("")
+  const [showClinicalResults, setShowClinicalResults] = useState(false)
+  const [testDropdownOpen, setTestDropdownOpen] = useState(false)
+  const [testSearch, setTestSearch] = useState("")
 
-  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL;
+  const Labbaseurl = process.env.REACT_APP_BACKEND_LAB_BASE_URL
 
   // Show toast message
   const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  };
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   // Fetch clinical names from API
   useEffect(() => {
     const fetchclinicalnames = async () => {
       try {
-        const response = await fetch(`${Labbaseurl}clinical_name/`);
+        const response = await fetch(`${Labbaseurl}clinical_name/`)
         if (response.ok) {
-          const data = await response.json();
-          setclinicalnames(data);
+          const data = await response.json()
+          setclinicalnames(data)
         } else {
-          showToast("Failed to fetch clinical names", "error");
+          showToast("Failed to fetch clinical names", "error")
         }
       } catch (error) {
-        showToast("Error fetching clinical names: " + error.message, "error");
+        showToast("Error fetching clinical names: " + error.message, "error")
       }
-    };
+    }
 
     if (Labbaseurl) {
-      fetchclinicalnames();
+      fetchclinicalnames()
     }
-  }, [Labbaseurl]);
+  }, [Labbaseurl])
 
   // Fetch test details from API
   useEffect(() => {
     const fetchTestDetails = async () => {
       try {
-        const response = await fetch(`${Labbaseurl}test_details/`);
+        const response = await fetch(`${Labbaseurl}test_details/`)
         if (response.ok) {
-          const data = await response.json();
-          setTestDetails(data);
+          const data = await response.json()
+          setTestDetails(data)
         } else {
-          showToast("Failed to fetch test details", "error");
+          showToast("Failed to fetch test details", "error")
         }
       } catch (error) {
-        showToast("Error fetching test details: " + error.message, "error");
+        showToast("Error fetching test details: " + error.message, "error")
       }
-    };
+    }
 
     if (Labbaseurl) {
-      fetchTestDetails();
+      fetchTestDetails()
     }
-  }, [Labbaseurl]);
+  }, [Labbaseurl])
 
   // Handle input changes
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
-  };
+    }))
+  }
 
   // Handle clinical search
   const handleClinicalSearch = (e) => {
-    const value = e.target.value;
-    setClinicalSearch(value);
-    setShowClinicalResults(value.length > 0);
-  };
+    const value = e.target.value
+    setClinicalSearch(value)
+    setShowClinicalResults(value.length > 0)
+  }
 
   // Filter clinical names based on search
   const filteredclinicalnames = clinicalnames.filter((clinical) =>
-    clinical.clinicalname?.toLowerCase().includes(clinicalSearch.toLowerCase())
-  );
+    clinical.clinicalname?.toLowerCase().includes(clinicalSearch.toLowerCase()),
+  )
 
   // Select clinical name
   const selectclinicalname = (clinical) => {
@@ -532,90 +592,123 @@ const B2BPackage = () => {
       ...prev,
       clinicalname: clinical.clinicalname,
       clinicalnameDisplay: clinical.clinicalname,
-    }));
-    setClinicalSearch(clinical.clinicalname);
-    setShowClinicalResults(false);
-  };
+    }))
+    setClinicalSearch(clinical.clinicalname)
+    setShowClinicalResults(false)
+  }
 
-  // Handle test selection
+  // Handle test selection with rates
   const handleTestSelection = (testId) => {
-    setFormData((prev) => ({
-      ...prev,
-      testNames: prev.testNames.includes(testId)
-        ? prev.testNames.filter((id) => id !== testId)
-        : [...prev.testNames, testId],
-    }));
-  };
+    const test = testDetails.find((t) => (t._id && t._id.$oid === testId) || t.id === testId || t.test_name === testId)
+
+    if (!test) return
+
+    const isAlreadySelected = selectedTestsWithRates.some((selectedTest) => selectedTest.testId === testId)
+
+    if (isAlreadySelected) {
+      // Remove test
+      setSelectedTestsWithRates((prev) => prev.filter((selectedTest) => selectedTest.testId !== testId))
+      setFormData((prev) => ({
+        ...prev,
+        testNames: prev.testNames.filter((id) => id !== testId),
+      }))
+    } else {
+      // Add test with rates
+      const newTestWithRates = {
+        testId: testId,
+        testName: test.test_name,
+        mrp: Number.parseFloat(test.MRP || 0),
+        l2lRate: Number.parseFloat(test.L2L_Rate_Card || 0),
+      }
+
+      setSelectedTestsWithRates((prev) => [...prev, newTestWithRates])
+      setFormData((prev) => ({
+        ...prev,
+        testNames: [...prev.testNames, test.test_name], // Store test names instead of IDs
+      }))
+    }
+  }
 
   // Remove selected test
   const removeSelectedTest = (testId) => {
+    const testToRemove = selectedTestsWithRates.find((test) => test.testId === testId)
+    setSelectedTestsWithRates((prev) => prev.filter((test) => test.testId !== testId))
     setFormData((prev) => ({
       ...prev,
-      testNames: prev.testNames.filter((id) => id !== testId),
-    }));
-  };
+      testNames: prev.testNames.filter((name) => name !== testToRemove?.testName),
+    }))
+  }
 
-  // Filter test details based on search
-  const filteredTestDetails = testDetails.filter((test) =>
-    test.test_name?.toLowerCase().includes(testSearch.toLowerCase())
-  );
+  // Enhanced filter for test details - searches in both test_name and shortcut
+  const filteredTestDetails = testDetails.filter((test) => {
+    const searchTerm = testSearch.toLowerCase()
+    const testName = (test.test_name || "").toLowerCase()
+    const shortcut = (test.shortcut || "").toLowerCase()
+
+    return testName.includes(searchTerm) || shortcut.includes(searchTerm)
+  })
 
   // Get test name display text
   const getTestNameDisplay = (testId) => {
-    const test = testDetails.find(
-      (t) =>
-        (t._id && t._id.$oid === testId) ||
-        t.id === testId ||
-        t.test_name === testId
-    );
-    return test ? test.test_name || test.name || testId : testId;
-  };
+    const test = testDetails.find((t) => (t._id && t._id.$oid === testId) || t.id === testId || t.test_name === testId)
+    return test ? test.test_name || test.name || testId : testId
+  }
 
   // Get selected test names for display
   const getSelectedTestNames = () => {
-    return formData.testNames.map((testId) => getTestNameDisplay(testId));
-  };
+    return formData.testNames
+  }
+
+  // Calculate totals
+  const calculateTotals = () => {
+    const mrpTotal = selectedTestsWithRates.reduce((sum, test) => sum + test.mrp, 0)
+    const l2lTotal = selectedTestsWithRates.reduce((sum, test) => sum + test.l2lRate, 0)
+
+    return { mrpTotal, l2lTotal }
+  }
 
   // Validate form data
   const validateForm = () => {
-    const { packageName, clinicalname, rate, testNames } = formData;
+    const { packageName, clinicalname, rate, testNames } = formData
 
     if (!packageName.trim()) {
-      showToast("Package name is required", "error");
-      return false;
+      showToast("Package name is required", "error")
+      return false
     }
 
     if (!clinicalname) {
-      showToast("Clinical name is required", "error");
-      return false;
+      showToast("Clinical name is required", "error")
+      return false
     }
 
     if (!rate || isNaN(rate) || parseFloat(rate) <= 0) {
-      showToast("Valid rate is required", "error");
-      return false;
+      showToast("Valid rate is required", "error")
+      return false
     }
 
     if (!testNames || testNames.length === 0) {
-      showToast("At least one test name is required", "error");
-      return false;
+      showToast("At least one test name is required", "error")
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   // Handle display button click
   const handleDisplay = (e) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault() // Prevent form submission
     if (validateForm()) {
-      setShowDisplay(true);
+      setShowDisplay(true)
     }
-  };
+  }
 
   // Handle save button click
   const handleSave = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) return
 
-    setLoading(true);
+    setLoading(true)
+
+    const { mrpTotal, l2lTotal } = calculateTotals()
 
     try {
       const response = await fetch(`${Labbaseurl}b2b_packages/`, {
@@ -624,13 +717,18 @@ const B2BPackage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
-          testName: formData.testNames, // For backward compatibility
+          packageName: formData.packageName,
+          clinicalname: formData.clinicalname,
+          mrptotal: mrpTotal.toString(), // Convert to string as per model
+          l2ltotal: l2lTotal.toString(), // Convert to string as per model
+          rate: formData.rate,
+          testNames: formData.testNames, // Array of test names
+          status: formData.status,
         }),
-      });
+      })
 
       if (response.ok) {
-        showToast("Package saved successfully!", "success");
+        showToast("Package saved successfully!", "success")
         // Reset form after successful save
         setFormData({
           packageName: "",
@@ -638,21 +736,24 @@ const B2BPackage = () => {
           clinicalnameDisplay: "",
           rate: "",
           testNames: [],
-          status: "Pending",
-        });
-        setClinicalSearch("");
-        setTestSearch("");
-        setShowDisplay(false);
+          status: "pending",
+        })
+        setSelectedTestsWithRates([])
+        setClinicalSearch("")
+        setTestSearch("")
+        setShowDisplay(false)
       } else {
-        const errorData = await response.json();
-        showToast(errorData.message || "Failed to save package", "error");
+        const errorData = await response.json()
+        showToast(errorData.message || "Failed to save package", "error")
       }
     } catch (error) {
-      showToast("Error saving package: " + error.message, "error");
+      showToast("Error saving package: " + error.message, "error")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const { mrpTotal, l2lTotal } = calculateTotals()
 
   return (
     <>
@@ -660,11 +761,7 @@ const B2BPackage = () => {
       <Container>
         {toast && (
           <Toast type={toast.type}>
-            {toast.type === "success" ? (
-              <Check size={16} />
-            ) : (
-              <AlertCircle size={16} />
-            )}
+            {toast.type === "success" ? <Check size={16} /> : <AlertCircle size={16} />}
             {toast.message}
           </Toast>
         )}
@@ -713,9 +810,7 @@ const B2BPackage = () => {
                           value={clinicalSearch}
                           onChange={handleClinicalSearch}
                           placeholder="Search clinical name"
-                          onFocus={() =>
-                            setShowClinicalResults(clinicalSearch.length > 0)
-                          }
+                          onFocus={() => setShowClinicalResults(clinicalSearch.length > 0)}
                         />
                       </InputWrapper>
                       {showClinicalResults && (
@@ -737,7 +832,7 @@ const B2BPackage = () => {
                     <Label required>Rate</Label>
                     <InputWrapper>
                       <InputIcon>
-                        <DollarSign size={16} />
+                        <Package size={16} />
                       </InputIcon>
                       <Input
                         type="number"
@@ -761,24 +856,25 @@ const B2BPackage = () => {
                 </SectionTitle>
                 <FormGroup>
                   <Label required>Test Names</Label>
+                  <SearchHelp>
+                    Search by test name or shortcut (e.g., "ACID" for "ACID PHOSPHATASE - PROSTATIC FRACTION")
+                  </SearchHelp>
                   <MultiSelectContainer>
-                    <MultiSelectHeader
-                      onClick={() => setTestDropdownOpen(!testDropdownOpen)}
-                      tabIndex={0}
-                    >
+                    <MultiSelectHeader onClick={() => setTestDropdownOpen(!testDropdownOpen)} tabIndex={0}>
                       <SelectedItems>
                         {formData.testNames.length === 0 ? (
-                          <span style={{ color: "var(--gray)" }}>
-                            Select test names
-                          </span>
+                          <span style={{ color: "var(--gray)" }}>Select test names</span>
                         ) : (
-                          formData.testNames.map((testId) => (
-                            <SelectedItem key={testId}>
-                              {getTestNameDisplay(testId)}
+                          formData.testNames.map((testName, index) => (
+                            <SelectedItem key={index}>
+                              {testName}
                               <RemoveButton
                                 onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeSelectedTest(testId);
+                                  e.stopPropagation()
+                                  const testToRemove = selectedTestsWithRates.find((test) => test.testName === testName)
+                                  if (testToRemove) {
+                                    removeSelectedTest(testToRemove.testId)
+                                  }
                                 }}
                                 type="button"
                               >
@@ -797,34 +893,73 @@ const B2BPackage = () => {
                           type="text"
                           value={testSearch}
                           onChange={(e) => setTestSearch(e.target.value)}
-                          placeholder="Search tests..."
+                          placeholder="Search by test name or shortcut..."
                           onClick={(e) => e.stopPropagation()}
                         />
                         {filteredTestDetails.map((test, index) => {
-                          const testId =
-                            test._id?.$oid || test.id || test.test_name;
-                          const testName = test.test_name || "Unnamed Test";
-                          const isSelected =
-                            formData.testNames.includes(testId);
+                          const testId = test._id?.$oid || test.id || test.test_name
+                          const testName = test.test_name || "Unnamed Test"
+                          const shortcut = test.shortcut || ""
+                          const isSelected = formData.testNames.includes(testName)
 
                           return (
-                            <MultiSelectOption
-                              key={testId || index}
-                              onClick={() => handleTestSelection(testId)}
-                            >
+                            <MultiSelectOption key={testId || index} onClick={() => handleTestSelection(testId)}>
                               <Checkbox
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => {}} // Handled by parent onClick
                               />
-                              <span>{testName}</span>
+                              <TestNameContainer>
+                                <TestName>{testName}</TestName>
+                                {shortcut && <TestShortcut>Shortcut: {shortcut}</TestShortcut>}
+                              </TestNameContainer>
                             </MultiSelectOption>
-                          );
+                          )
                         })}
+                        {filteredTestDetails.length === 0 && testSearch && (
+                          <MultiSelectOption>
+                            <span style={{ color: "var(--gray)", fontStyle: "italic" }}>
+                              No tests found matching "{testSearch}"
+                            </span>
+                          </MultiSelectOption>
+                        )}
                       </MultiSelectDropdown>
                     )}
                   </MultiSelectContainer>
                 </FormGroup>
+
+                {/* Test Table with Rates */}
+                {selectedTestsWithRates.length > 0 && (
+                  <TestTable>
+                    <TestTableHeader>
+                      <tr>
+                        <th>Test Name</th>
+                        <th>MRP (₹)</th>
+                        <th>L2L Rate (₹)</th>
+                      </tr>
+                    </TestTableHeader>
+                    <TestTableBody>
+                      {selectedTestsWithRates.map((test) => (
+                        <tr key={test.testId}>
+                          <td>{test.testName}</td>
+                          <td>{test.mrp.toFixed(2)}</td>
+                          <td>{test.l2lRate.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      <TotalRow>
+                        <td>
+                          <strong>Total</strong>
+                        </td>
+                        <td>
+                          <strong>₹{mrpTotal.toFixed(2)}</strong>
+                        </td>
+                        <td>
+                          <strong>₹{l2lTotal.toFixed(2)}</strong>
+                        </td>
+                      </TotalRow>
+                    </TestTableBody>
+                  </TestTable>
+                )}
               </FormSection>
 
               <ButtonContainer>
@@ -860,6 +995,14 @@ const B2BPackage = () => {
                 <DisplayValue>₹{formData.rate}</DisplayValue>
               </DisplayItem>
               <DisplayItem>
+                <DisplayLabel>MRP Total:</DisplayLabel>
+                <DisplayValue>₹{mrpTotal.toFixed(2)}</DisplayValue>
+              </DisplayItem>
+              <DisplayItem>
+                <DisplayLabel>L2L Total:</DisplayLabel>
+                <DisplayValue>₹{l2lTotal.toFixed(2)}</DisplayValue>
+              </DisplayItem>
+              <DisplayItem>
                 <DisplayLabel>Test Names:</DisplayLabel>
                 <DisplayValue>{getSelectedTestNames().join(", ")}</DisplayValue>
               </DisplayItem>
@@ -868,7 +1011,7 @@ const B2BPackage = () => {
         )}
       </Container>
     </>
-  );
-};
+  )
+}
 
-export default B2BPackage;
+export default B2BPackage
