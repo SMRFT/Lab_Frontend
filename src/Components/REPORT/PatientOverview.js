@@ -32,6 +32,7 @@ import headerImage from "../Images/Header.png";
 import FooterImage from "../Images/Footer.png";
 import Savitha from "../Images/Savitha.png";
 import Vijayan from "../Images/Vijayan.png";
+import Brindha from "../Images/Brindha.png";
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -741,9 +742,9 @@ const fileUrl = uploadResponse.data.file_url;
 
       // Adding Consultant names and qualifications
       const consultants = [
-        ["Dr. S. Brindha M.D.", "Consultant Pathologist"],
+        ["Dr. S. Brindha M.D.", "Consultant Pathologist", Brindha],
         ["Dr. Rajesh Sengodan M.D.", "Consultant Microbiologist"],
-        ["Dr. R. VIJAYAN Ph.D.", "Consultant Biochemist", Vijayan],
+        ["Dr. R. VIJAYAN Ph.D.", "Consultant Biochemist"],
       ];
 
       const patientRefNo =
