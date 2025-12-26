@@ -13,6 +13,7 @@ import "jspdf-autotable";
 import headerImage from "../Images/Header.png";
 import FooterImage from "../Images/Footer.png";
 import Vijayan from "../Images/Vijayan.png";
+import Brindha from "../Images/Brindha.png";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import axios from "axios";
 import {
@@ -408,9 +409,9 @@ const TestSorting = ({ patient, onClose }) => {
 
       // Adding Consultant names and qualifications
       const consultants = [
-        ["Dr. S. Brindha M.D.", "Consultant Pathologist"],
+        ["Dr. S. Brindha M.D.", "Consultant Pathologist", Brindha],
         ["Dr. Rajesh Sengodan M.D.", "Consultant Microbiologist"],
-        ["Dr. R. VIJAYAN Ph.D.", "Consultant Biochemist", Vijayan],
+        ["Dr. R. VIJAYAN Ph.D.", "Consultant Biochemist"],
       ];
 
       const patientRefNo =
